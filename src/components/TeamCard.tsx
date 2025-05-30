@@ -1,3 +1,4 @@
+
 import { Trophy, Target, Users } from 'lucide-react';
 
 interface Team {
@@ -32,7 +33,8 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: Tea
     <div 
       onClick={onClick}
       className={`
-        relative overflow-hidden rounded-lg p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg
+        relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 
+        hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation
         ${isQualified 
           ? 'bg-slate-800 border border-green-500/30 hover:border-green-500/50' 
           : 'bg-slate-800 border border-red-500/30 hover:border-red-500/50'
@@ -56,22 +58,23 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: Tea
       {/* Team Color Strip */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
 
-      <div className="ml-4">
+      <div className="ml-3 sm:ml-4">
         {/* Team Info */}
         <div className="flex items-start justify-between mb-3 mt-6">
           <div>
-            <h3 className="text-xl font-bold text-white mb-1">{team.name}</h3>
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
             <p className="text-slate-400 text-sm">{team.university}</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 sm:space-x-4">
             <div className="flex items-center space-x-2">
               <Target className="h-4 w-4 text-blue-400" />
               <span className="text-white font-semibold">{team.bidPoints}</span>
-              <span className="text-slate-400 text-sm">bid points</span>
+              <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
+              <span className="text-slate-400 text-sm sm:hidden">pts</span>
             </div>
             
             <div className="flex items-center space-x-2">

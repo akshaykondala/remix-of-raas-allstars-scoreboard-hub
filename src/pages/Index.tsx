@@ -210,18 +210,18 @@ const Index = () => {
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Header */}
+    <div className="min-h-screen bg-slate-900 pb-safe">
+      {/* Mobile-optimized Header */}
       <header className="relative overflow-hidden bg-slate-800 border-b border-slate-700">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"></div>
-        <div className="relative container mx-auto px-6 py-12 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
+        <div className="relative container mx-auto px-4 sm:px-6 py-8 sm:py-12 text-center">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-3 sm:mb-4 tracking-tight">
             RAAS ALL STARS
           </h1>
-          <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-slate-300 mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
             The ultimate collegiate Raas competition featuring the nation's top 9 teams
           </p>
-          <div className="flex flex-wrap justify-center gap-4 text-sm">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 text-sm px-4">
             <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700">
               <span className="text-blue-400 font-semibold">{qualifiedTeams}</span>
               <span className="text-slate-300"> / {QUALIFYING_SPOTS} Teams Qualified</span>
@@ -237,11 +237,11 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Leaderboard */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-3">Team Leaderboard</h2>
-          <p className="text-slate-400 text-base">
+      {/* Mobile-optimized Leaderboard */}
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">Team Leaderboard</h2>
+          <p className="text-slate-400 text-sm sm:text-base px-4">
             Ranked by bid points earned throughout the season
           </p>
         </div>
@@ -268,11 +268,11 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Info Section */}
-        <div className="mt-12 text-center">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-3xl mx-auto">
-            <h3 className="text-xl font-bold text-white mb-3">About Raas All Stars</h3>
-            <p className="text-slate-300 text-base leading-relaxed">
+        {/* Mobile-optimized Info Section */}
+        <div className="mt-8 sm:mt-12 text-center px-2">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 max-w-3xl mx-auto">
+            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">About Raas All Stars</h3>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
               Raas All Stars is the premier collegiate Raas competition, bringing together 
               the top 9 university teams from across the nation. Teams earn bid points 
               throughout the season at regional competitions to qualify for this ultimate 
