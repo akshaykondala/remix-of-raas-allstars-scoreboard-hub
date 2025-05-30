@@ -210,43 +210,43 @@ const Index = () => {
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900">
+    <div className="min-h-screen bg-slate-900">
       {/* Header */}
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-500/20"></div>
-        <div className="relative container mx-auto px-6 py-16 text-center">
-          <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-tight">
+      <header className="relative overflow-hidden bg-slate-800 border-b border-slate-700">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"></div>
+        <div className="relative container mx-auto px-6 py-12 text-center">
+          <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
             RAAS ALL STARS
           </h1>
-          <p className="text-xl md:text-2xl text-purple-200 mb-8 max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
             The ultimate collegiate Raas competition featuring the nation's top 9 teams
           </p>
-          <div className="flex flex-wrap justify-center gap-6 text-lg">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
-              <span className="text-yellow-300 font-semibold">{qualifiedTeams}</span>
-              <span className="text-white"> / {QUALIFYING_SPOTS} Teams Qualified</span>
+          <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700">
+              <span className="text-blue-400 font-semibold">{qualifiedTeams}</span>
+              <span className="text-slate-300"> / {QUALIFYING_SPOTS} Teams Qualified</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-6 py-3">
-              <span className="text-yellow-300 font-semibold">{CUTOFF_POINTS}</span>
-              <span className="text-white"> Bid Points Cutoff</span>
+            <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700">
+              <span className="text-blue-400 font-semibold">{CUTOFF_POINTS}</span>
+              <span className="text-slate-300"> Bid Points Cutoff</span>
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce">
-          <ChevronDown size={32} />
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-slate-400 animate-bounce">
+          <ChevronDown size={24} />
         </div>
       </header>
 
       {/* Leaderboard */}
-      <main className="container mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">Team Leaderboard</h2>
-          <p className="text-purple-200 text-lg">
+      <main className="container mx-auto px-6 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-white mb-3">Team Leaderboard</h2>
+          <p className="text-slate-400 text-base">
             Ranked by bid points earned throughout the season
           </p>
         </div>
 
-        <div className="grid gap-4 max-w-4xl mx-auto">
+        <div className="grid gap-3 max-w-4xl mx-auto">
           {sortedTeams.map((team, index) => (
             <TeamCard
               key={team.id}
@@ -260,19 +260,19 @@ const Index = () => {
         </div>
 
         {/* Cutoff Line */}
-        <div className="max-w-4xl mx-auto mt-8">
-          <div className="border-t-4 border-dashed border-red-400 relative">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+        <div className="max-w-4xl mx-auto mt-6">
+          <div className="border-t-2 border-dashed border-red-500 relative">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
               QUALIFICATION CUTOFF
             </div>
           </div>
         </div>
 
         {/* Info Section */}
-        <div className="mt-16 text-center">
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-8 max-w-3xl mx-auto">
-            <h3 className="text-2xl font-bold text-white mb-4">About Raas All Stars</h3>
-            <p className="text-purple-200 text-lg leading-relaxed">
+        <div className="mt-12 text-center">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-3xl mx-auto">
+            <h3 className="text-xl font-bold text-white mb-3">About Raas All Stars</h3>
+            <p className="text-slate-300 text-base leading-relaxed">
               Raas All Stars is the premier collegiate Raas competition, bringing together 
               the top 9 university teams from across the nation. Teams earn bid points 
               throughout the season at regional competitions to qualify for this ultimate 
