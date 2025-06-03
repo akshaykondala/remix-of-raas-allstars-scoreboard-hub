@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Users } from 'lucide-react';
 
 interface Team {
   id: string;
@@ -64,20 +64,21 @@ export function TeamSelector({ selectedTeam, onTeamSelect }: TeamSelectorProps) 
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-sm ${
           selectedTeam 
             ? `${selectedTeam.colors.primary} border-transparent text-white` 
             : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-600'
         }`}
       >
+        <Users className="h-3 w-3" />
         <span className="font-medium">
-          {selectedTeam ? selectedTeam.name : 'Select Your Team'}
+          {selectedTeam ? selectedTeam.name : 'My Team'}
         </span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 max-h-60 overflow-y-auto min-w-64">
           {teams.map((team) => (
             <button
               key={team.id}

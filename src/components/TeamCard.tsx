@@ -1,5 +1,5 @@
 
-import { Trophy, Target, Users } from 'lucide-react';
+import { Trophy, Target, Users, Lock } from 'lucide-react';
 
 interface Team {
   id: string;
@@ -7,6 +7,7 @@ interface Team {
   university: string;
   bidPoints: number;
   qualified: boolean;
+  locked?: boolean; // New field for locked status
   color: string;
   founded: string;
 }
@@ -47,12 +48,15 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: Tea
       </div>
 
       {/* Qualification Status */}
-      <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold ${
-        isQualified 
-          ? 'bg-green-600 text-white' 
-          : 'bg-red-600 text-white'
+      <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${
+        team.locked 
+          ? 'bg-purple-600 text-white' 
+          : isQualified 
+            ? 'bg-green-600 text-white' 
+            : 'bg-red-600 text-white'
       }`}>
-        {isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
+        {team.locked && <Lock className="h-3 w-3" />}
+        {team.locked ? 'LOCKED IN' : isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
       </div>
 
       {/* Team Color Strip */}

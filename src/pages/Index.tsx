@@ -5,7 +5,7 @@ import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
 import { TeamSelector, Team as SelectorTeam } from '@/components/TeamSelector';
-import { Trophy, Target, Calendar, Users, Zap } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, Lock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -14,6 +14,7 @@ interface Team {
   university: string;
   bidPoints: number;
   qualified: boolean;
+  locked?: boolean; // New field for "locked into RAS"
   logo?: string;
   color: string;
   history: string[];
@@ -28,6 +29,7 @@ const teams: Team[] = [
     university: 'University of Texas at Austin',
     bidPoints: 95,
     qualified: true,
+    locked: true, // Locked into RAS
     color: 'bg-orange-600',
     history: [
       'Founded in 2005, Texas Raas has been a powerhouse in collegiate Raas',
@@ -43,6 +45,7 @@ const teams: Team[] = [
     university: 'Carnegie Mellon University',
     bidPoints: 92,
     qualified: true,
+    locked: true, // Locked into RAS
     color: 'bg-red-700',
     history: [
       'CMU Raasta brings technical precision to every performance',
@@ -58,6 +61,7 @@ const teams: Team[] = [
     university: 'University of Florida',
     bidPoints: 88,
     qualified: true,
+    locked: true, // Locked into RAS
     color: 'bg-blue-600',
     history: [
       'Gatoraas represents the Southeast with pride and energy',
@@ -275,14 +279,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-slate-950 pb-safe overflow-x-hidden">
       <Tabs defaultValue="leaderboard" className="w-full">
-        {/* Team Selector */}
-        <div className="px-4 pt-4">
+        {/* Header with Team Selector */}
+        <div className="flex justify-between items-center px-4 pt-4">
+          <div></div> {/* Empty div for spacing */}
           <TeamSelector 
             selectedTeam={selectedSchoolTeam}
             onTeamSelect={setSelectedSchoolTeam}
           />
         </div>
 
+        {/* Centered Tabs */}
         <div className="flex justify-center px-4 mt-4">
           <TabsList className="grid grid-cols-4 bg-slate-800 border-slate-700 rounded-xl w-full max-w-md">
             <TabsTrigger 
@@ -509,7 +515,11 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="competitions" className="mt-0">
-          <CompetitionsTab />
+          <div className="flex justify-center">
+            <div className="w-full max-w-4xl">
+              <CompetitionsTab />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
 

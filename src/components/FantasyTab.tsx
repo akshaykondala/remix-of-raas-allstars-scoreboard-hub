@@ -66,6 +66,7 @@ export function FantasyTab() {
   const [selectedTeam, setSelectedTeam] = useState<FantasyTeam | null>(null);
 
   const sortedTeams = fantasyTeams.sort((a, b) => b.points - a.points);
+  const topThreeTeams = sortedTeams.slice(0, 3);
 
   return (
     <div className="px-4 py-6">
@@ -76,45 +77,69 @@ export function FantasyTab() {
         </p>
       </div>
 
-      {/* Top 3 Fantasy Teams */}
-      <section className="bg-slate-900 rounded-2xl border border-slate-700 p-4 mb-6">
-        <h3 className="text-lg font-bold text-white mb-4 text-center">Top 3 Fantasy Teams</h3>
-        <div className="flex gap-3 justify-center">
-          {sortedTeams.slice(0, 3).map((team, index) => (
-            <div 
-              key={team.id}
-              onClick={() => setSelectedTeam(team)}
-              className="flex-1 max-w-[120px] bg-slate-800 border border-slate-600 rounded-xl p-3 cursor-pointer transform transition-all duration-200 hover:scale-105 active:scale-95"
-            >
+      {/* Top 3 Fantasy Teams - Consistent with Board tab */}
+      <section className="px-4 py-6">
+        <h2 className="text-xl font-bold text-white mb-6 text-center">Top 3 Fantasy Teams</h2>
+        <div className="flex gap-4 justify-center items-end">
+          {/* 2nd Place */}
+          <div 
+            onClick={() => setSelectedTeam(topThreeTeams[1])}
+            className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            <div className="bg-gradient-to-b from-slate-600 to-slate-700 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500 shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md">
+                <Trophy className="h-6 w-6 text-slate-200" />
+              </div>
               <div className="text-center">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${
-                  index === 0 ? 'bg-yellow-600' : 
-                  index === 1 ? 'bg-slate-600' : 
-                  'bg-orange-600'
-                }`}>
-                  <Trophy className={`h-6 w-6 ${
-                    index === 0 ? 'text-yellow-400' : 
-                    index === 1 ? 'text-slate-300' : 
-                    'text-orange-400'
-                  }`} />
-                </div>
-                <div className={`text-xs font-bold mb-1 ${
-                  index === 0 ? 'text-yellow-400' : 
-                  index === 1 ? 'text-slate-300' : 
-                  'text-orange-400'
-                }`}>
-                  {index === 0 ? '1st' : index === 1 ? '2nd' : '3rd'}
-                </div>
-                <div className="text-white font-semibold text-sm leading-tight mb-1">
-                  {team.name}
-                </div>
-                <div className="flex items-center justify-center gap-1 text-xs">
-                  <Target className="h-3 w-3 text-blue-400" />
-                  <span className="text-white font-semibold">{team.points}</span>
+                <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
+                <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
+                <div className="flex items-center justify-center gap-1">
+                  <Target className="h-3 w-3 text-slate-300" />
+                  <span className="text-white font-semibold text-xs">{topThreeTeams[1]?.points}</span>
                 </div>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* 1st Place - Taller */}
+          <div 
+            onClick={() => setSelectedTeam(topThreeTeams[0])}
+            className="flex-1 max-w-[120px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            <div className="bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400">
+              <div className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
+                <Trophy className="h-8 w-8 text-yellow-700" />
+              </div>
+              <div className="text-center">
+                <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
+                <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
+                <div className="flex items-center justify-center gap-1">
+                  <Target className="h-3 w-3 text-yellow-800" />
+                  <span className="text-yellow-900 font-bold text-sm">{topThreeTeams[0]?.points}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3rd Place */}
+          <div 
+            onClick={() => setSelectedTeam(topThreeTeams[2])}
+            className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
+          >
+            <div className="bg-gradient-to-b from-orange-500 to-orange-600 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400 shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md">
+                <Trophy className="h-6 w-6 text-orange-700" />
+              </div>
+              <div className="text-center">
+                <div className="text-orange-800 font-bold text-xs mb-1">3rd</div>
+                <div className="text-orange-900 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
+                <div className="flex items-center justify-center gap-1">
+                  <Target className="h-3 w-3 text-orange-800" />
+                  <span className="text-orange-900 font-semibold text-xs">{topThreeTeams[2]?.points}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
