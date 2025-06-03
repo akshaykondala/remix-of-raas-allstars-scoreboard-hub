@@ -1,8 +1,7 @@
-
 import { useState } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
-import { ChevronDown } from 'lucide-react';
+import { Trophy, Target } from 'lucide-react';
 
 interface Team {
   id: string;
@@ -208,50 +207,83 @@ const Index = () => {
   
   const qualifiedTeams = teams.filter(team => team.qualified).length;
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
+  const topThreeTeams = sortedTeams.slice(0, 3);
+  const otherTeams = sortedTeams.slice(3);
 
   return (
     <div className="min-h-screen bg-slate-900 pb-safe">
-      {/* Mobile-optimized Header */}
-      <header className="relative overflow-hidden bg-slate-800 border-b border-slate-700">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-indigo-900/30"></div>
-        <div className="relative container mx-auto px-4 sm:px-6 py-8 sm:py-12 text-center">
-          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-3 sm:mb-4 tracking-tight">
+      {/* App Header */}
+      <header className="bg-slate-800 border-b border-slate-700 px-4 py-6">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
             RAAS ALL STARS
           </h1>
-          <p className="text-base sm:text-lg md:text-xl text-slate-300 mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
-            The ultimate collegiate Raas competition featuring the nation's top 9 teams
-          </p>
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 text-sm px-4">
-            <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700">
+          <div className="flex justify-center gap-4 text-sm">
+            <div className="bg-slate-700 rounded-lg px-3 py-1">
               <span className="text-blue-400 font-semibold">{qualifiedTeams}</span>
-              <span className="text-slate-300"> / {QUALIFYING_SPOTS} Teams Qualified</span>
+              <span className="text-slate-300"> / {QUALIFYING_SPOTS} Qualified</span>
             </div>
-            <div className="bg-slate-800/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-slate-700">
+            <div className="bg-slate-700 rounded-lg px-3 py-1">
               <span className="text-blue-400 font-semibold">{CUTOFF_POINTS}</span>
-              <span className="text-slate-300"> Bid Points Cutoff</span>
+              <span className="text-slate-300"> Points Cutoff</span>
             </div>
           </div>
         </div>
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-slate-400 animate-bounce">
-          <ChevronDown size={24} />
-        </div>
       </header>
 
-      {/* Mobile-optimized Leaderboard */}
-      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2 sm:mb-3">Team Leaderboard</h2>
-          <p className="text-slate-400 text-sm sm:text-base px-4">
-            Ranked by bid points earned throughout the season
+      {/* Top 3 Teams */}
+      <section className="px-4 py-6 bg-slate-800">
+        <h2 className="text-xl font-bold text-white mb-4 text-center">Top 3 Teams</h2>
+        <div className="flex gap-3 justify-center">
+          {topThreeTeams.map((team, index) => (
+            <div 
+              key={team.id}
+              onClick={() => setSelectedTeam(team)}
+              className="flex-1 max-w-[120px] bg-slate-700 border border-slate-600 rounded-lg p-3 cursor-pointer transform transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <div className="text-center">
+                <div className={`w-12 h-12 ${team.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                  <Trophy className={`h-6 w-6 ${
+                    index === 0 ? 'text-yellow-400' : 
+                    index === 1 ? 'text-slate-300' : 
+                    'text-orange-400'
+                  }`} />
+                </div>
+                <div className={`text-xs font-bold mb-1 ${
+                  index === 0 ? 'text-yellow-400' : 
+                  index === 1 ? 'text-slate-300' : 
+                  'text-orange-400'
+                }`}>
+                  {index === 0 ? '1st' : index === 1 ? '2nd' : '3rd'}
+                </div>
+                <div className="text-white font-semibold text-sm leading-tight mb-1">
+                  {team.name}
+                </div>
+                <div className="flex items-center justify-center gap-1 text-xs">
+                  <Target className="h-3 w-3 text-blue-400" />
+                  <span className="text-white font-semibold">{team.bidPoints}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Main Leaderboard */}
+      <main className="px-4 py-6">
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-white mb-2">Full Leaderboard</h2>
+          <p className="text-slate-400 text-sm">
+            All teams ranked by bid points
           </p>
         </div>
 
-        <div className="grid gap-3 max-w-4xl mx-auto">
-          {sortedTeams.map((team, index) => (
+        <div className="grid gap-3">
+          {otherTeams.map((team, index) => (
             <TeamCard
               key={team.id}
               team={team}
-              rank={index + 1}
+              rank={index + 4}
               isQualified={team.qualified}
               cutoffPoints={CUTOFF_POINTS}
               onClick={() => setSelectedTeam(team)}
@@ -260,7 +292,7 @@ const Index = () => {
         </div>
 
         {/* Cutoff Line */}
-        <div className="max-w-4xl mx-auto mt-6">
+        <div className="mt-6">
           <div className="border-t-2 border-dashed border-red-500 relative">
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
               QUALIFICATION CUTOFF
@@ -268,15 +300,15 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile-optimized Info Section */}
-        <div className="mt-8 sm:mt-12 text-center px-2">
-          <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 sm:p-6 max-w-3xl mx-auto">
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">About Raas All Stars</h3>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Raas All Stars is the premier collegiate Raas competition, bringing together 
+        {/* About Section */}
+        <div className="mt-8">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-4">
+            <h3 className="text-lg font-bold text-white mb-2">About Raas All Stars</h3>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              The premier collegiate Raas competition, bringing together 
               the top 9 university teams from across the nation. Teams earn bid points 
               throughout the season at regional competitions to qualify for this ultimate 
-              championship event celebrating the art of traditional Gujarati folk dance.
+              championship event celebrating traditional Gujarati folk dance.
             </p>
           </div>
         </div>
