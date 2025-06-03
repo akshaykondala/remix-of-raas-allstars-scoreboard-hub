@@ -1,8 +1,11 @@
+
 import { useState } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
-import { Trophy, Target, Calendar, Users } from 'lucide-react';
+import { FantasyTab } from '@/components/FantasyTab';
+import { TeamSelector, Team } from '@/components/TeamSelector';
+import { Trophy, Target, Calendar, Users, Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -206,65 +209,99 @@ const QUALIFYING_SPOTS = 9;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedSchoolTeam, setSelectedSchoolTeam] = useState<Team | null>(null);
   
   const qualifiedTeams = teams.filter(team => team.qualified).length;
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
   const topThreeTeams = sortedTeams.slice(0, 3);
   const otherTeams = sortedTeams.slice(3);
 
+  // Get theme colors based on selected school team
+  const getThemeColors = () => {
+    if (selectedSchoolTeam) {
+      return {
+        primary: selectedSchoolTeam.colors.primary,
+        secondary: selectedSchoolTeam.colors.secondary,
+        accent: selectedSchoolTeam.colors.accent
+      };
+    }
+    return {
+      primary: 'bg-blue-600',
+      secondary: 'bg-blue-700', 
+      accent: 'text-blue-400'
+    };
+  };
+
+  const themeColors = getThemeColors();
+
   return (
-    <div className="min-h-screen bg-slate-950 pb-safe">
+    <div className="min-h-screen bg-slate-950 pb-safe overflow-x-hidden">
       <Tabs defaultValue="leaderboard" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-slate-800 border-slate-700 mx-4 mt-4 rounded-xl">
+        {/* Team Selector */}
+        <div className="px-4 pt-4">
+          <TeamSelector 
+            selectedTeam={selectedSchoolTeam}
+            onTeamSelect={setSelectedSchoolTeam}
+          />
+        </div>
+
+        <TabsList className={`grid w-full grid-cols-3 bg-slate-800 border-slate-700 mx-4 mt-4 rounded-xl`}>
           <TabsTrigger 
             value="leaderboard" 
-            className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg"
+            className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg`}
           >
             <Users className="h-4 w-4 mr-2" />
-            Leaderboard
+            Teams
+          </TabsTrigger>
+          <TabsTrigger 
+            value="fantasy" 
+            className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg`}
+          >
+            <Zap className="h-4 w-4 mr-2" />
+            Fantasy
           </TabsTrigger>
           <TabsTrigger 
             value="competitions" 
-            className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg"
+            className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg`}
           >
             <Calendar className="h-4 w-4 mr-2" />
-            Competitions
+            Comps
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="leaderboard" className="mt-0">
-          {/* App Header */}
-          <header className="bg-slate-900 border-b border-slate-700 px-4 py-6 rounded-b-3xl mx-4 mt-4">
+          {/* Status Bar */}
+          <div className="bg-slate-900 border-b border-slate-700 px-4 py-4 mx-4 mt-4 rounded-2xl">
             <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                RAAS ALL STARS
+              <h1 className="text-xl font-bold text-white mb-3">
+                RAAS ALL STARS 2024
               </h1>
               <div className="flex justify-center gap-4 text-sm">
-                <div className="bg-slate-800 rounded-lg px-3 py-1 border border-slate-600">
-                  <span className="text-blue-400 font-semibold">{qualifiedTeams}</span>
+                <div className="bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                  <span className={`${themeColors.accent} font-semibold`}>{qualifiedTeams}</span>
                   <span className="text-slate-300"> / {QUALIFYING_SPOTS} Qualified</span>
                 </div>
-                <div className="bg-slate-800 rounded-lg px-3 py-1 border border-slate-600">
-                  <span className="text-blue-400 font-semibold">{CUTOFF_POINTS}</span>
+                <div className="bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                  <span className={`${themeColors.accent} font-semibold`}>{CUTOFF_POINTS}</span>
                   <span className="text-slate-300"> Points Cutoff</span>
                 </div>
               </div>
             </div>
-          </header>
+          </div>
 
           {/* Top 3 Teams */}
           <section className="px-4 py-6 bg-slate-900 mx-4 my-4 rounded-2xl border border-slate-700">
-            <h2 className="text-xl font-bold text-white mb-4 text-center">Top 3 Teams</h2>
+            <h2 className="text-lg font-bold text-white mb-4 text-center">Top 3 Teams</h2>
             <div className="flex gap-3 justify-center">
               {topThreeTeams.map((team, index) => (
                 <div 
                   key={team.id}
                   onClick={() => setSelectedTeam(team)}
-                  className="flex-1 max-w-[120px] bg-slate-800 border border-slate-600 rounded-xl p-3 cursor-pointer transform transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="flex-1 max-w-[110px] bg-slate-800 border border-slate-600 rounded-xl p-3 cursor-pointer transform transition-all duration-200 hover:scale-105 active:scale-95"
                 >
                   <div className="text-center">
-                    <div className={`w-12 h-12 ${team.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
-                      <Trophy className={`h-6 w-6 ${
+                    <div className={`w-10 h-10 ${team.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                      <Trophy className={`h-5 w-5 ${
                         index === 0 ? 'text-yellow-400' : 
                         index === 1 ? 'text-slate-300' : 
                         'text-orange-400'
@@ -277,11 +314,11 @@ const Index = () => {
                     }`}>
                       {index === 0 ? '1st' : index === 1 ? '2nd' : '3rd'}
                     </div>
-                    <div className="text-white font-semibold text-sm leading-tight mb-1">
+                    <div className="text-white font-semibold text-xs leading-tight mb-1">
                       {team.name}
                     </div>
                     <div className="flex items-center justify-center gap-1 text-xs">
-                      <Target className="h-3 w-3 text-blue-400" />
+                      <Target className={`h-3 w-3 ${themeColors.accent}`} />
                       <span className="text-white font-semibold">{team.bidPoints}</span>
                     </div>
                   </div>
@@ -293,7 +330,7 @@ const Index = () => {
           {/* Main Leaderboard */}
           <main className="px-4 py-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-2">Full Leaderboard</h2>
+              <h2 className="text-lg font-bold text-white mb-2">Full Leaderboard</h2>
               <p className="text-slate-400 text-sm">
                 All teams ranked by bid points
               </p>
@@ -334,6 +371,10 @@ const Index = () => {
               </div>
             </div>
           </main>
+        </TabsContent>
+
+        <TabsContent value="fantasy" className="mt-0">
+          <FantasyTab />
         </TabsContent>
 
         <TabsContent value="competitions" className="mt-0">
