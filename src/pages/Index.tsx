@@ -3,7 +3,7 @@ import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { Trophy, Target, Calendar, Users, Zap } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -18,6 +18,15 @@ interface Team {
   history: string[];
   achievements: string[];
   founded: string;
+}
+
+interface SimulationData {
+  competitionName: string;
+  predictions: {
+    first: string;
+    second: string;
+    third: string;
+  };
 }
 
 const teams: Team[] = [
@@ -248,12 +257,21 @@ const QUALIFYING_SPOTS = 9;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   
   const qualifiedTeams = teams.filter(team => team.qualified).length;
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
   const topThreeTeams = sortedTeams.slice(0, 3);
   const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
   const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
+
+  const handleSimulationSet = (competitionName: string, predictions: { first: string; second: string; third: string }) => {
+    setSimulationData({ competitionName, predictions });
+  };
+
+  const clearSimulation = () => {
+    setSimulationData(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black pb-safe overflow-x-hidden relative">
@@ -264,7 +282,7 @@ const Index = () => {
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Tabs defaultValue="leaderboard" className="w-full relative z-10">
+      <Tabs defaultValue="standings" className="w-full relative z-10 pb-20">
         {/* Header with Logo - Faded into gradient */}
         <div className="bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-sm">
           <div className="flex justify-center items-center px-4 py-4">
@@ -276,63 +294,33 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Centered Tabs */}
-        <div className="flex justify-center px-4 mt-6">
-          <TabsList className="grid grid-cols-4 bg-slate-800/80 backdrop-blur-sm border-slate-700/50 rounded-xl w-full max-w-md shadow-lg">
-            <TabsTrigger 
-              value="leaderboard" 
-              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
-            >
-              <Users className="h-3 w-3 mr-1" />
-              Board
-            </TabsTrigger>
-            <TabsTrigger 
-              value="teams" 
-              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
-            >
-              <Target className="h-3 w-3 mr-1" />
-              Teams
-            </TabsTrigger>
-            <TabsTrigger 
-              value="fantasy" 
-              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
-            >
-              <Zap className="h-3 w-3 mr-1" />
-              Fantasy
-            </TabsTrigger>
-            <TabsTrigger 
-              value="competitions" 
-              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
-            >
-              <Calendar className="h-3 w-3 mr-1" />
-              Comps
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="leaderboard" className="mt-0">
-          {/* Status Bar */}
-          <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 px-4 py-4 mx-4 mt-6 rounded-2xl shadow-lg">
-            <div className="text-center">
-              <h1 className="text-xl font-bold text-white mb-3">
-                2024 SEASON STANDINGS
-              </h1>
-              <div className="flex justify-center gap-4 text-sm">
-                <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
-                  <span className="font-semibold">{qualifiedTeams}</span>
-                  <span className="text-slate-300"> / {QUALIFYING_SPOTS} Qualified</span>
-                </div>
-                <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
-                  <span className="font-semibold">{CUTOFF_POINTS}</span>
-                  <span className="text-slate-300"> Points Cutoff</span>
+        <TabsContent value="standings" className="mt-6">
+          {/* Simulation Alert */}
+          {simulationData && (
+            <div className="mx-4 mb-6">
+              <div className="bg-gradient-to-r from-blue-600/80 to-purple-600/80 backdrop-blur-sm border border-blue-500/50 rounded-xl p-4 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-yellow-400" />
+                    <div>
+                      <h3 className="text-white font-bold text-sm">Simulation Mode</h3>
+                      <p className="text-blue-100 text-xs">Viewing predicted results for {simulationData.competitionName}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={clearSimulation}
+                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Exit
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Top 3 Teams - Modern Design */}
           <section className="px-4 py-6">
-            <h2 className="text-xl font-bold text-white mb-6 text-center">Top 3 Teams</h2>
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
               <div 
@@ -463,6 +451,16 @@ const Index = () => {
           </main>
         </TabsContent>
 
+        <TabsContent value="comps" className="mt-0">
+          <div className="px-4">
+            <CompetitionsTab onSimulationSet={handleSimulationSet} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="fantasy" className="mt-0">
+          <FantasyTab />
+        </TabsContent>
+
         <TabsContent value="teams" className="mt-0">
           <div className="px-4 py-6">
             <div className="mb-6">
@@ -498,15 +496,39 @@ const Index = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="fantasy" className="mt-0">
-          <FantasyTab />
-        </TabsContent>
-
-        <TabsContent value="competitions" className="mt-0">
-          <div className="px-4">
-            <CompetitionsTab />
-          </div>
-        </TabsContent>
+        {/* Mobile Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50">
+          <TabsList className="grid grid-cols-4 bg-transparent border-none rounded-none w-full h-16 p-0">
+            <TabsTrigger 
+              value="standings" 
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+            >
+              <Trophy className="h-4 w-4" />
+              Standings
+            </TabsTrigger>
+            <TabsTrigger 
+              value="comps" 
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+            >
+              <Calendar className="h-4 w-4" />
+              Comps
+            </TabsTrigger>
+            <TabsTrigger 
+              value="fantasy" 
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+            >
+              <Zap className="h-4 w-4" />
+              Fantasy
+            </TabsTrigger>
+            <TabsTrigger 
+              value="teams" 
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+            >
+              <Users className="h-4 w-4" />
+              Teams
+            </TabsTrigger>
+          </TabsList>
+        </div>
       </Tabs>
 
       {/* Team Detail Modal */}
