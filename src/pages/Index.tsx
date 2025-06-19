@@ -277,20 +277,38 @@ const Index = () => {
   const themeColors = getThemeColors();
 
   return (
-    <div className="min-h-screen bg-slate-950 pb-safe overflow-x-hidden">
-      <Tabs defaultValue="leaderboard" className="w-full">
-        {/* Header with Team Selector */}
-        <div className="flex justify-between items-center px-4 pt-4">
-          <div></div> {/* Empty div for spacing */}
-          <TeamSelector 
-            selectedTeam={selectedSchoolTeam}
-            onTeamSelect={setSelectedSchoolTeam}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 pb-safe overflow-x-hidden relative">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <Tabs defaultValue="leaderboard" className="w-full relative z-10">
+        {/* Header with Logo */}
+        <div className="bg-gradient-to-r from-slate-800/90 via-slate-800/80 to-slate-800/90 backdrop-blur-sm border-b border-slate-700/50 shadow-lg">
+          <div className="flex justify-between items-center px-4 py-4">
+            <div className="flex-1"></div>
+            <div className="flex justify-center">
+              <img 
+                src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+                alt="Raas All Stars Logo" 
+                className="h-12 w-auto"
+              />
+            </div>
+            <div className="flex-1 flex justify-end">
+              <TeamSelector 
+                selectedTeam={selectedSchoolTeam}
+                onTeamSelect={setSelectedSchoolTeam}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Centered Tabs */}
-        <div className="flex justify-center px-4 mt-4">
-          <TabsList className="grid grid-cols-4 bg-slate-800 border-slate-700 rounded-xl w-full max-w-md">
+        <div className="flex justify-center px-4 mt-6">
+          <TabsList className="grid grid-cols-4 bg-slate-800/80 backdrop-blur-sm border-slate-700/50 rounded-xl w-full max-w-md shadow-lg">
             <TabsTrigger 
               value="leaderboard" 
               className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg text-xs`}
@@ -324,17 +342,17 @@ const Index = () => {
 
         <TabsContent value="leaderboard" className="mt-0">
           {/* Status Bar */}
-          <div className="bg-slate-900 border-b border-slate-700 px-4 py-4 mx-4 mt-4 rounded-2xl">
+          <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 px-4 py-4 mx-4 mt-6 rounded-2xl shadow-lg">
             <div className="text-center">
               <h1 className="text-xl font-bold text-white mb-3">
-                RAAS ALL STARS 2024
+                2024 SEASON STANDINGS
               </h1>
               <div className="flex justify-center gap-4 text-sm">
-                <div className="bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
                   <span className={`${themeColors.accent} font-semibold`}>{qualifiedTeams}</span>
                   <span className="text-slate-300"> / {QUALIFYING_SPOTS} Qualified</span>
                 </div>
-                <div className="bg-slate-800 rounded-lg px-3 py-2 border border-slate-600">
+                <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
                   <span className={`${themeColors.accent} font-semibold`}>{CUTOFF_POINTS}</span>
                   <span className="text-slate-300"> Points Cutoff</span>
                 </div>
@@ -351,7 +369,7 @@ const Index = () => {
                 onClick={() => setSelectedTeam(topThreeTeams[1])}
                 className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                <div className="bg-gradient-to-b from-slate-600 to-slate-700 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500 shadow-lg">
+                <div className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl">
                   <div className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md">
                     <Trophy className="h-6 w-6 text-slate-200" />
                   </div>
@@ -371,7 +389,7 @@ const Index = () => {
                 onClick={() => setSelectedTeam(topThreeTeams[0])}
                 className="flex-1 max-w-[120px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                <div className="bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400">
+                <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50">
                   <div className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
                     <Trophy className="h-8 w-8 text-yellow-700" />
                   </div>
@@ -391,7 +409,7 @@ const Index = () => {
                 onClick={() => setSelectedTeam(topThreeTeams[2])}
                 className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                <div className="bg-gradient-to-b from-orange-500 to-orange-600 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400 shadow-lg">
+                <div className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl">
                   <div className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md">
                     <Trophy className="h-6 w-6 text-orange-700" />
                   </div>
@@ -432,8 +450,8 @@ const Index = () => {
 
             {/* Cutoff Line */}
             <div className="my-8">
-              <div className="border-t-2 border-dashed border-red-500 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+              <div className="border-t-2 border-dashed border-red-500/70 relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
                   QUALIFICATION CUTOFF ({CUTOFF_POINTS} PTS)
                 </div>
               </div>
@@ -462,7 +480,7 @@ const Index = () => {
 
             {/* About Section */}
             <div className="mt-8">
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-lg">
                 <h3 className="text-lg font-bold text-white mb-2">About Raas All Stars</h3>
                 <p className="text-slate-300 text-sm leading-relaxed">
                   The premier collegiate Raas competition, bringing together 
@@ -498,7 +516,7 @@ const Index = () => {
             </div>
 
             <div className="mt-8">
-              <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-lg">
                 <h3 className="text-lg font-bold text-white mb-2">Emerging Programs</h3>
                 <p className="text-slate-300 text-sm leading-relaxed">
                   These teams are building their competitive programs and working towards 
