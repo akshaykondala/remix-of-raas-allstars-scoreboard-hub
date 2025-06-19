@@ -265,8 +265,8 @@ const Index = () => {
       </div>
 
       <Tabs defaultValue="leaderboard" className="w-full relative z-10">
-        {/* Header with Logo */}
-        <div className="bg-black/95 backdrop-blur-sm border-b border-slate-800/50 shadow-lg">
+        {/* Header with Logo - Faded into gradient */}
+        <div className="bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-sm">
           <div className="flex justify-center items-center px-4 py-4">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
@@ -503,10 +503,8 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="competitions" className="mt-0">
-          <div className="flex justify-center">
-            <div className="w-full max-w-4xl">
-              <CompetitionsTab />
-            </div>
+          <div className="px-4">
+            <CompetitionsTab />
           </div>
         </TabsContent>
       </Tabs>
