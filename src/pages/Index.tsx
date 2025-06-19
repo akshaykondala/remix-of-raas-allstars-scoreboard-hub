@@ -1,11 +1,9 @@
-
 import { useState } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { TeamSelector, Team as SelectorTeam } from '@/components/TeamSelector';
-import { Trophy, Target, Calendar, Users, Zap, Lock } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -250,7 +248,6 @@ const QUALIFYING_SPOTS = 9;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [selectedSchoolTeam, setSelectedSchoolTeam] = useState<SelectorTeam | null>(null);
   
   const qualifiedTeams = teams.filter(team => team.qualified).length;
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
@@ -258,51 +255,24 @@ const Index = () => {
   const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
   const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
 
-  // Get theme colors based on selected school team
-  const getThemeColors = () => {
-    if (selectedSchoolTeam) {
-      return {
-        primary: selectedSchoolTeam.colors.primary,
-        secondary: selectedSchoolTeam.colors.secondary,
-        accent: selectedSchoolTeam.colors.accent
-      };
-    }
-    return {
-      primary: 'bg-blue-600',
-      secondary: 'bg-blue-700', 
-      accent: 'text-blue-400'
-    };
-  };
-
-  const themeColors = getThemeColors();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-blue-900/30 pb-safe overflow-x-hidden relative">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black pb-safe overflow-x-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-40 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-slate-800/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
       </div>
 
       <Tabs defaultValue="leaderboard" className="w-full relative z-10">
         {/* Header with Logo */}
-        <div className="bg-gradient-to-r from-slate-800/90 via-slate-800/80 to-slate-800/90 backdrop-blur-sm border-b border-slate-700/50 shadow-lg">
-          <div className="flex justify-between items-center px-4 py-4">
-            <div className="flex-1"></div>
-            <div className="flex justify-center">
-              <img 
-                src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-                alt="Raas All Stars Logo" 
-                className="h-12 w-auto"
-              />
-            </div>
-            <div className="flex-1 flex justify-end">
-              <TeamSelector 
-                selectedTeam={selectedSchoolTeam}
-                onTeamSelect={setSelectedSchoolTeam}
-              />
-            </div>
+        <div className="bg-black/95 backdrop-blur-sm border-b border-slate-800/50 shadow-lg">
+          <div className="flex justify-center items-center px-4 py-4">
+            <img 
+              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+              alt="Raas All Stars Logo" 
+              className="h-12 w-auto"
+            />
           </div>
         </div>
 
@@ -311,28 +281,28 @@ const Index = () => {
           <TabsList className="grid grid-cols-4 bg-slate-800/80 backdrop-blur-sm border-slate-700/50 rounded-xl w-full max-w-md shadow-lg">
             <TabsTrigger 
               value="leaderboard" 
-              className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg text-xs`}
+              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
             >
               <Users className="h-3 w-3 mr-1" />
               Board
             </TabsTrigger>
             <TabsTrigger 
               value="teams" 
-              className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg text-xs`}
+              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
             >
               <Target className="h-3 w-3 mr-1" />
               Teams
             </TabsTrigger>
             <TabsTrigger 
               value="fantasy" 
-              className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg text-xs`}
+              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
             >
               <Zap className="h-3 w-3 mr-1" />
               Fantasy
             </TabsTrigger>
             <TabsTrigger 
               value="competitions" 
-              className={`text-slate-300 data-[state=active]:${themeColors.primary} data-[state=active]:text-white rounded-lg text-xs`}
+              className="text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg text-xs"
             >
               <Calendar className="h-3 w-3 mr-1" />
               Comps
@@ -349,11 +319,11 @@ const Index = () => {
               </h1>
               <div className="flex justify-center gap-4 text-sm">
                 <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
-                  <span className={`${themeColors.accent} font-semibold`}>{qualifiedTeams}</span>
+                  <span className="font-semibold">{qualifiedTeams}</span>
                   <span className="text-slate-300"> / {QUALIFYING_SPOTS} Qualified</span>
                 </div>
                 <div className="bg-slate-700/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-slate-600/50">
-                  <span className={`${themeColors.accent} font-semibold`}>{CUTOFF_POINTS}</span>
+                  <span className="font-semibold">{CUTOFF_POINTS}</span>
                   <span className="text-slate-300"> Points Cutoff</span>
                 </div>
               </div>
