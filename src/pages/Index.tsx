@@ -320,7 +320,7 @@ const Index = () => {
           )}
 
           {/* Top 3 Teams - Modern Design */}
-          <section className="px-4 py-6">
+          <section className="px-4 py-1"> {/* changed ts penis*/}
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
               <div 

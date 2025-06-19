@@ -15,7 +15,7 @@ export function CompetitionDetail({ competition, onClose }: CompetitionDetailPro
       year: 'numeric',
       month: 'long', 
       day: 'numeric'
-    });
+    }); 
   };
 
   return (
