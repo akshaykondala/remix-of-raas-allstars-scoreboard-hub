@@ -175,15 +175,15 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center gap-3 bg-gradient-to-r ${getBackgroundColor()} rounded-lg px-3 py-3 border text-left`}
+        className={`w-full flex items-center gap-3 bg-gradient-to-r ${getBackgroundColor()} rounded-lg px-3 py-3 border text-left min-h-[48px]`}
       >
-        <div className={`w-6 h-6 ${getNumberColor()} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
+        <div className={`w-6 h-6 ${getNumberColor()} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
         </div>
-        <span className="text-white font-semibold flex-1 truncate">
+        <span className="text-white font-semibold flex-1 truncate text-sm">
           {selectedTeam || placeholder}
         </span>
-        <ChevronDown className={`h-4 w-4 text-white transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
@@ -195,7 +195,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
                 onSelect(team);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+              className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
             >
               {team}
             </button>
@@ -261,7 +261,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
   };
 
   return (
-    <div className="py-4 max-w-full overflow-hidden">
+    <div className="py-4 w-full overflow-hidden">
       <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-white mb-2">Season Competitions</h2>
         <p className="text-slate-400 text-sm">
@@ -321,12 +321,12 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
         </div>
       )}
 
-      <div className="px-4">
+      <div className="flex flex-col items-center w-full px-4">
         {/* Past Competitions */}
         {pastCompetitions.length > 0 && (
-          <div className="mb-8">
+          <div className="mb-8 w-full max-w-2xl">
             <h3 className="text-lg font-bold text-white mb-3 text-center">Past Competitions</h3>
-            <div className="grid gap-3 max-w-2xl mx-auto">
+            <div className="grid gap-3 w-full">
               {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
                 <CompetitionCard
                   key={competition.id}
@@ -340,9 +340,9 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
         {/* Divider Line */}
         {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-          <div className="my-8">
+          <div className="my-8 w-full max-w-2xl">
             <div className="border-t-2 border-dashed border-blue-500/70 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
                 UPCOMING COMPETITIONS
               </div>
             </div>
@@ -351,14 +351,14 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
         {/* Future Competitions */}
         {futureCompetitions.length > 0 && (
-          <div>
+          <div className="w-full max-w-2xl">
             <h3 className="text-lg font-bold text-white mb-2 text-center">Upcoming Competitions</h3>
-            <p className="text-slate-400 text-sm mb-4 text-center max-w-md mx-auto">
+            <p className="text-slate-400 text-sm mb-4 text-center px-4">
               Click "Simulate" to predict results for future competitions
             </p>
-            <div className="grid gap-3 max-w-2xl mx-auto">
+            <div className="grid gap-3 w-full">
               {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
-                <div key={competition.id} className="relative">
+                <div key={competition.id} className="relative w-full">
                   <CompetitionCard
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
