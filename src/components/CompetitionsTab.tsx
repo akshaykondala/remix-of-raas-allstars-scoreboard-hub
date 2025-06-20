@@ -175,7 +175,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center gap-3 bg-gradient-to-r ${getBackgroundColor()} rounded-lg px-3 py-2 border text-left`}
+        className={`w-full flex items-center gap-3 bg-gradient-to-r ${getBackgroundColor()} rounded-lg px-3 py-3 border text-left`}
       >
         <div className={`w-6 h-6 ${getNumberColor()} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
@@ -261,8 +261,8 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
   };
 
   return (
-    <div className="py-6 max-w-full overflow-hidden">
-      <div className="mb-6">
+    <div className="py-4 max-w-full overflow-hidden">
+      <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-white mb-2">Season Competitions</h2>
         <p className="text-slate-400 text-sm">
           Track competitions throughout the 2024-25 season
@@ -274,8 +274,8 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Simulate {simulatingCompetition.name}</h3>
-              <p className="text-slate-400 text-sm mb-6">Predict the top 3 placings for this competition</p>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
+              <p className="text-slate-400 text-sm mb-6 text-center">Predict the top 3 placings for this competition</p>
               
               <div className="space-y-4 mb-6">
                 <SimulationDropdown
@@ -304,14 +304,14 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
               <div className="flex gap-3">
                 <button
                   onClick={handleCancelSimulation}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveSimulation}
                   disabled={!canSaveSimulation}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-colors"
                 >
                   Save Simulation
                 </button>
@@ -321,61 +321,63 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
         </div>
       )}
 
-      {/* Past Competitions */}
-      {pastCompetitions.length > 0 && (
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
-          <div className="grid gap-3">
-            {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
-              <CompetitionCard
-                key={competition.id}
-                competition={competition}
-                onClick={() => setSelectedCompetition(competition)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Divider Line */}
-      {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-        <div className="my-8">
-          <div className="border-t-2 border-dashed border-blue-500/70 relative">
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-              UPCOMING COMPETITIONS
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Future Competitions */}
-      {futureCompetitions.length > 0 && (
-        <div>
-          <h3 className="text-lg font-bold text-white mb-2">Upcoming Competitions</h3>
-          <p className="text-slate-400 text-sm mb-4">
-            Click "Simulate" to predict results for future competitions
-          </p>
-          <div className="grid gap-3">
-            {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
-              <div key={competition.id} className="relative">
+      <div className="px-4">
+        {/* Past Competitions */}
+        {pastCompetitions.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-bold text-white mb-3 text-center">Past Competitions</h3>
+            <div className="grid gap-3 max-w-2xl mx-auto">
+              {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
                 <CompetitionCard
+                  key={competition.id}
                   competition={competition}
                   onClick={() => setSelectedCompetition(competition)}
                 />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSimulationStart(competition);
-                  }}
-                  className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors"
-                >
-                  Simulate
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Divider Line */}
+        {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
+          <div className="my-8">
+            <div className="border-t-2 border-dashed border-blue-500/70 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg">
+                UPCOMING COMPETITIONS
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Future Competitions */}
+        {futureCompetitions.length > 0 && (
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2 text-center">Upcoming Competitions</h3>
+            <p className="text-slate-400 text-sm mb-4 text-center max-w-md mx-auto">
+              Click "Simulate" to predict results for future competitions
+            </p>
+            <div className="grid gap-3 max-w-2xl mx-auto">
+              {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
+                <div key={competition.id} className="relative">
+                  <CompetitionCard
+                    competition={competition}
+                    onClick={() => setSelectedCompetition(competition)}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSimulationStart(competition);
+                    }}
+                    className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold"
+                  >
+                    Simulate
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Competition Detail Modal */}
       {selectedCompetition && (

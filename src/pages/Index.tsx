@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -267,6 +266,9 @@ const Index = () => {
   const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
   const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
 
+  // Sort teams alphabetically by name for the teams tab
+  const sortedNoBidTeams = noBidTeams.sort((a, b) => a.name.localeCompare(b.name));
+
   const handleSimulationSet = (competitionName: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData({ competitionName, predictions });
     setActiveTab('standings');
@@ -486,7 +488,7 @@ const Index = () => {
             </div>
 
             <div className="grid gap-3">
-              {noBidTeams.map((team, index) => (
+              {sortedNoBidTeams.map((team, index) => (
                 <div 
                   key={team.id}
                   onClick={() => setSelectedTeam(team)}
