@@ -258,6 +258,7 @@ const QUALIFYING_SPOTS = 9;
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('standings');
   
   const qualifiedTeams = teams.filter(team => team.qualified).length;
   const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
@@ -267,14 +268,19 @@ const Index = () => {
 
   const handleSimulationSet = (competitionName: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData({ competitionName, predictions });
+    setActiveTab('standings');
   };
 
   const clearSimulation = () => {
     setSimulationData(null);
   };
 
+  const goToSimulation = () => {
+    setActiveTab('comps');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black pb-safe overflow-x-hidden relative">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black pb-safe overflow-x-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
@@ -282,10 +288,10 @@ const Index = () => {
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Tabs defaultValue="standings" className="w-full relative z-10 pb-20">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 pb-20">
         {/* Header with Logo - Faded into gradient */}
-        <div className="bg-gradient-to-b from-black/95 via-black/80 to-transparent backdrop-blur-sm">
-          <div className="flex justify-center items-center px-4 py-4">
+        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm">
+          <div className="flex justify-center items-center px-4 py-3">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
               alt="Raas All Stars Logo" 
@@ -294,7 +300,7 @@ const Index = () => {
           </div>
         </div>
 
-        <TabsContent value="standings" className="mt-6">
+        <TabsContent value="standings" className="mt-4">
           {/* Simulation Alert */}
           {simulationData && (
             <div className="mx-4 mb-6">
@@ -307,20 +313,28 @@ const Index = () => {
                       <p className="text-blue-100 text-xs">Viewing predicted results for {simulationData.competitionName}</p>
                     </div>
                   </div>
-                  <button
-                    onClick={clearSimulation}
-                    className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1 transition-colors"
-                  >
-                    <RotateCcw className="h-3 w-3" />
-                    Exit
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={goToSimulation}
+                      className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-3 py-1 rounded-lg text-xs transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={clearSimulation}
+                      className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1 transition-colors"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Exit
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {/* Top 3 Teams - Modern Design */}
-          <section className="px-4 py-1"> {/* changed ts penis*/}
+          <section className="px-4 py-2">
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
               <div 
