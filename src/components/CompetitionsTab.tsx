@@ -245,6 +245,21 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
     predictions.first !== predictions.third && 
     predictions.second !== predictions.third;
 
+  const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
+    if (!simulatingCompetition) return [];
+    
+    switch (position) {
+      case 'first':
+        return simulatingCompetition.lineup;
+      case 'second':
+        return simulatingCompetition.lineup.filter(team => team !== predictions.first);
+      case 'third':
+        return simulatingCompetition.lineup.filter(team => team !== predictions.first && team !== predictions.second);
+      default:
+        return simulatingCompetition.lineup;
+    }
+  };
+
   return (
     <div className="py-6 max-w-full overflow-hidden">
       <div className="mb-6">
@@ -264,21 +279,21 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
               
               <div className="space-y-4 mb-6">
                 <SimulationDropdown
-                  teams={simulatingCompetition.lineup}
+                  teams={getAvailableTeams('first')}
                   selectedTeam={predictions.first}
                   onSelect={(team) => handlePredictionChange('first', team)}
                   placeholder="Select 1st place team"
                   position="first"
                 />
                 <SimulationDropdown
-                  teams={simulatingCompetition.lineup.filter(team => team !== predictions.first)}
+                  teams={getAvailableTeams('second')}
                   selectedTeam={predictions.second}
                   onSelect={(team) => handlePredictionChange('second', team)}
                   placeholder="Select 2nd place team"
                   position="second"
                 />
                 <SimulationDropdown
-                  teams={simulatingCompetition.lineup.filter(team => team !== predictions.first && team !== predictions.second)}
+                  teams={getAvailableTeams('third')}
                   selectedTeam={predictions.third}
                   onSelect={(team) => handlePredictionChange('third', team)}
                   placeholder="Select 3rd place team"

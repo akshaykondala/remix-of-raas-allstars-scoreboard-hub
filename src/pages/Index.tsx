@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -289,9 +290,9 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 pb-20">
-        {/* Header with Logo - Faded into gradient */}
+        {/* Header with Logo */}
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm">
-          <div className="flex justify-center items-center px-4 py-3">
+          <div className="flex justify-center items-center px-4 py-2">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
               alt="Raas All Stars Logo" 
@@ -300,7 +301,7 @@ const Index = () => {
           </div>
         </div>
 
-        <TabsContent value="standings" className="mt-4">
+        <TabsContent value="standings" className="mt-2">
           {/* Simulation Alert */}
           {simulationData && (
             <div className="mx-4 mb-6">
@@ -333,7 +334,7 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Teams - Modern Design */}
+          {/* Top 3 Teams */}
           <section className="px-4 py-2">
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
@@ -486,14 +487,49 @@ const Index = () => {
 
             <div className="grid gap-3">
               {noBidTeams.map((team, index) => (
-                <TeamCard
+                <div 
                   key={team.id}
-                  team={team}
-                  rank={teams.length + index + 1}
-                  isQualified={team.qualified}
-                  cutoffPoints={CUTOFF_POINTS}
                   onClick={() => setSelectedTeam(team)}
-                />
+                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
+                >
+                  {/* Rank Badge */}
+                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
+                    {teams.length + index + 1}th
+                  </div>
+
+                  {/* Team Color Strip */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
+
+                  <div className="ml-3 sm:ml-4">
+                    {/* Team Info */}
+                    <div className="flex items-start justify-between mb-3 mt-6">
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
+                        <p className="text-slate-400 text-sm">{team.university}</p>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Target className="h-4 w-4 text-blue-400" />
+                          <span className="text-white font-semibold">{team.bidPoints}</span>
+                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
+                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-slate-500" />
+                          <span className="text-slate-400 text-sm">Est. {team.founded}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover Effect */}
+                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                </div>
               ))}
             </div>
 
