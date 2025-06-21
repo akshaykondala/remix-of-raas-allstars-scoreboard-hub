@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { CompetitionCard } from './CompetitionCard';
 import { CompetitionDetail } from './CompetitionDetail';
@@ -21,6 +20,21 @@ export interface Competition {
     photos: string[];
     videos: string[];
   };
+}
+
+interface SimulationData {
+  competitionName: string;
+  competitionId: string;
+  predictions: {
+    first: string;
+    second: string;
+    third: string;
+  };
+}
+
+export interface CompetitionsTabProps {
+  onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
+  simulationData?: SimulationData | null;
 }
 
 const competitions: Competition[] = [
@@ -134,10 +148,6 @@ const competitions: Competition[] = [
   }
 ];
 
-export interface CompetitionsTabProps {
-  onSimulationSet?: (competitionName: string, predictions: { first: string; second: string; third: string }) => void;
-}
-
 interface SimulationDropdownProps {
   teams: string[];
   selectedTeam: string;
@@ -206,7 +216,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
   );
 }
 
-export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
+export function CompetitionsTab({ onSimulationSet, simulationData }: CompetitionsTabProps) {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [simulatingCompetition, setSimulatingCompetition] = useState<Competition | null>(null);
   const [predictions, setPredictions] = useState<{ first: string; second: string; third: string }>({
@@ -219,6 +229,16 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
   const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
   const futureCompetitions = competitions.filter(comp => new Date(comp.date) >= currentDate);
 
+  // Auto-open competition detail if navigating from simulation edit
+  useState(() => {
+    if (simulationData) {
+      const targetCompetition = competitions.find(comp => comp.id === simulationData.competitionId);
+      if (targetCompetition) {
+        setSelectedCompetition(targetCompetition);
+      }
+    }
+  });
+
   const handleSimulationStart = (competition: Competition) => {
     setSimulatingCompetition(competition);
     setPredictions({ first: '', second: '', third: '' });
@@ -230,7 +250,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
   const handleSaveSimulation = () => {
     if (simulatingCompetition && predictions.first && predictions.second && predictions.third && onSimulationSet) {
-      onSimulationSet(simulatingCompetition.name, predictions);
+      onSimulationSet(simulatingCompetition.name, simulatingCompetition.id, predictions);
       setSimulatingCompetition(null);
     }
   };
@@ -385,6 +405,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
           competition={selectedCompetition} 
           onClose={() => setSelectedCompetition(null)}
           onSimulationSet={onSimulationSet}
+          simulationData={simulationData}
         />
       )}
     </div>

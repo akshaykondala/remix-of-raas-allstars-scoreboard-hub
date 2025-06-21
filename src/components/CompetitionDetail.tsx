@@ -1,12 +1,23 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Trophy, Users, Eye, Camera, ChevronDown } from 'lucide-react';
 import { Competition } from './CompetitionsTab';
+
+interface SimulationData {
+  competitionName: string;
+  competitionId: string;
+  predictions: {
+    first: string;
+    second: string;
+    third: string;
+  };
+}
 
 interface CompetitionDetailProps {
   competition: Competition;
   onClose: () => void;
-  onSimulationSet?: (competitionName: string, predictions: { first: string; second: string; third: string }) => void;
+  onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
+  simulationData?: SimulationData | null;
 }
 
 interface SimulationDropdownProps {
@@ -77,11 +88,11 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
   );
 }
 
-export function CompetitionDetail({ competition, onClose, onSimulationSet }: CompetitionDetailProps) {
+export function CompetitionDetail({ competition, onClose, onSimulationSet, simulationData }: CompetitionDetailProps) {
   const [predictions, setPredictions] = useState<{ first: string; second: string; third: string }>({
-    first: competition.placings.first || '',
-    second: competition.placings.second || '',
-    third: competition.placings.third || ''
+    first: '',
+    second: '',
+    third: ''
   });
 
   const formatDate = (dateString: string) => {
@@ -96,13 +107,26 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet }: Com
 
   const isFutureCompetition = !competition.placings.first;
 
+  // Initialize predictions from simulation data if this is the competition being simulated
+  useEffect(() => {
+    if (simulationData && simulationData.competitionId === competition.id) {
+      setPredictions(simulationData.predictions);
+    } else {
+      setPredictions({
+        first: competition.placings.first || '',
+        second: competition.placings.second || '',
+        third: competition.placings.third || ''
+      });
+    }
+  }, [simulationData, competition]);
+
   const handlePredictionChange = (position: 'first' | 'second' | 'third', team: string) => {
     setPredictions(prev => ({ ...prev, [position]: team }));
   };
 
   const handleSaveSimulation = () => {
     if (predictions.first && predictions.second && predictions.third && onSimulationSet) {
-      onSimulationSet(competition.name, predictions);
+      onSimulationSet(competition.name, competition.id, predictions);
       onClose();
     }
   };

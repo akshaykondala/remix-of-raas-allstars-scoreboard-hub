@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
@@ -22,6 +22,7 @@ interface Team {
 
 interface SimulationData {
   competitionName: string;
+  competitionId: string;
   predictions: {
     first: string;
     second: string;
@@ -29,14 +30,14 @@ interface SimulationData {
   };
 }
 
-const teams: Team[] = [
+const initialTeams: Team[] = [
   {
     id: '1',
     name: 'Texas Raas',
     university: 'University of Texas at Austin',
     bidPoints: 95,
     qualified: true,
-    locked: true, // Locked into RAS
+    locked: true,
     color: 'bg-orange-600',
     history: [
       'Founded in 2005, Texas Raas has been a powerhouse in collegiate Raas',
@@ -52,7 +53,7 @@ const teams: Team[] = [
     university: 'Carnegie Mellon University',
     bidPoints: 92,
     qualified: true,
-    locked: true, // Locked into RAS
+    locked: true,
     color: 'bg-red-700',
     history: [
       'CMU Raasta brings technical precision to every performance',
@@ -68,7 +69,7 @@ const teams: Team[] = [
     university: 'University of Florida',
     bidPoints: 88,
     qualified: true,
-    locked: true, // Locked into RAS
+    locked: true,
     color: 'bg-blue-600',
     history: [
       'Gatoraas represents the Southeast with pride and energy',
@@ -253,26 +254,68 @@ const noBidTeams: Team[] = [
 ];
 
 const CUTOFF_POINTS = 75;
-const QUALIFYING_SPOTS = 9;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const [activeTab, setActiveTab] = useState<string>('standings');
-  const [teamsData, setTeamsData] = useState<Team[]>(teams);
+  const [teamsData, setTeamsData] = useState<Team[]>(initialTeams);
   const [uploadingTeamId, setUploadingTeamId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
+  // Calculate bid points based on competition results
+  const calculateBidPoints = (teams: Team[], competitions: any[]) => {
+    const pointsMap: { [teamName: string]: number } = {};
+    
+    // Initialize all teams with 0 points
+    teams.forEach(team => {
+      pointsMap[team.name] = 0;
+    });
+
+    // Add points from completed competitions
+    competitions.forEach(comp => {
+      if (comp.placings.first) {
+        pointsMap[comp.placings.first] = (pointsMap[comp.placings.first] || 0) + 4;
+      }
+      if (comp.placings.second) {
+        pointsMap[comp.placings.second] = (pointsMap[comp.placings.second] || 0) + 2;
+      }
+      if (comp.placings.third) {
+        pointsMap[comp.placings.third] = (pointsMap[comp.placings.third] || 0) + 1;
+      }
+    });
+
+    // Add simulation points if active
+    if (simulationData) {
+      pointsMap[simulationData.predictions.first] = (pointsMap[simulationData.predictions.first] || 0) + 4;
+      pointsMap[simulationData.predictions.second] = (pointsMap[simulationData.predictions.second] || 0) + 2;
+      pointsMap[simulationData.predictions.third] = (pointsMap[simulationData.predictions.third] || 0) + 1;
+    }
+
+    return teams.map(team => ({
+      ...team,
+      bidPoints: pointsMap[team.name] || 0,
+      qualified: (pointsMap[team.name] || 0) >= CUTOFF_POINTS
+    }));
+  };
+
+  // Update teams when simulation data changes
+  useEffect(() => {
+    // This will be called when competitions data changes in the future
+    const updatedTeams = calculateBidPoints(initialTeams, []);
+    setTeamsData(updatedTeams);
+  }, [simulationData]);
+
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = teamsData.sort((a, b) => b.bidPoints - a.bidPoints);
+  const sortedTeams = [...teamsData].sort((a, b) => b.bidPoints - a.bidPoints);
   const topThreeTeams = sortedTeams.slice(0, 3);
   const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
   const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
 
-  const sortedNoBidTeams = noBidTeams.sort((a, b) => a.name.localeCompare(b.name));
+  const sortedNoBidTeams = [...noBidTeams].sort((a, b) => a.name.localeCompare(b.name));
 
-  const handleSimulationSet = (competitionName: string, predictions: { first: string; second: string; third: string }) => {
-    setSimulationData({ competitionName, predictions });
+  const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
+    setSimulationData({ competitionName, competitionId, predictions });
     setActiveTab('standings');
   };
 
@@ -376,12 +419,6 @@ const Index = () => {
               {/* 2nd Place */}
               <div className="flex-1 max-w-[100px]">
                 <div className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group">
-                  <button
-                    onClick={() => handleLogoUpload(topThreeTeams[1]?.id)}
-                    className="absolute top-1 right-1 bg-blue-600/70 hover:bg-blue-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Upload className="h-3 w-3 text-white" />
-                  </button>
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[1])}
                     className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
@@ -406,12 +443,6 @@ const Index = () => {
               {/* 1st Place - Taller */}
               <div className="flex-1 max-w-[120px]">
                 <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group">
-                  <button
-                    onClick={() => handleLogoUpload(topThreeTeams[0]?.id)}
-                    className="absolute top-1 right-1 bg-yellow-600/70 hover:bg-yellow-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Upload className="h-3 w-3 text-white" />
-                  </button>
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[0])}
                     className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg cursor-pointer overflow-hidden"
@@ -436,12 +467,6 @@ const Index = () => {
               {/* 3rd Place */}
               <div className="flex-1 max-w-[100px]">
                 <div className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group">
-                  <button
-                    onClick={() => handleLogoUpload(topThreeTeams[2]?.id)}
-                    className="absolute top-1 right-1 bg-orange-600/70 hover:bg-orange-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Upload className="h-3 w-3 text-white" />
-                  </button>
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[2])}
                     className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
@@ -476,21 +501,15 @@ const Index = () => {
 
             <div className="grid gap-3">
               {qualifiedOtherTeams.map((team, index) => (
-                <div key={team.id} className="relative group">
-                  <TeamCard
-                    team={team}
-                    rank={index + 4}
-                    isQualified={team.qualified}
-                    cutoffPoints={CUTOFF_POINTS}
-                    onClick={() => setSelectedTeam(team)}
-                  />
-                  <button
-                    onClick={() => handleLogoUpload(team.id)}
-                    className="absolute top-3 right-3 bg-blue-600/70 hover:bg-blue-600/90 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  >
-                    <Upload className="h-3 w-3 text-white" />
-                  </button>
-                </div>
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  rank={index + 4}
+                  isQualified={team.qualified}
+                  cutoffPoints={CUTOFF_POINTS}
+                  onClick={() => setSelectedTeam(team)}
+                  onLogoUpload={() => handleLogoUpload(team.id)}
+                />
               ))}
             </div>
 
@@ -513,21 +532,15 @@ const Index = () => {
 
             <div className="grid gap-3">
               {notQualifiedTeams.map((team, index) => (
-                <div key={team.id} className="relative group">
-                  <TeamCard
-                    team={team}
-                    rank={index + qualifiedTeams + 1}
-                    isQualified={team.qualified}
-                    cutoffPoints={CUTOFF_POINTS}
-                    onClick={() => setSelectedTeam(team)}
-                  />
-                  <button
-                    onClick={() => handleLogoUpload(team.id)}
-                    className="absolute top-3 right-3 bg-blue-600/70 hover:bg-blue-600/90 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                  >
-                    <Upload className="h-3 w-3 text-white" />
-                  </button>
-                </div>
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  rank={index + qualifiedTeams + 1}
+                  isQualified={team.qualified}
+                  cutoffPoints={CUTOFF_POINTS}
+                  onClick={() => setSelectedTeam(team)}
+                  onLogoUpload={() => handleLogoUpload(team.id)}
+                />
               ))}
             </div>
 
@@ -548,7 +561,10 @@ const Index = () => {
 
         <TabsContent value="comps" className="mt-0">
           <div className="px-4">
-            <CompetitionsTab onSimulationSet={handleSimulationSet} />
+            <CompetitionsTab 
+              onSimulationSet={handleSimulationSet}
+              simulationData={simulationData}
+            />
           </div>
         </TabsContent>
 
@@ -574,7 +590,7 @@ const Index = () => {
                 >
                   {/* Rank Badge */}
                   <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
-                    {teams.length + index + 1}th
+                    {teamsData.length + index + 1}th
                   </div>
 
                   {/* Team Color Strip */}
@@ -601,7 +617,7 @@ const Index = () => {
                         
                         <div className="flex items-center space-x-2">
                           <Users className="h-4 w-4 text-slate-500" />
-                          <span className="text-slate-400 text-sm">Est. {team.founded}</span>
+                          <span className="text-slate-400 text-sm">Team</span>
                         </div>
                       </div>
                     </div>
