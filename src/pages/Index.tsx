@@ -1,9 +1,10 @@
-import { useState } from 'react';
+
+import { useState, useRef } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw, Upload } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -12,7 +13,7 @@ interface Team {
   university: string;
   bidPoints: number;
   qualified: boolean;
-  locked?: boolean; // New field for "locked into RAS"
+  locked?: boolean;
   logo?: string;
   color: string;
   history: string[];
@@ -259,14 +260,16 @@ const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const [activeTab, setActiveTab] = useState<string>('standings');
+  const [teamsData, setTeamsData] = useState<Team[]>(teams);
+  const [uploadingTeamId, setUploadingTeamId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const qualifiedTeams = teams.filter(team => team.qualified).length;
-  const sortedTeams = teams.sort((a, b) => b.bidPoints - a.bidPoints);
+  const qualifiedTeams = teamsData.filter(team => team.qualified).length;
+  const sortedTeams = teamsData.sort((a, b) => b.bidPoints - a.bidPoints);
   const topThreeTeams = sortedTeams.slice(0, 3);
   const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
   const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
 
-  // Sort teams alphabetically by name for the teams tab
   const sortedNoBidTeams = noBidTeams.sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSimulationSet = (competitionName: string, predictions: { first: string; second: string; third: string }) => {
@@ -282,8 +285,40 @@ const Index = () => {
     setActiveTab('comps');
   };
 
+  const handleLogoUpload = (teamId: string) => {
+    setUploadingTeamId(teamId);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && uploadingTeamId) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const logoUrl = e.target?.result as string;
+        setTeamsData(prev => prev.map(team => 
+          team.id === uploadingTeamId ? { ...team, logo: logoUrl } : team
+        ));
+      };
+      reader.readAsDataURL(file);
+    }
+    setUploadingTeamId(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black pb-safe overflow-x-hidden relative">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/jpg"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
@@ -340,15 +375,25 @@ const Index = () => {
           <section className="px-4 py-2">
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
-              <div 
-                onClick={() => setSelectedTeam(topThreeTeams[1])}
-                className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                <div className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl">
-                  <div className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md">
-                    <Trophy className="h-6 w-6 text-slate-200" />
+              <div className="flex-1 max-w-[100px]">
+                <div className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group">
+                  <button
+                    onClick={() => handleLogoUpload(topThreeTeams[1]?.id)}
+                    className="absolute top-1 right-1 bg-blue-600/70 hover:bg-blue-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Upload className="h-3 w-3 text-white" />
+                  </button>
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[1])}
+                    className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
+                  >
+                    {topThreeTeams[1]?.logo ? (
+                      <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Trophy className="h-6 w-6 text-slate-200" />
+                    )}
                   </div>
-                  <div className="text-center">
+                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[1])}>
                     <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
                     <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -360,15 +405,25 @@ const Index = () => {
               </div>
 
               {/* 1st Place - Taller */}
-              <div 
-                onClick={() => setSelectedTeam(topThreeTeams[0])}
-                className="flex-1 max-w-[120px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50">
-                  <div className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg">
-                    <Trophy className="h-8 w-8 text-yellow-700" />
+              <div className="flex-1 max-w-[120px]">
+                <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group">
+                  <button
+                    onClick={() => handleLogoUpload(topThreeTeams[0]?.id)}
+                    className="absolute top-1 right-1 bg-yellow-600/70 hover:bg-yellow-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Upload className="h-3 w-3 text-white" />
+                  </button>
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[0])}
+                    className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg cursor-pointer overflow-hidden"
+                  >
+                    {topThreeTeams[0]?.logo ? (
+                      <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Trophy className="h-8 w-8 text-yellow-700" />
+                    )}
                   </div>
-                  <div className="text-center">
+                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[0])}>
                     <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
                     <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -380,15 +435,25 @@ const Index = () => {
               </div>
 
               {/* 3rd Place */}
-              <div 
-                onClick={() => setSelectedTeam(topThreeTeams[2])}
-                className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
-              >
-                <div className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl">
-                  <div className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md">
-                    <Trophy className="h-6 w-6 text-orange-700" />
+              <div className="flex-1 max-w-[100px]">
+                <div className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group">
+                  <button
+                    onClick={() => handleLogoUpload(topThreeTeams[2]?.id)}
+                    className="absolute top-1 right-1 bg-orange-600/70 hover:bg-orange-600/90 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Upload className="h-3 w-3 text-white" />
+                  </button>
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[2])}
+                    className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
+                  >
+                    {topThreeTeams[2]?.logo ? (
+                      <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Trophy className="h-6 w-6 text-orange-700" />
+                    )}
                   </div>
-                  <div className="text-center">
+                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[2])}>
                     <div className="text-orange-800 font-bold text-xs mb-1">3rd</div>
                     <div className="text-orange-900 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -412,14 +477,21 @@ const Index = () => {
 
             <div className="grid gap-3">
               {qualifiedOtherTeams.map((team, index) => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  rank={index + 4}
-                  isQualified={team.qualified}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                />
+                <div key={team.id} className="relative group">
+                  <TeamCard
+                    team={team}
+                    rank={index + 4}
+                    isQualified={team.qualified}
+                    cutoffPoints={CUTOFF_POINTS}
+                    onClick={() => setSelectedTeam(team)}
+                  />
+                  <button
+                    onClick={() => handleLogoUpload(team.id)}
+                    className="absolute top-3 right-3 bg-blue-600/70 hover:bg-blue-600/90 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <Upload className="h-3 w-3 text-white" />
+                  </button>
+                </div>
               ))}
             </div>
 
@@ -442,14 +514,21 @@ const Index = () => {
 
             <div className="grid gap-3">
               {notQualifiedTeams.map((team, index) => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  rank={index + qualifiedTeams + 1}
-                  isQualified={team.qualified}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                />
+                <div key={team.id} className="relative group">
+                  <TeamCard
+                    team={team}
+                    rank={index + qualifiedTeams + 1}
+                    isQualified={team.qualified}
+                    cutoffPoints={CUTOFF_POINTS}
+                    onClick={() => setSelectedTeam(team)}
+                  />
+                  <button
+                    onClick={() => handleLogoUpload(team.id)}
+                    className="absolute top-3 right-3 bg-blue-600/70 hover:bg-blue-600/90 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <Upload className="h-3 w-3 text-white" />
+                  </button>
+                </div>
               ))}
             </div>
 

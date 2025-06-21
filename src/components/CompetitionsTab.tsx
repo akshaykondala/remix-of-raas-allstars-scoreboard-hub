@@ -321,12 +321,12 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
         </div>
       )}
 
-      <div className="flex flex-col items-center w-full px-3">
+      <div className="flex flex-col items-start w-full px-4">
         {/* Past Competitions */}
         {pastCompetitions.length > 0 && (
-          <div className="mb-8 w-full max-w-lg">
-            <h3 className="text-lg font-bold text-white mb-3 text-center">Past Competitions</h3>
-            <div className="grid gap-3 w-full">
+          <div className="mb-8 w-full">
+            <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
+            <div className="space-y-3 w-full">
               {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
                 <CompetitionCard
                   key={competition.id}
@@ -340,7 +340,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
         {/* Divider Line */}
         {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-          <div className="my-8 w-full max-w-lg">
+          <div className="my-8 w-full max-w-lg mx-auto">
             <div className="border-t-2 border-dashed border-blue-500/70 relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
                 UPCOMING COMPETITIONS
@@ -351,12 +351,12 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
         {/* Future Competitions */}
         {futureCompetitions.length > 0 && (
-          <div className="w-full max-w-lg">
-            <h3 className="text-lg font-bold text-white mb-2 text-center">Upcoming Competitions</h3>
-            <p className="text-slate-400 text-sm mb-4 text-center px-4">
+          <div className="w-full">
+            <h3 className="text-lg font-bold text-white mb-2">Upcoming Competitions</h3>
+            <p className="text-slate-400 text-sm mb-4">
               Click "Simulate" to predict results for future competitions
             </p>
-            <div className="grid gap-3 w-full">
+            <div className="space-y-3 w-full">
               {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
                 <div key={competition.id} className="relative w-full">
                   <CompetitionCard
@@ -368,7 +368,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
                       e.stopPropagation();
                       handleSimulationStart(competition);
                     }}
-                    className="absolute top-3 right-3 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold"
+                    className="absolute top-3 right-6 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold z-10"
                   >
                     Simulate
                   </button>
