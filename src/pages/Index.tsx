@@ -3,7 +3,7 @@ import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw, Upload } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Team {
@@ -35,7 +35,7 @@ const initialTeams: Team[] = [
     id: '1',
     name: 'Texas Raas',
     university: 'University of Texas at Austin',
-    bidPoints: 95,
+    bidPoints: 8,
     qualified: true,
     locked: true,
     color: 'bg-orange-600',
@@ -45,7 +45,8 @@ const initialTeams: Team[] = [
       'Known for innovative choreography and strong storytelling'
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
-    founded: '2005'
+    founded: '2005',
+    logo: '/src/logos/texas-raas.jpg' // Correct logo path
   },
   {
     id: '2',
@@ -61,7 +62,8 @@ const initialTeams: Team[] = [
       'Known for clean formations and synchronized movements'
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
-    founded: '2003'
+    founded: '2003',
+    logo: '/src/logos/cmu-raasta.jpg' // Correct logo path
   },
   {
     id: '3',
@@ -77,7 +79,8 @@ const initialTeams: Team[] = [
       'Fan favorite for high-energy performances'
     ],
     achievements: ['Raas All Stars 2023 - 8th Place', 'Regional Champions 2022'],
-    founded: '2008'
+    founded: '2008',
+     logo: '/src/logos/uf-gatoraas.jpeg'
   },
   {
     id: '4',
@@ -253,15 +256,22 @@ const noBidTeams: Team[] = [
   }
 ];
 
-const CUTOFF_POINTS = 75;
+const CUTOFF_POINTS = 2;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>(initialTeams);
-  const [uploadingTeamId, setUploadingTeamId] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoSource = (teamId: string, fileName: string) => {
+    const logoUrl = `/src/assets/logos/${fileName}`;
+    setTeamsData(prev =>
+      prev.map(team =>
+        team.id === teamId ? { ...team, logo: logoUrl } : team
+      )
+    );
+  };
 
   // Calculate bid points based on competition results
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
@@ -327,40 +337,8 @@ const Index = () => {
     setActiveTab('comps');
   };
 
-  const handleLogoUpload = (teamId: string) => {
-    setUploadingTeamId(teamId);
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && uploadingTeamId) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const logoUrl = e.target?.result as string;
-        setTeamsData(prev => prev.map(team => 
-          team.id === uploadingTeamId ? { ...team, logo: logoUrl } : team
-        ));
-      };
-      reader.readAsDataURL(file);
-    }
-    setUploadingTeamId(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black pb-safe overflow-x-hidden relative">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/jpg"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
@@ -418,18 +396,20 @@ const Index = () => {
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
               <div className="flex-1 max-w-[100px]">
-                <div className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group">
-                  <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[1])}
-                    className="w-12 h-12 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
-                  >
+                <div 
+                  onClick={() => setSelectedTeam(topThreeTeams[1])} // Add click functionality
+                  className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group cursor-pointer"
+                >
+                  {/* Logo */}
+                  <div className="w-14 h-14 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                     {topThreeTeams[1]?.logo ? (
                       <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-6 w-6 text-slate-200" />
+                      <Trophy className="h-8 w-8 text-slate-200" />
                     )}
                   </div>
-                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[1])}>
+                  {/* Team Info */}
+                  <div className="text-center">
                     <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
                     <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -466,18 +446,20 @@ const Index = () => {
 
               {/* 3rd Place */}
               <div className="flex-1 max-w-[100px]">
-                <div className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group">
-                  <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[2])}
-                    className="w-12 h-12 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-md cursor-pointer overflow-hidden"
-                  >
+                <div 
+                  onClick={() => setSelectedTeam(topThreeTeams[2])} // Add click functionality
+                  className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group cursor-pointer"
+                >
+                  {/* Logo */}
+                  <div className="w-14 h-14 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                     {topThreeTeams[2]?.logo ? (
                       <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-6 w-6 text-orange-700" />
+                      <Trophy className="h-8 w-8 text-orange-700" />
                     )}
                   </div>
-                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[2])}>
+                  {/* Team Info */}
+                  <div className="text-center">
                     <div className="text-orange-800 font-bold text-xs mb-1">3rd</div>
                     <div className="text-orange-900 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -501,22 +483,56 @@ const Index = () => {
 
             <div className="grid gap-3">
               {qualifiedOtherTeams.map((team, index) => (
-                <TeamCard
+                <div 
                   key={team.id}
-                  team={team}
-                  rank={index + 4}
-                  isQualified={team.qualified}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                  onLogoUpload={() => handleLogoUpload(team.id)}
-                />
+                  onClick={() => setSelectedTeam(team)} // Add click functionality
+                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
+                >
+                  {/* Rank Badge */}
+                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
+                    {index + 4}th
+                  </div>
+
+                  {/* Team Color Strip */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
+
+                  <div className="ml-3 sm:ml-4">
+                    {/* Team Info */}
+                    <div className="flex items-start justify-between mb-3 mt-6">
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
+                        <p className="text-slate-400 text-sm">{team.university}</p>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Target className="h-4 w-4 text-blue-400" />
+                          <span className="text-white font-semibold">{team.bidPoints}</span>
+                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
+                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-slate-500" />
+                          <span className="text-slate-400 text-sm">Team</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover Effect */}
+                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                </div>
               ))}
             </div>
 
             {/* Cutoff Line */}
             <div className="my-8">
               <div className="border-t-2 border-dashed border-red-500/70 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                <div className="absolute -top-3 left-1/4 transform -translate-x-1/20 bg-gradient-to-r from-red-600 to-red-500 text-white px-1 py-1 rounded-full text-xs font-semibold shadow-lg">
                   QUALIFICATION CUTOFF ({CUTOFF_POINTS} PTS)
                 </div>
               </div>
@@ -532,15 +548,49 @@ const Index = () => {
 
             <div className="grid gap-3">
               {notQualifiedTeams.map((team, index) => (
-                <TeamCard
+                <div 
                   key={team.id}
-                  team={team}
-                  rank={index + qualifiedTeams + 1}
-                  isQualified={team.qualified}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                  onLogoUpload={() => handleLogoUpload(team.id)}
-                />
+                  onClick={() => setSelectedTeam(team)} // Add click functionality
+                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
+                >
+                  {/* Rank Badge */}
+                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
+                    {index + qualifiedTeams + 1}th
+                  </div>
+
+                  {/* Team Color Strip */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
+
+                  <div className="ml-3 sm:ml-4">
+                    {/* Team Info */}
+                    <div className="flex items-start justify-between mb-3 mt-6">
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
+                        <p className="text-slate-400 text-sm">{team.university}</p>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="flex items-center space-x-2">
+                          <Target className="h-4 w-4 text-blue-400" />
+                          <span className="text-white font-semibold">{team.bidPoints}</span>
+                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
+                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-slate-500" />
+                          <span className="text-slate-400 text-sm">Team</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover Effect */}
+                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                </div>
               ))}
             </div>
 
@@ -565,6 +615,23 @@ const Index = () => {
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
             />
+            {/* Developer-only logo source */}
+            <div className="mt-4">
+              <h3 className="text-lg font-bold text-white mb-2">Developer Tools</h3>
+              <div className="grid gap-3">
+                {teamsData.map(team => (
+                  <div key={team.id} className="flex items-center gap-2">
+                    <span className="text-white">{team.name}:</span>
+                    <input
+                      type="text"
+                      placeholder="Enter PNG file name"
+                      className="bg-slate-800 text-white px-2 py-1 rounded-lg text-sm"
+                      onBlur={(e) => handleLogoSource(team.id, e.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </TabsContent>
 
@@ -577,7 +644,7 @@ const Index = () => {
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
               <p className="text-slate-400 text-sm">
-                Teams that have not earned bid points this season
+                A display of every team in the circuit
               </p>
             </div>
 

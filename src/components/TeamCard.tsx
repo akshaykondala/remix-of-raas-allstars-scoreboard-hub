@@ -19,7 +19,7 @@ interface TeamCardProps {
   isQualified: boolean;
   cutoffPoints: number;
   onClick: () => void;
-  onLogoUpload?: () => void;
+  onLogoUpload?: () => void; //whatever now ignore ts
 }
 
 export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, onLogoUpload }: TeamCardProps) => {
