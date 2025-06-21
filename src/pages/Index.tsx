@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';

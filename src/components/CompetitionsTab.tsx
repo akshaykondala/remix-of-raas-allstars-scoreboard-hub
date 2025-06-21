@@ -326,7 +326,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
         {pastCompetitions.length > 0 && (
           <div className="mb-8 w-full">
             <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
-            <div className="space-y-3 w-full">
+            <div className="space-y-3 w-full flex flex-col items-start">
               {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
                 <CompetitionCard
                   key={competition.id}
@@ -340,7 +340,7 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
 
         {/* Divider Line */}
         {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-          <div className="my-8 w-full max-w-lg mx-auto">
+          <div className="my-8 w-full max-w-lg">
             <div className="border-t-2 border-dashed border-blue-500/70 relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
                 UPCOMING COMPETITIONS
@@ -356,9 +356,9 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
             <p className="text-slate-400 text-sm mb-4">
               Click "Simulate" to predict results for future competitions
             </p>
-            <div className="space-y-3 w-full">
+            <div className="space-y-3 w-full flex flex-col items-start">
               {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
-                <div key={competition.id} className="relative w-full">
+                <div key={competition.id} className="relative w-full max-w-sm">
                   <CompetitionCard
                     competition={competition}
                     onClick={() => setSelectedCompetition(competition)}
@@ -383,7 +383,8 @@ export function CompetitionsTab({ onSimulationSet }: CompetitionsTabProps) {
       {selectedCompetition && (
         <CompetitionDetail 
           competition={selectedCompetition} 
-          onClose={() => setSelectedCompetition(null)} 
+          onClose={() => setSelectedCompetition(null)}
+          onSimulationSet={onSimulationSet}
         />
       )}
     </div>
