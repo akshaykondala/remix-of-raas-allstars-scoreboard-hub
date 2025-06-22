@@ -21,12 +21,14 @@ interface Team {
 }
 
 interface SimulationData {
-  competitionName: string;
-  competitionId: string;
-  predictions: {
-    first: string;
-    second: string;
-    third: string;
+  [competitionId: string]: {
+    competitionName: string;
+    competitionId: string;
+    predictions: {
+      first: string;
+      second: string;
+      third: string;
+    };
   };
 }
 
@@ -256,11 +258,11 @@ const noBidTeams: Team[] = [
   }
 ];
 
-const CUTOFF_POINTS = 2;
+const CUTOFF_POINTS = 5;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [simulationData, setSimulationData] = useState<SimulationData | null>(null);
+  const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>(initialTeams);
 
@@ -296,11 +298,11 @@ const Index = () => {
     });
 
     // Add simulation points if active
-    if (simulationData) {
-      pointsMap[simulationData.predictions.first] = (pointsMap[simulationData.predictions.first] || 0) + 4;
-      pointsMap[simulationData.predictions.second] = (pointsMap[simulationData.predictions.second] || 0) + 2;
-      pointsMap[simulationData.predictions.third] = (pointsMap[simulationData.predictions.third] || 0) + 1;
-    }
+    Object.values(simulationData).forEach(simulation => {
+      pointsMap[simulation.predictions.first] = (pointsMap[simulation.predictions.first] || 0) + 4;
+      pointsMap[simulation.predictions.second] = (pointsMap[simulation.predictions.second] || 0) + 2;
+      pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
+    });
 
     return teams.map(team => ({
       ...team,
@@ -325,17 +327,23 @@ const Index = () => {
   const sortedNoBidTeams = [...noBidTeams].sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
-    setSimulationData({ competitionName, competitionId, predictions });
+    setSimulationData(prev => ({
+      ...prev,
+      [competitionId]: { competitionName, competitionId, predictions }
+    }));
     setActiveTab('standings');
   };
 
   const clearSimulation = () => {
-    setSimulationData(null);
+    setSimulationData({});
   };
 
   const goToSimulation = () => {
     setActiveTab('comps');
   };
+
+  const simulationCount = Object.keys(simulationData).length;
+  const simulationNames = Object.values(simulationData).map(sim => sim.competitionName);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black pb-safe overflow-x-hidden relative">
@@ -346,7 +354,7 @@ const Index = () => {
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 pb-20">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 pb-20 h-screen overflow-y-auto">
         {/* Header with Logo */}
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm">
           <div className="flex justify-center items-center px-4 py-2">
@@ -360,7 +368,7 @@ const Index = () => {
 
         <TabsContent value="standings" className="mt-2">
           {/* Simulation Alert */}
-          {simulationData && (
+          {simulationCount > 0 && (
             <div className="mx-4 mb-6">
               <div className="bg-gradient-to-r from-blue-600/80 to-purple-600/80 backdrop-blur-sm border border-blue-500/50 rounded-xl p-4 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -368,19 +376,24 @@ const Index = () => {
                     <Zap className="h-5 w-5 text-yellow-400" />
                     <div>
                       <h3 className="text-white font-bold text-sm">Simulation Mode</h3>
-                      <p className="text-blue-100 text-xs">Viewing predicted results for {simulationData.competitionName}</p>
+                      <p className="text-blue-100 text-xs">
+                        {simulationCount === 1 
+                          ? `Viewing predicted results for ${simulationNames[0]}`
+                          : `Viewing predictions for ${simulationCount} competitions: ${simulationNames.join(', ')}`
+                        }
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={goToSimulation}
-                      className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-3 py-1 rounded-lg text-xs transition-colors"
+                      className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-4 py-3 rounded-lg text-xs transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                     >
                       Edit
                     </button>
                     <button
                       onClick={clearSimulation}
-                      className="bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-xs flex items-center gap-1 transition-colors"
+                      className="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg text-xs flex items-center gap-1 transition-colors min-h-[44px]"
                     >
                       <RotateCcw className="h-3 w-3" />
                       Exit
@@ -483,49 +496,14 @@ const Index = () => {
 
             <div className="grid gap-3">
               {qualifiedOtherTeams.map((team, index) => (
-                <div 
+                <TeamCard
                   key={team.id}
-                  onClick={() => setSelectedTeam(team)} // Add click functionality
-                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
-                >
-                  {/* Rank Badge */}
-                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
-                    {index + 4}th
-                  </div>
-
-                  {/* Team Color Strip */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
-
-                  <div className="ml-3 sm:ml-4">
-                    {/* Team Info */}
-                    <div className="flex items-start justify-between mb-3 mt-6">
-                      <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
-                        <p className="text-slate-400 text-sm">{team.university}</p>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 sm:space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Target className="h-4 w-4 text-blue-400" />
-                          <span className="text-white font-semibold">{team.bidPoints}</span>
-                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
-                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4 text-slate-500" />
-                          <span className="text-slate-400 text-sm">Team</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
-                </div>
+                  team={team}
+                  rank={index + 4}
+                  isQualified={true}
+                  cutoffPoints={CUTOFF_POINTS}
+                  onClick={() => setSelectedTeam(team)}
+                />
               ))}
             </div>
 
@@ -548,49 +526,14 @@ const Index = () => {
 
             <div className="grid gap-3">
               {notQualifiedTeams.map((team, index) => (
-                <div 
+                <TeamCard
                   key={team.id}
-                  onClick={() => setSelectedTeam(team)} // Add click functionality
-                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
-                >
-                  {/* Rank Badge */}
-                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
-                    {index + qualifiedTeams + 1}th
-                  </div>
-
-                  {/* Team Color Strip */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
-
-                  <div className="ml-3 sm:ml-4">
-                    {/* Team Info */}
-                    <div className="flex items-start justify-between mb-3 mt-6">
-                      <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
-                        <p className="text-slate-400 text-sm">{team.university}</p>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 sm:space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Target className="h-4 w-4 text-blue-400" />
-                          <span className="text-white font-semibold">{team.bidPoints}</span>
-                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
-                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4 text-slate-500" />
-                          <span className="text-slate-400 text-sm">Team</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
-                </div>
+                  team={team}
+                  rank={index + qualifiedTeams + 1}
+                  isQualified={false}
+                  cutoffPoints={CUTOFF_POINTS}
+                  onClick={() => setSelectedTeam(team)}
+                />
               ))}
             </div>
 
@@ -714,28 +657,28 @@ const Index = () => {
           <TabsList className="grid grid-cols-4 bg-transparent border-none rounded-none w-full h-16 p-0">
             <TabsTrigger 
               value="standings" 
-              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
             >
               <Trophy className="h-4 w-4" />
               Standings
             </TabsTrigger>
             <TabsTrigger 
               value="comps" 
-              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
             >
               <Calendar className="h-4 w-4" />
               Comps
             </TabsTrigger>
             <TabsTrigger 
               value="fantasy" 
-              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
             >
               <Zap className="h-4 w-4" />
               Fantasy
             </TabsTrigger>
             <TabsTrigger 
               value="teams" 
-              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none"
+              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
             >
               <Users className="h-4 w-4" />
               Teams

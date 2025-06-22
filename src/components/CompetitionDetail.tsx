@@ -4,12 +4,14 @@ import { X, Trophy, Users, Eye, Camera, ChevronDown } from 'lucide-react';
 import { Competition } from './CompetitionsTab';
 
 interface SimulationData {
-  competitionName: string;
-  competitionId: string;
-  predictions: {
-    first: string;
-    second: string;
-    third: string;
+  [competitionId: string]: {
+    competitionName: string;
+    competitionId: string;
+    predictions: {
+      first: string;
+      second: string;
+      third: string;
+    };
   };
 }
 
@@ -17,7 +19,7 @@ interface CompetitionDetailProps {
   competition: Competition;
   onClose: () => void;
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
-  simulationData?: SimulationData | null;
+  simulationData?: SimulationData;
 }
 
 interface SimulationDropdownProps {
@@ -94,6 +96,7 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
     second: '',
     third: ''
   });
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -109,8 +112,8 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
 
   // Initialize predictions from simulation data if this is the competition being simulated
   useEffect(() => {
-    if (simulationData && simulationData.competitionId === competition.id) {
-      setPredictions(simulationData.predictions);
+    if (simulationData?.[competition.id]) {
+      setPredictions(simulationData[competition.id].predictions);
     } else {
       setPredictions({
         first: competition.placings.first || '',
@@ -127,7 +130,11 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
   const handleSaveSimulation = () => {
     if (predictions.first && predictions.second && predictions.third && onSimulationSet) {
       onSimulationSet(competition.name, competition.id, predictions);
-      onClose();
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        onClose();
+        setShowSuccessMessage(false);
+      }, 1500);
     }
   };
 
@@ -169,7 +176,7 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
           </div>
           <button 
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-2"
+            className="text-slate-400 hover:text-white transition-colors p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <X className="h-6 w-6" />
           </button>
@@ -232,9 +239,13 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
                 {canSaveSimulation && (
                   <button
                     onClick={handleSaveSimulation}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold"
+                    className={`w-full px-4 py-4 rounded-lg transition-colors font-semibold min-h-[48px] ${
+                      showSuccessMessage 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                   >
-                    Save Predictions
+                    {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                   </button>
                 )}
               </div>

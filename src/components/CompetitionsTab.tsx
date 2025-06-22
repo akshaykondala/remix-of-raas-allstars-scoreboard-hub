@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { CompetitionCard } from './CompetitionCard';
 import { CompetitionDetail } from './CompetitionDetail';
@@ -23,18 +24,20 @@ export interface Competition {
 }
 
 interface SimulationData {
-  competitionName: string;
-  competitionId: string;
-  predictions: {
-    first: string;
-    second: string;
-    third: string;
+  [competitionId: string]: {
+    competitionName: string;
+    competitionId: string;
+    predictions: {
+      first: string;
+      second: string;
+      third: string;
+    };
   };
 }
 
 export interface CompetitionsTabProps {
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
-  simulationData?: SimulationData | null;
+  simulationData?: SimulationData;
 }
 
 const competitions: Competition[] = [
@@ -224,24 +227,22 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
     second: '',
     third: ''
   });
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const currentDate = new Date();
   const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
   const futureCompetitions = competitions.filter(comp => new Date(comp.date) >= currentDate);
 
-  // Auto-open competition detail if navigating from simulation edit
-  useState(() => {
-    if (simulationData) {
-      const targetCompetition = competitions.find(comp => comp.id === simulationData.competitionId);
-      if (targetCompetition) {
-        setSelectedCompetition(targetCompetition);
-      }
-    }
-  });
-
   const handleSimulationStart = (competition: Competition) => {
     setSimulatingCompetition(competition);
-    setPredictions({ first: '', second: '', third: '' });
+    // Load existing predictions if available
+    const existingData = simulationData?.[competition.id];
+    if (existingData) {
+      setPredictions(existingData.predictions);
+    } else {
+      setPredictions({ first: '', second: '', third: '' });
+    }
+    setShowSuccessMessage(false);
   };
 
   const handlePredictionChange = (position: 'first' | 'second' | 'third', team: string) => {
@@ -251,13 +252,18 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
   const handleSaveSimulation = () => {
     if (simulatingCompetition && predictions.first && predictions.second && predictions.third && onSimulationSet) {
       onSimulationSet(simulatingCompetition.name, simulatingCompetition.id, predictions);
-      setSimulatingCompetition(null);
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setSimulatingCompetition(null);
+        setShowSuccessMessage(false);
+      }, 1500);
     }
   };
 
   const handleCancelSimulation = () => {
     setSimulatingCompetition(null);
     setPredictions({ first: '', second: '', third: '' });
+    setShowSuccessMessage(false);
   };
 
   const canSaveSimulation = predictions.first && predictions.second && predictions.third && 
@@ -324,16 +330,22 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
               <div className="flex gap-3">
                 <button
                   onClick={handleCancelSimulation}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-3 rounded-lg transition-colors"
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-4 rounded-lg transition-colors min-h-[48px]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveSimulation}
                   disabled={!canSaveSimulation}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-colors"
+                  className={`flex-1 px-4 py-4 rounded-lg transition-colors min-h-[48px] ${
+                    showSuccessMessage 
+                      ? 'bg-green-600 text-white' 
+                      : canSaveSimulation 
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                        : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                  }`}
                 >
-                  Save Simulation
+                  {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                 </button>
               </div>
             </div>

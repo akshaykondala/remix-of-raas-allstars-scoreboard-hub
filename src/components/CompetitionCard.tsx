@@ -1,5 +1,5 @@
 
-import { MapPin, Calendar, Users } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { Competition } from './CompetitionsTab';
 
 interface CompetitionCardProps {
@@ -48,11 +48,6 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
                 <Calendar className="h-3 w-3" />
                 <span>{formatDate(competition.date)}</span>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-1 text-xs text-slate-300">
-              <Users className="h-3 w-3 text-blue-400 flex-shrink-0" />
-              <span>{competition.lineup.length} teams</span>
             </div>
           </div>
           
