@@ -322,7 +322,7 @@ const Index = () => {
       ...prev,
       [competitionId]: { competitionName, competitionId, predictions }
     }));
-    // Don't switch tabs, keep them on the current tab
+    setActiveTab('standings');
   };
 
   const clearSimulation = () => {
@@ -498,10 +498,8 @@ const Index = () => {
                 const lockedIn = isLockedIn(team, rank);
                 return (
                   <div key={team.id} className="relative">
-                    {/* Enhanced gradient border with animation */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 via-pink-500 to-blue-500 rounded-lg blur-sm opacity-75 animate-pulse"></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/40 via-purple-400/40 via-pink-400/40 to-blue-400/40 rounded-lg"></div>
-                    <div className="relative bg-slate-800/95 backdrop-blur-sm border border-transparent rounded-lg">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-lg blur-sm"></div>
+                    <div className="relative bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 rounded-lg">
                       <TeamCard
                         team={team}
                         rank={rank}
@@ -520,8 +518,12 @@ const Index = () => {
             <div className="my-6 relative">
               <div className="flex items-center justify-center">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
-                <div className="mx-4 px-3 py-1 bg-slate-800 border border-slate-600 rounded-full">
-                  <span className="text-slate-300 font-medium text-xs">RAS Teams</span>
+                <div className="mx-4 px-4 py-2 bg-slate-800 border border-slate-600 rounded-full">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                    <span className="text-slate-300 font-medium text-sm">Below RAS</span>
+                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                  </div>
                 </div>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
               </div>
