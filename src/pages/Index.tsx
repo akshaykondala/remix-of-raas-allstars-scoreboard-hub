@@ -312,8 +312,9 @@ const Index = () => {
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
   const sortedTeams = [...teamsData].sort((a, b) => b.bidPoints - a.bidPoints);
   const topThreeTeams = sortedTeams.slice(0, 3);
-  const qualifiedOtherTeams = sortedTeams.slice(3).filter(team => team.qualified);
-  const notQualifiedTeams = sortedTeams.filter(team => !team.qualified);
+  const topNineTeams = sortedTeams.slice(0, 9);
+  const qualifiedOtherTeams = sortedTeams.slice(3, 9);
+  const notQualifiedTeams = sortedTeams.slice(9);
 
   const sortedNoBidTeams = [...noBidTeams].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -411,11 +412,11 @@ const Index = () => {
                   className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group cursor-pointer"
                 >
                   {/* Logo */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-slate-400 to-slate-500 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-slate-400 to-slate-500 flex items-center justify-center">
                     {topThreeTeams[1]?.logo ? (
                       <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-8 w-8 text-slate-200" />
+                      <Trophy className="h-7 w-7 text-slate-200" />
                     )}
                   </div>
                   {/* Team Info */}
@@ -435,12 +436,12 @@ const Index = () => {
                 <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group">
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[0])}
-                    className="w-18 h-18 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center cursor-pointer"
+                    className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center cursor-pointer"
                   >
                     {topThreeTeams[0]?.logo ? (
                       <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-10 w-10 text-yellow-700" />
+                      <Trophy className="h-8 w-8 text-yellow-700" />
                     )}
                   </div>
                   <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[0])}>
@@ -461,11 +462,11 @@ const Index = () => {
                   className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group cursor-pointer"
                 >
                   {/* Logo */}
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-orange-300 to-orange-400 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-orange-300 to-orange-400 flex items-center justify-center">
                     {topThreeTeams[2]?.logo ? (
                       <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-8 w-8 text-orange-700" />
+                      <Trophy className="h-7 w-7 text-orange-700" />
                     )}
                   </div>
                   {/* Team Info */}
@@ -485,38 +486,41 @@ const Index = () => {
           {/* Main Leaderboard */}
           <main className="px-4 py-6">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-white mb-2">Qualified Teams</h2>
+              <h2 className="text-lg font-bold text-white mb-2">RAS Teams</h2>
               <p className="text-slate-400 text-sm">
-                Remaining teams with All Stars qualification
+                The top 9 teams competing at Raas All Stars
               </p>
             </div>
 
             <div className="grid gap-3">
               {qualifiedOtherTeams.map((team, index) => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  rank={index + 4}
-                  isQualified={true}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                />
+                <div key={team.id} className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-lg blur-sm"></div>
+                  <div className="relative bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 rounded-lg">
+                    <TeamCard
+                      team={team}
+                      rank={index + 4}
+                      isQualified={true}
+                      cutoffPoints={CUTOFF_POINTS}
+                      onClick={() => setSelectedTeam(team)}
+                    />
+                  </div>
+                </div>
               ))}
             </div>
 
             {/* Modern Cutoff Line */}
-            <div className="my-8 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 rounded-full shadow-lg border border-red-400/30">
+            <div className="my-6 relative">
+              <div className="flex items-center justify-center">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
+                <div className="mx-4 px-4 py-2 bg-slate-800 border border-slate-600 rounded-full">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
-                    <span className="text-white font-semibold text-sm">Qualification Cutoff: {CUTOFF_POINTS} Points</span>
-                    <div className="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                    <span className="text-slate-300 font-medium text-sm">Below RAS Cutoff</span>
+                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
                   </div>
                 </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
               </div>
             </div>
 
@@ -524,7 +528,7 @@ const Index = () => {
             <div className="mb-6">
               <h2 className="text-lg font-bold text-white mb-2">Not Qualified</h2>
               <p className="text-slate-400 text-sm">
-                Teams below the qualification cutoff
+                Teams below the RAS qualification cutoff
               </p>
             </div>
 
@@ -533,7 +537,7 @@ const Index = () => {
                 <TeamCard
                   key={team.id}
                   team={team}
-                  rank={index + qualifiedTeams + 1}
+                  rank={index + 10}
                   isQualified={false}
                   cutoffPoints={CUTOFF_POINTS}
                   onClick={() => setSelectedTeam(team)}
