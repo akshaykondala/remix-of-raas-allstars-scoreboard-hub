@@ -19,9 +19,10 @@ interface TeamCardProps {
   isQualified: boolean;
   cutoffPoints: number;
   onClick: () => void;
+  showLockedIn?: boolean;
 }
 
-export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: TeamCardProps) => {
+export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showLockedIn = false }: TeamCardProps) => {
   const getRankDisplay = () => {
     if (rank === 1) return { text: '1st', color: 'text-yellow-400', bg: 'bg-yellow-400/20' };
     if (rank === 2) return { text: '2nd', color: 'text-slate-300', bg: 'bg-slate-300/20' };
@@ -47,14 +48,12 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: Tea
         {rankDisplay.text}
       </div>
 
-      {/* Qualification Status */}
-      <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${
-        isQualified 
-          ? 'bg-green-600 text-white' 
-          : 'bg-red-600 text-white'
-      }`}>
-        {isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
-      </div>
+      {/* Locked In Status */}
+      {showLockedIn && (
+        <div className="absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 bg-green-600 text-white">
+          LOCKED IN
+        </div>
+      )}
 
       {/* Team Color Strip */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>

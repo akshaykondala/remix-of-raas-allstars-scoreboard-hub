@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -343,6 +342,14 @@ const Index = () => {
   const simulationCount = Object.keys(simulationData).length;
   const simulationNames = Object.values(simulationData).map(sim => sim.competitionName);
 
+  // Determine if a team is locked in (has enough points to guarantee top 9)
+  const isLockedIn = (team: any, rank: number) => {
+    // A team is locked in if they're in top 6 with significant point lead
+    // or if the gap between them and 10th place is too large to overcome
+    const tenthPlacePoints = sortedTeams[9]?.bidPoints || 0;
+    return rank <= 6 && team.bidPoints >= tenthPlacePoints + 8; // 8+ point lead is generally safe
+  };
+
   return (
     <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
@@ -485,28 +492,26 @@ const Index = () => {
 
           {/* Main Leaderboard */}
           <main className="px-4 py-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-white mb-2">RAS Teams</h2>
-              <p className="text-slate-400 text-sm">
-                The top 9 teams competing at Raas All Stars
-              </p>
-            </div>
-
             <div className="grid gap-3">
-              {qualifiedOtherTeams.map((team, index) => (
-                <div key={team.id} className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-lg blur-sm"></div>
-                  <div className="relative bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 rounded-lg">
-                    <TeamCard
-                      team={team}
-                      rank={index + 4}
-                      isQualified={true}
-                      cutoffPoints={CUTOFF_POINTS}
-                      onClick={() => setSelectedTeam(team)}
-                    />
+              {qualifiedOtherTeams.map((team, index) => {
+                const rank = index + 4;
+                const lockedIn = isLockedIn(team, rank);
+                return (
+                  <div key={team.id} className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-lg blur-sm"></div>
+                    <div className="relative bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 rounded-lg">
+                      <TeamCard
+                        team={team}
+                        rank={rank}
+                        isQualified={true}
+                        cutoffPoints={CUTOFF_POINTS}
+                        onClick={() => setSelectedTeam(team)}
+                        showLockedIn={lockedIn}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Modern Cutoff Line */}
@@ -516,20 +521,12 @@ const Index = () => {
                 <div className="mx-4 px-4 py-2 bg-slate-800 border border-slate-600 rounded-full">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium text-sm">Below RAS Cutoff</span>
+                    <span className="text-slate-300 font-medium text-sm">Below RAS</span>
                     <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
                   </div>
                 </div>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
               </div>
-            </div>
-
-            {/* Not Qualified Teams */}
-            <div className="mb-6">
-              <h2 className="text-lg font-bold text-white mb-2">Not Qualified</h2>
-              <p className="text-slate-400 text-sm">
-                Teams below the RAS qualification cutoff
-              </p>
             </div>
 
             <div className="grid gap-3">
