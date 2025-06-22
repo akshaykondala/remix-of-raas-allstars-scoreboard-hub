@@ -1,5 +1,5 @@
 
-import { Trophy, Target, Upload } from 'lucide-react';
+import { Trophy, Target } from 'lucide-react';
 
 interface Team {
   id: string;
@@ -19,10 +19,9 @@ interface TeamCardProps {
   isQualified: boolean;
   cutoffPoints: number;
   onClick: () => void;
-  onLogoUpload?: () => void; //whatever now ignore ts
 }
 
-export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, onLogoUpload }: TeamCardProps) => {
+export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick }: TeamCardProps) => {
   const getRankDisplay = () => {
     if (rank === 1) return { text: '1st', color: 'text-yellow-400', bg: 'bg-yellow-400/20' };
     if (rank === 2) return { text: '2nd', color: 'text-slate-300', bg: 'bg-slate-300/20' };
@@ -50,27 +49,12 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, onLog
 
       {/* Qualification Status */}
       <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 ${
-        team.locked 
-          ? 'bg-purple-600 text-white' 
-          : isQualified 
-            ? 'bg-green-600 text-white' 
-            : 'bg-red-600 text-white'
+        isQualified 
+          ? 'bg-green-600 text-white' 
+          : 'bg-red-600 text-white'
       }`}>
-        {team.locked ? 'LOCKED IN' : isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
+        {isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
       </div>
-
-      {/* Logo Upload Button */}
-      {onLogoUpload && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onLogoUpload();
-          }}
-          className="absolute top-3 right-20 bg-blue-600/70 hover:bg-blue-600/90 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10"
-        >
-          <Upload className="h-3 w-3 text-white" />
-        </button>
-      )}
 
       {/* Team Color Strip */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>

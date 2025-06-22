@@ -17,8 +17,6 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
     });
   };
 
-  const isFutureCompetition = !competition.placings.first;
-
   return (
     <div className="w-full flex justify-start">
       <div 
@@ -48,13 +46,6 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
                 <Calendar className="h-3 w-3" />
                 <span>{formatDate(competition.date)}</span>
               </div>
-            </div>
-          </div>
-          
-          <div className="text-right flex-shrink-0 min-w-0 max-w-[60px]">
-            <div className="text-xs text-slate-400 mb-1">Winner</div>
-            <div className="text-white font-semibold text-xs truncate">
-              {isFutureCompetition ? 'TBD' : competition.placings.first}
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -48,7 +49,7 @@ const initialTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
     founded: '2005',
-    logo: '/src/logos/texas-raas.jpg' // Correct logo path
+    logo: '/src/logos/texas-raas.jpg'
   },
   {
     id: '2',
@@ -65,7 +66,7 @@ const initialTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
     founded: '2003',
-    logo: '/src/logos/cmu-raasta.jpg' // Correct logo path
+    logo: '/src/logos/cmu-raasta.jpg'
   },
   {
     id: '3',
@@ -266,15 +267,6 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>(initialTeams);
 
-  const handleLogoSource = (teamId: string, fileName: string) => {
-    const logoUrl = `/src/assets/logos/${fileName}`;
-    setTeamsData(prev =>
-      prev.map(team =>
-        team.id === teamId ? { ...team, logo: logoUrl } : team
-      )
-    );
-  };
-
   // Calculate bid points based on competition results
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
     const pointsMap: { [teamName: string]: number } = {};
@@ -313,7 +305,6 @@ const Index = () => {
 
   // Update teams when simulation data changes
   useEffect(() => {
-    // This will be called when competitions data changes in the future
     const updatedTeams = calculateBidPoints(initialTeams, []);
     setTeamsData(updatedTeams);
   }, [simulationData]);
@@ -339,14 +330,20 @@ const Index = () => {
   };
 
   const goToSimulation = () => {
-    setActiveTab('comps');
+    const simulationCount = Object.keys(simulationData).length;
+    if (simulationCount === 1) {
+      const singleSimulation = Object.values(simulationData)[0];
+      setActiveTab('comps');
+    } else {
+      setActiveTab('comps');
+    }
   };
 
   const simulationCount = Object.keys(simulationData).length;
   const simulationNames = Object.values(simulationData).map(sim => sim.competitionName);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black pb-safe overflow-x-hidden relative">
+    <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
@@ -354,9 +351,9 @@ const Index = () => {
         <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 pb-20 h-screen overflow-y-auto">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
         {/* Header with Logo */}
-        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm">
+        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm flex-shrink-0">
           <div className="flex justify-center items-center px-4 py-2">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
@@ -366,7 +363,7 @@ const Index = () => {
           </div>
         </div>
 
-        <TabsContent value="standings" className="mt-2">
+        <TabsContent value="standings" className="mt-2 flex-1 overflow-y-auto">
           {/* Simulation Alert */}
           {simulationCount > 0 && (
             <div className="mx-4 mb-6">
@@ -387,13 +384,13 @@ const Index = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={goToSimulation}
-                      className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-4 py-3 rounded-lg text-xs transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-6 py-4 rounded-lg text-xs transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
                     >
                       Edit
                     </button>
                     <button
                       onClick={clearSimulation}
-                      className="bg-white/20 hover:bg-white/30 text-white px-4 py-3 rounded-lg text-xs flex items-center gap-1 transition-colors min-h-[44px]"
+                      className="bg-white/20 hover:bg-white/30 text-white px-6 py-4 rounded-lg text-xs flex items-center gap-2 transition-colors min-h-[48px]"
                     >
                       <RotateCcw className="h-3 w-3" />
                       Exit
@@ -410,11 +407,11 @@ const Index = () => {
               {/* 2nd Place */}
               <div className="flex-1 max-w-[100px]">
                 <div 
-                  onClick={() => setSelectedTeam(topThreeTeams[1])} // Add click functionality
+                  onClick={() => setSelectedTeam(topThreeTeams[1])}
                   className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group cursor-pointer"
                 >
                   {/* Logo */}
-                  <div className="w-14 h-14 bg-gradient-to-b from-slate-400 to-slate-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-slate-400 to-slate-500 flex items-center justify-center">
                     {topThreeTeams[1]?.logo ? (
                       <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
                     ) : (
@@ -438,12 +435,12 @@ const Index = () => {
                 <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group">
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[0])}
-                    className="w-14 h-14 bg-gradient-to-b from-yellow-300 to-yellow-400 rounded-full flex items-center justify-center shadow-lg cursor-pointer overflow-hidden"
+                    className="w-18 h-18 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center cursor-pointer"
                   >
                     {topThreeTeams[0]?.logo ? (
                       <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-8 w-8 text-yellow-700" />
+                      <Trophy className="h-10 w-10 text-yellow-700" />
                     )}
                   </div>
                   <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[0])}>
@@ -460,11 +457,11 @@ const Index = () => {
               {/* 3rd Place */}
               <div className="flex-1 max-w-[100px]">
                 <div 
-                  onClick={() => setSelectedTeam(topThreeTeams[2])} // Add click functionality
+                  onClick={() => setSelectedTeam(topThreeTeams[2])}
                   className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group cursor-pointer"
                 >
                   {/* Logo */}
-                  <div className="w-14 h-14 bg-gradient-to-b from-orange-300 to-orange-400 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shadow-lg bg-gradient-to-b from-orange-300 to-orange-400 flex items-center justify-center">
                     {topThreeTeams[2]?.logo ? (
                       <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
                     ) : (
@@ -507,11 +504,18 @@ const Index = () => {
               ))}
             </div>
 
-            {/* Cutoff Line */}
-            <div className="my-8">
-              <div className="border-t-2 border-dashed border-red-500/70 relative">
-                <div className="absolute -top-3 left-1/4 transform -translate-x-1/20 bg-gradient-to-r from-red-600 to-red-500 text-white px-1 py-1 rounded-full text-xs font-semibold shadow-lg">
-                  QUALIFICATION CUTOFF ({CUTOFF_POINTS} PTS)
+            {/* Modern Cutoff Line */}
+            <div className="my-8 relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-3 rounded-full shadow-lg border border-red-400/30">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
+                    <span className="text-white font-semibold text-sm">Qualification Cutoff: {CUTOFF_POINTS} Points</span>
+                    <div className="w-2 h-2 bg-red-300 rounded-full animate-pulse"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -552,37 +556,20 @@ const Index = () => {
           </main>
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0">
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto">
           <div className="px-4">
             <CompetitionsTab 
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
             />
-            {/* Developer-only logo source */}
-            <div className="mt-4">
-              <h3 className="text-lg font-bold text-white mb-2">Developer Tools</h3>
-              <div className="grid gap-3">
-                {teamsData.map(team => (
-                  <div key={team.id} className="flex items-center gap-2">
-                    <span className="text-white">{team.name}:</span>
-                    <input
-                      type="text"
-                      placeholder="Enter PNG file name"
-                      className="bg-slate-800 text-white px-2 py-1 rounded-lg text-sm"
-                      onBlur={(e) => handleLogoSource(team.id, e.target.value)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="fantasy" className="mt-0">
+        <TabsContent value="fantasy" className="mt-0 flex-1 overflow-y-auto">
           <FantasyTab />
         </TabsContent>
 
-        <TabsContent value="teams" className="mt-0">
+        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto">
           <div className="px-4 py-6">
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
@@ -653,7 +640,7 @@ const Index = () => {
         </TabsContent>
 
         {/* Mobile Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50 flex-shrink-0">
           <TabsList className="grid grid-cols-4 bg-transparent border-none rounded-none w-full h-16 p-0">
             <TabsTrigger 
               value="standings" 
