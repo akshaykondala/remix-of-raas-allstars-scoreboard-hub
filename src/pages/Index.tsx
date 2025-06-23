@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -499,9 +498,9 @@ const Index = () => {
                 const lockedIn = isLockedIn(team, rank);
                 return (
                   <div key={team.id} className="relative">
-                    {/* Subtle modern outline for top 9 teams */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-xl"></div>
-                    <div className="relative bg-slate-800/95 backdrop-blur-sm border border-cyan-400/40 rounded-xl shadow-lg shadow-cyan-400/10">
+                    {/* Modern outline for top 9 teams - similar to simulation warning */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-xl"></div>
+                    <div className="relative bg-slate-800/95 backdrop-blur-sm border border-blue-500/50 rounded-xl shadow-lg">
                       <TeamCard
                         team={team}
                         rank={rank}
