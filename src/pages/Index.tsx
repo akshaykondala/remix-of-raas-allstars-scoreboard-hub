@@ -441,18 +441,18 @@ const Index = () => {
 
               {/* 1st Place - Taller */}
               <div className="flex-1 max-w-[120px]">
-                <div className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group">
-                  <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[0])}
-                    className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center cursor-pointer"
-                  >
+                <div 
+                  onClick={() => setSelectedTeam(topThreeTeams[0])}
+                  className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group cursor-pointer"
+                >
+                  <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center">
                     {topThreeTeams[0]?.logo ? (
                       <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
                     ) : (
                       <Trophy className="h-8 w-8 text-yellow-700" />
                     )}
                   </div>
-                  <div className="text-center cursor-pointer" onClick={() => setSelectedTeam(topThreeTeams[0])}>
+                  <div className="text-center">
                     <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
                     <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
                     <div className="flex items-center justify-center gap-1">
@@ -499,9 +499,9 @@ const Index = () => {
                 const lockedIn = isLockedIn(team, rank);
                 return (
                   <div key={team.id} className="relative">
-                    {/* Bold modern outline for top 9 teams */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                    <div className="relative bg-slate-800/95 backdrop-blur-sm border-2 border-cyan-400/50 rounded-xl shadow-lg shadow-cyan-400/25 ring-1 ring-cyan-300/20">
+                    {/* Subtle modern outline for top 9 teams */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 rounded-xl"></div>
+                    <div className="relative bg-slate-800/95 backdrop-blur-sm border border-cyan-400/40 rounded-xl shadow-lg shadow-cyan-400/10">
                       <TeamCard
                         team={team}
                         rank={rank}
