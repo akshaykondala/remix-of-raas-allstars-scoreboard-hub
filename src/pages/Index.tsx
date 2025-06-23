@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -498,8 +499,9 @@ const Index = () => {
                 const lockedIn = isLockedIn(team, rank);
                 return (
                   <div key={team.id} className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 rounded-lg blur-sm"></div>
-                    <div className="relative bg-slate-800/90 backdrop-blur-sm border border-blue-500/30 rounded-lg">
+                    {/* Bold modern outline for top 9 teams */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                    <div className="relative bg-slate-800/95 backdrop-blur-sm border-2 border-cyan-400/50 rounded-xl shadow-lg shadow-cyan-400/25 ring-1 ring-cyan-300/20">
                       <TeamCard
                         team={team}
                         rank={rank}
