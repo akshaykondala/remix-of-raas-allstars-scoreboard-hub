@@ -529,7 +529,7 @@ const Index = () => {
                 <div className="mx-4 px-4 py-2 bg-slate-800 border border-slate-600 rounded-full">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium text-sm">Below RAS</span>
+                    <span className="text-slate-300 font-medium text-sm"> RAS Cutoff</span>
                     <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
                   </div>
                 </div>

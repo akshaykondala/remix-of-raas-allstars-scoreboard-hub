@@ -58,13 +58,7 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showL
           </div>
           
           {/* Qualification Status */}
-          <div className={`px-2 py-1 rounded text-xs font-semibold ${
-            isQualified 
-              ? 'bg-green-600 text-white' 
-              : 'bg-red-600 text-white'
-          }`}>
-            {isQualified ? 'QUALIFIED' : 'NOT QUALIFIED'}
-          </div>
+          
         </div>
 
         {/* Stats */}
@@ -77,10 +71,7 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showL
               <span className="text-slate-400 text-sm sm:hidden">pts</span>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-green-400" />
-              <span className="text-slate-400 text-sm">Team</span>
-            </div>
+            
           </div>
 
           {/* Points needed indicator */}
