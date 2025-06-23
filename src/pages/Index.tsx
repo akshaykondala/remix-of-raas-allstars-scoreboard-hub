@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -371,7 +372,7 @@ const Index = () => {
           </div>
         </div>
 
-        <TabsContent value="standings" className="mt-2 flex-1 overflow-y-auto">
+        <TabsContent value="standings" className="mt-2 flex-1 overflow-y-auto scrollbar-hide pb-20">
           {/* Simulation Alert */}
           {simulationCount > 0 && (
             <div className="mx-4 mb-6">
@@ -413,10 +414,12 @@ const Index = () => {
           <section className="px-4 py-2">
             <div className="flex gap-4 justify-center items-end">
               {/* 2nd Place */}
-              <div className="flex-1 max-w-[100px]">
+              <div className="flex-1 max-w-[100px] relative">
+                {/* Top 9 outline effect */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[1])}
-                  className="bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl relative group cursor-pointer"
+                  className="relative bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl group cursor-pointer"
                 >
                   {/* Logo */}
                   <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-slate-400 to-slate-500 flex items-center justify-center">
@@ -439,10 +442,12 @@ const Index = () => {
               </div>
 
               {/* 1st Place - Taller */}
-              <div className="flex-1 max-w-[120px]">
+              <div className="flex-1 max-w-[120px] relative">
+                {/* Top 9 outline effect */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[0])}
-                  className="bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 relative group cursor-pointer"
+                  className="relative bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 group cursor-pointer"
                 >
                   <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center">
                     {topThreeTeams[0]?.logo ? (
@@ -463,10 +468,12 @@ const Index = () => {
               </div>
 
               {/* 3rd Place */}
-              <div className="flex-1 max-w-[100px]">
+              <div className="flex-1 max-w-[100px] relative">
+                {/* Top 9 outline effect */}
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[2])}
-                  className="bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl relative group cursor-pointer"
+                  className="relative bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl group cursor-pointer"
                 >
                   {/* Logo */}
                   <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-orange-300 to-orange-400 flex items-center justify-center">
@@ -558,7 +565,7 @@ const Index = () => {
           </main>
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto">
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           <div className="px-4">
             <CompetitionsTab 
               onSimulationSet={handleSimulationSet}
@@ -567,11 +574,11 @@ const Index = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="fantasy" className="mt-0 flex-1 overflow-y-auto">
+        <TabsContent value="fantasy" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           <FantasyTab />
         </TabsContent>
 
-        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto">
+        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           <div className="px-4 py-6">
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
