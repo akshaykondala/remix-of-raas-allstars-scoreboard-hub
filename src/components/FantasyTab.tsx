@@ -75,7 +75,7 @@ export function FantasyTab() {
         <div className="flex gap-4 justify-center items-end">
           {/* 2nd Place */}
           <div 
-            onClick={() => setSelectedTeam(topThreeTeams[1])}
+            onClick={() => window.open(`/team/${topThreeTeams[1].id}`, '_blank')}
             className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <div className="bg-gradient-to-b from-slate-600 to-slate-700 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500 shadow-lg">
@@ -95,7 +95,7 @@ export function FantasyTab() {
 
           {/* 1st Place - Taller */}
           <div 
-            onClick={() => setSelectedTeam(topThreeTeams[0])}
+            onClick={() => window.open(`/team/${topThreeTeams[0].id}`, '_blank')}
             className="flex-1 max-w-[120px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <div className="bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400">
@@ -115,7 +115,7 @@ export function FantasyTab() {
 
           {/* 3rd Place */}
           <div 
-            onClick={() => setSelectedTeam(topThreeTeams[2])}
+            onClick={() => window.open(`/team/${topThreeTeams[2].id}`, '_blank')}
             className="flex-1 max-w-[100px] cursor-pointer transform transition-all duration-300 hover:scale-105 active:scale-95"
           >
             <div className="bg-gradient-to-b from-orange-500 to-orange-600 rounded-2xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400 shadow-lg">
@@ -145,7 +145,7 @@ export function FantasyTab() {
         {sortedTeams.map((team, index) => (
           <div 
             key={team.id}
-            onClick={() => setSelectedTeam(team)}
+            onClick={() => window.open(`/team/${team.id}`, '_blank')}
             className="bg-slate-900 border border-slate-700 rounded-xl p-4 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] hover:border-blue-600"
           >
             <div className="flex items-center justify-between mb-3">
