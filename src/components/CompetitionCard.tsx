@@ -1,6 +1,6 @@
 
 import { MapPin, Calendar } from 'lucide-react';
-import { Competition } from './CompetitionsTab';
+import { Competition } from '@/lib/types';
 
 interface CompetitionCardProps {
   competition: Competition;
