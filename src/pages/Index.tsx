@@ -21,6 +21,9 @@ const fallbackTeams: Team[] = [
     qualified: true,
     locked: true,
     color: 'bg-orange-600',
+    city: 'Austin, TX',
+    instagramlink: 'https://www.instagram.com/texasraas/',
+    competitions_attending: [],
     history: [
       'Founded in 2005, Texas Raas has been a powerhouse in collegiate Raas',
       'Multiple-time Raas All Stars qualifier',
@@ -38,6 +41,9 @@ const fallbackTeams: Team[] = [
     qualified: true,
     locked: true,
     color: 'bg-red-700',
+    city: 'Pittsburgh, PA',
+    instagramlink: 'https://www.instagram.com/cmuraasta/',
+    competitions_attending: [],
     history: [
       'CMU Raasta brings technical precision to every performance',
       'Consistently ranked in top 10 nationally',
@@ -46,6 +52,146 @@ const fallbackTeams: Team[] = [
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
     founded: '2003',
     logo: '/src/logos/cmu-raasta.jpg'
+  },
+  {
+    id: '3',
+    name: 'UF Gatoraas',
+    university: 'University of Florida',
+    bidPoints: 6,
+    qualified: true,
+    locked: false,
+    color: 'bg-blue-600',
+    city: 'Gainesville, FL',
+    instagramlink: 'https://www.instagram.com/ufgatoraas/',
+    competitions_attending: [],
+    history: [
+      'UF Gatoraas represents the University of Florida with pride',
+      'Known for high-energy performances and crowd engagement',
+      'Consistent top performer in regional competitions'
+    ],
+    achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
+    founded: '2008',
+    logo: '/src/logos/uf-gatoraas.jpeg'
+  },
+  {
+    id: '4',
+    name: 'UCLA Nashaa',
+    university: 'University of California, Los Angeles',
+    bidPoints: 4,
+    qualified: false,
+    locked: false,
+    color: 'bg-blue-800',
+    city: 'Los Angeles, CA',
+    instagramlink: 'https://www.instagram.com/uclanashaa/',
+    competitions_attending: [],
+    history: [
+      'UCLA Nashaa brings West Coast energy to the Raas circuit',
+      'Known for innovative choreography and modern interpretations',
+      'Strong presence in California competitions'
+    ],
+    achievements: ['Bollywood Berkeley 2024 - 1st Place', 'Spring Nationals 2023 - 5th Place'],
+    founded: '2010',
+    logo: ''
+  },
+  {
+    id: '5',
+    name: 'Michigan Maize Mirchi',
+    university: 'University of Michigan',
+    bidPoints: 3,
+    qualified: false,
+    locked: false,
+    color: 'bg-yellow-600',
+    city: 'Ann Arbor, MI',
+    instagramlink: 'https://www.instagram.com/michiganmaizemirchi/',
+    competitions_attending: [],
+    history: [
+      'Michigan Maize Mirchi represents the Midwest with pride',
+      'Known for synchronized formations and technical precision',
+      'Consistent performer in regional competitions'
+    ],
+    achievements: ['Midwest Magic 2024 - 1st Place', 'Raas All Stars 2022 - 7th Place'],
+    founded: '2007',
+    logo: ''
+  },
+  {
+    id: '6',
+    name: 'NYU Bhangra',
+    university: 'New York University',
+    bidPoints: 2,
+    qualified: false,
+    locked: false,
+    color: 'bg-purple-700',
+    city: 'New York, NY',
+    instagramlink: 'https://www.instagram.com/nyubhangra/',
+    competitions_attending: [],
+    history: [
+      'NYU Bhangra brings the energy of New York City',
+      'Known for creative storytelling and emotional performances',
+      'Strong presence in East Coast competitions'
+    ],
+    achievements: ['East Coast Showdown 2024 - 2nd Place', 'Raas All Stars 2021 - 9th Place'],
+    founded: '2006',
+    logo: ''
+  },
+  {
+    id: '7',
+    name: 'Georgia Tech Raas',
+    university: 'Georgia Institute of Technology',
+    bidPoints: 1,
+    qualified: false,
+    locked: false,
+    color: 'bg-yellow-500',
+    city: 'Atlanta, GA',
+    instagramlink: 'https://www.instagram.com/gatechraas/',
+    competitions_attending: [],
+    history: [
+      'Georgia Tech Raas represents the Southeast with pride',
+      'Known for technical excellence and innovative choreography',
+      'Rising star in the collegiate Raas circuit'
+    ],
+    achievements: ['Raas Chaos 2024 - 5th Place', 'Spring Nationals 2023 - 8th Place'],
+    founded: '2012',
+    logo: ''
+  },
+  {
+    id: '8',
+    name: 'Penn Aatish',
+    university: 'University of Pennsylvania',
+    bidPoints: 1,
+    qualified: false,
+    locked: false,
+    color: 'bg-red-600',
+    city: 'Philadelphia, PA',
+    instagramlink: 'https://www.instagram.com/pennaatish/',
+    competitions_attending: [],
+    history: [
+      'Penn Aatish brings Ivy League excellence to Raas',
+      'Known for sophisticated choreography and storytelling',
+      'Consistent performer in regional competitions'
+    ],
+    achievements: ['East Coast Showdown 2024 - 3rd Place', 'Raas All Stars 2022 - 10th Place'],
+    founded: '2009',
+    logo: ''
+  },
+  {
+    id: '9',
+    name: 'UIUC Roshni',
+    university: 'University of Illinois at Urbana-Champaign',
+    bidPoints: 0,
+    qualified: false,
+    locked: false,
+    color: 'bg-orange-500',
+    city: 'Champaign, IL',
+    instagramlink: 'https://www.instagram.com/uiucroshni/',
+    competitions_attending: [],
+    history: [
+      'UIUC Roshni represents the heart of Illinois',
+      'Known for energetic performances and crowd engagement',
+      'Emerging talent in the collegiate Raas circuit'
+    ],
+    achievements: ['Midwest Magic 2024 - 3rd Place', 'Spring Nationals 2023 - 9th Place'],
+    founded: '2015',
+    logo: ''
   }
 ];
 
