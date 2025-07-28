@@ -4,9 +4,9 @@ const TOKEN = import.meta.env.VITE_DIRECTUS_TOKEN;
 export async function fetchFromDirectus(collection: string) {
   try {
     let url = `${API_URL}/items/${collection}`;
-    // Deep populate lineup for competitions
+    // Deep populate lineup for competitions - get the nested team data from junction table
     if (collection === 'competitions') {
-      url += '?fields=*,lineup.*';
+      url += '?fields=*,lineup.teams_id.*';
     }
     const res = await fetch(url, {
       headers: {

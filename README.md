@@ -1,73 +1,156 @@
-# Welcome to your Lovable project
+# Raas All Stars Scoreboard Hub
 
-## Project info
+A comprehensive web application for tracking collegiate Raas dance competitions, team standings, and fantasy league management.
 
-**URL**: https://lovable.dev/projects/bac76a51-37e0-434d-a7a9-4238d1557291
+## 🏆 Project Overview
 
-## How can I edit this code?
+The Raas All Stars Scoreboard Hub is a modern web application designed to provide real-time tracking of collegiate Raas dance competitions across the United States. The platform features team standings, competition results, fantasy league management, and detailed team profiles.
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+### 📊 Standings Tab
+- Real-time team rankings based on bid points
+- Top 9 teams qualification system for Raas All Stars
+- Team cards with university info, logos, and bid points
+- Locked-in status indicators for qualified teams
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bac76a51-37e0-434d-a7a9-4238d1557291) and start prompting.
+### 🏅 Competitions Tab
+- Season competition tracking with past and upcoming events
+- Competition simulation for future events
+- Detailed competition information including:
+  - Team lineups with logos and names
+  - Top 3 placings with team details
+  - Competition dates, locations, and judges
+  - Instagram links and media
 
-Changes made via Lovable will be committed automatically to this repo.
+### ⚡ Fantasy Tab
+- Fantasy league management system
+- Team owner tracking and point calculations
+- Weekly change indicators
+- Dancer selection and captain assignments
 
-**Use your preferred IDE**
+### 👥 Teams Tab
+- Comprehensive team directory
+- Team profiles with university information
+- Historical achievements and team history
+- Competition attendance tracking
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Technology Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Backend**: Directus CMS
+- **State Management**: React hooks
+- **Icons**: Lucide React
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+- Directus CMS instance
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd raas-allstars-scoreboard-hub
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_DIRECTUS_URL=your_directus_url
+   VITE_DIRECTUS_TOKEN=your_directus_token
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:8080`
+
+## 📁 Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ui/            # shadcn/ui components
+│   ├── CompetitionCard.tsx
+│   ├── CompetitionDetail.tsx
+│   ├── CompetitionsTab.tsx
+│   ├── FantasyTab.tsx
+│   ├── TeamCard.tsx
+│   └── TeamDetail.tsx
+├── lib/
+│   ├── api.ts         # Directus API functions
+│   ├── types.ts       # TypeScript type definitions
+│   ├── utils.ts       # Utility functions
+│   └── competitionMapping.ts  # Competition data mapping
+├── pages/
+│   └── Index.tsx      # Main application page
+└── logos/             # Team logo assets
 ```
 
-**Edit a file directly in GitHub**
+## 🗄️ Database Schema
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Teams Collection
+- Team information (name, university, logo)
+- Bid points and qualification status
+- Competition attendance tracking
+- Team history and achievements
 
-**Use GitHub Codespaces**
+### Competitions Collection
+- Competition details (name, date, location)
+- Team lineups (many-to-many relationship)
+- Top 3 placings with team references
+- Judge information and media links
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔧 Development
 
-## What technologies are used for this project?
+### Key Features Implemented
+- **Real-time data fetching** from Directus CMS
+- **Robust team mapping** for competition lineups and placings
+- **Responsive design** for mobile and desktop
+- **Error handling** and loading states
+- **TypeScript** for type safety
 
-This project is built with:
+### Recent Updates
+- Fixed competition lineup display issues
+- Implemented proper team object mapping
+- Added deep population for Directus relations
+- Enhanced error handling for junction table structures
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🚀 Deployment
 
-## How can I deploy this project?
+### Via Lovable
+1. Open [Lovable](https://lovable.dev/projects/bac76a51-37e0-434d-a7a9-4238d1557291)
+2. Click Share → Publish
 
-Simply open [Lovable](https://lovable.dev/projects/bac76a51-37e0-434d-a7a9-4238d1557291) and click on Share -> Publish.
+### Custom Domain
+Navigate to Project > Settings > Domains and click Connect Domain.
 
-## Can I connect a custom domain to my Lovable project?
+## 🤝 Contributing
 
-Yes, you can!
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📝 License
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License.
+
+---
+
+**Built with ❤️ for the Raas community**

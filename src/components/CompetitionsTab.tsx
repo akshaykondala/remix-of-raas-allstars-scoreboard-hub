@@ -450,12 +450,12 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
       {/* Competition Detail Modal */}
       {selectedCompetition && (
         <>
-          <CompetitionDetail 
-            competition={selectedCompetition} 
-            onClose={() => setSelectedCompetition(null)}
-            onSimulationSet={onSimulationSet}
-            simulationData={simulationData}
-          />
+        <CompetitionDetail 
+          competition={selectedCompetition} 
+          onClose={() => setSelectedCompetition(null)}
+          onSimulationSet={onSimulationSet}
+          simulationData={simulationData}
+        />
         </>
       )}
     </div>
