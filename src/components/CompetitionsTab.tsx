@@ -1,45 +1,19 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CompetitionCard } from './CompetitionCard';
 import { CompetitionDetail } from './CompetitionDetail';
 import { ChevronDown } from 'lucide-react';
-
-export interface Competition {
-  id: string;
-  name: string;
-  city: string;
-  date: string;
-  logo: string;
-  lineup: string[];
-  placings: {
-    first: string;
-    second: string;
-    third: string;
-  };
-  judges: string[];
-  media: {
-    photos: string[];
-    videos: string[];
-  };
-}
-
-interface SimulationData {
-  [competitionId: string]: {
-    competitionName: string;
-    competitionId: string;
-    predictions: {
-      first: string;
-      second: string;
-      third: string;
-    };
-  };
-}
+import { fetchFromDirectus } from '../lib/api';
+import { Competition, SimulationData } from '../lib/types';
+import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 
 export interface CompetitionsTabProps {
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
   simulationData?: SimulationData;
+  teams: any[];
 }
 
+/*
 const competitions: Competition[] = [
   {
     id: '1',
@@ -121,7 +95,7 @@ const competitions: Competition[] = [
     logo: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center',
     lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish'],
     placings: {
-      first: '',
+      first: '',  
       second: '',
       third: ''
     },
@@ -150,6 +124,7 @@ const competitions: Competition[] = [
     }
   }
 ];
+*/
 
 interface SimulationDropdownProps {
   teams: string[];
@@ -183,6 +158,14 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
         return 'bg-orange-600';
     }
   };
+
+  if (!teams.length) {
+    return (
+      <div className="text-center text-slate-400 py-8">
+        No teams available
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -219,7 +202,9 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
   );
 }
 
-export function CompetitionsTab({ onSimulationSet, simulationData }: CompetitionsTabProps) {
+export function CompetitionsTab({ onSimulationSet, simulationData, teams }: CompetitionsTabProps) {
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [simulatingCompetition, setSimulatingCompetition] = useState<Competition | null>(null);
   const [predictions, setPredictions] = useState<{ first: string; second: string; third: string }>({
@@ -228,6 +213,27 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
     third: ''
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      const data = await fetchFromDirectus('competitions');
+      // If your logo is a file object, use .id to build the URL
+      const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+  
+      const mapped = (data || []).map(item => {
+        const mappedComp = mapCompetitionTeamsFull(item, teams);
+        console.log('[DEBUG] Raw item.lineup:', item.lineup);
+        console.log('[DEBUG] Mapped lineup:', mappedComp.lineup);
+        console.log('[DEBUG] Mapped placings:', mappedComp.placings);
+        return mappedComp;
+      });
+  
+      setCompetitions(mapped);
+      setLoading(false);
+    };
+  
+    fetchCompetitions();
+  }, []);
 
   const currentDate = new Date();
   const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
@@ -286,6 +292,12 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
     }
   };
 
+  useEffect(() => {
+    if (selectedCompetition) {
+      console.log('[DEBUG] Passing to CompetitionDetail:', selectedCompetition);
+    }
+  }, [selectedCompetition]);
+
   return (
     <div className="py-4 w-full overflow-hidden">
       <div className="mb-6 text-center px-4">
@@ -294,6 +306,13 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
           Track competitions throughout the 2024-25 season
         </p>
       </div>
+
+      {loading && (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <p className="text-slate-400 mt-2">Loading competitions...</p>
+        </div>
+      )}
 
       {/* Simulation Modal */}
       {simulatingCompetition && (
@@ -353,19 +372,28 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
         </div>
       )}
 
-      <div className="flex flex-col items-start w-full px-4">
-        {/* Past Competitions */}
-        {pastCompetitions.length > 0 && (
+      {!loading && (
+        <div className="flex flex-col items-start w-full px-4">
+          {/* Past Competitions */}
+          {pastCompetitions.length > 0 && (
           <div className="mb-8 w-full">
             <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
             <div className="space-y-3 w-full flex flex-col items-start">
-              {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => (
-                <CompetitionCard
-                  key={competition.id}
-                  competition={competition}
-                  onClick={() => setSelectedCompetition(competition)}
-                />
-              ))}
+              {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => {
+                const [year, month, day] = competition.date.split('-');
+                const displayDate = `${month}/${day}/${year}`;
+                return (
+                  <CompetitionCard
+                    key={competition.id}
+                    competition={{ ...competition, date: displayDate }}
+                    onClick={() => {
+                      const { media, ...rest } = competition;
+                      console.log('[DEBUG] Competition clicked:', { ...rest, media: { photos: [], videos: [] } });
+                      setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                    }}
+                  />
+                );
+              })}
             </div>
           </div>
         )}
@@ -389,36 +417,46 @@ export function CompetitionsTab({ onSimulationSet, simulationData }: Competition
               Click "Simulate" to predict results for future competitions
             </p>
             <div className="space-y-3 w-full flex flex-col items-start">
-              {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => (
-                <div key={competition.id} className="relative w-full max-w-sm">
-                  <CompetitionCard
-                    competition={competition}
-                    onClick={() => setSelectedCompetition(competition)}
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSimulationStart(competition);
-                    }}
-                    className="absolute top-3 right-6 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold z-10"
-                  >
-                    Simulate
-                  </button>
-                </div>
-              ))}
+              {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => {
+                const [year, month, day] = competition.date.split('-');
+                const displayDate = `${month}/${day}/${year}`;
+                return (
+                  <div key={competition.id} className="relative w-full max-w-sm">
+                    <CompetitionCard
+                      competition={{ ...competition, date: displayDate }}
+                      onClick={() => {
+                        const { media, ...rest } = competition;
+                        setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                      }}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSimulationStart(competition);
+                      }}
+                      className="absolute top-3 right-6 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold z-10"
+                    >
+                      Simulate
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Competition Detail Modal */}
       {selectedCompetition && (
-        <CompetitionDetail 
-          competition={selectedCompetition} 
-          onClose={() => setSelectedCompetition(null)}
-          onSimulationSet={onSimulationSet}
-          simulationData={simulationData}
-        />
+        <>
+          <CompetitionDetail 
+            competition={selectedCompetition} 
+            onClose={() => setSelectedCompetition(null)}
+            onSimulationSet={onSimulationSet}
+            simulationData={simulationData}
+          />
+        </>
       )}
     </div>
   );

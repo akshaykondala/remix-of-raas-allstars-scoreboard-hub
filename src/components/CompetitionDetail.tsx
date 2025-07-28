@@ -1,29 +1,18 @@
 
 import { useState, useEffect } from 'react';
 import { X, Trophy, Users, Eye, Camera, ChevronDown } from 'lucide-react';
-import { Competition } from './CompetitionsTab';
-
-interface SimulationData {
-  [competitionId: string]: {
-    competitionName: string;
-    competitionId: string;
-    predictions: {
-      first: string;
-      second: string;
-      third: string;
-    };
-  };
-}
+import { Competition, SimulationData, Team } from '../lib/types';
 
 interface CompetitionDetailProps {
   competition: Competition;
   onClose: () => void;
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
   simulationData?: SimulationData;
+  teams?: Team[]; // <-- add teams prop
 }
 
 interface SimulationDropdownProps {
-  teams: string[];
+  teams: any[]; // now array of team objects
   selectedTeam: string;
   onSelect: (team: string) => void;
   placeholder: string;
@@ -65,7 +54,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
         </div>
         <span className="text-white font-semibold flex-1 truncate text-sm">
-          {selectedTeam || placeholder}
+          {teams.find(t => t.id === selectedTeam)?.name || placeholder}
         </span>
         <ChevronDown className={`h-4 w-4 text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -74,14 +63,14 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
         <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
           {teams.map((team) => (
             <button
-              key={team}
+              key={team.id}
               onClick={() => {
-                onSelect(team);
+                onSelect(team.id);
                 setIsOpen(false);
               }}
               className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
             >
-              {team}
+              {team.name}
             </button>
           ))}
         </div>
@@ -90,7 +79,9 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
   );
 }
 
-export function CompetitionDetail({ competition, onClose, onSimulationSet, simulationData }: CompetitionDetailProps) {
+export function CompetitionDetail({ competition, onClose, onSimulationSet, simulationData, teams = [] }: CompetitionDetailProps) {
+  console.log('[DEBUG] CompetitionDetail props:', { competition, onClose, onSimulationSet, simulationData, teams });
+  console.log('[DEBUG] CompetitionDetail lineup:', competition?.lineup);
   const [predictions, setPredictions] = useState<{ first: string; second: string; third: string }>({
     first: '',
     second: '',
@@ -98,17 +89,30 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+  // Settable current date for testing; switch to `new Date()` for production
+  // TODO: when we are ready to go live, switch to `new Date()`
+  const CURRENT_DATE = new Date(2025, 1, 24); // February is month 1 (0-indexed)
+
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+    // Parse as local date to avoid timezone shift
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-').map(Number);
+    // month is 0-indexed in JS Date
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
-      month: 'long', 
-      day: 'numeric'
-    }); 
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
-  const isFutureCompetition = !competition.placings.first;
+  // Use CURRENT_DATE to determine if competition is in the future
+  const isFutureCompetition = (() => {
+    const [year, month, day] = competition.date.split('-').map(Number);
+    const compDate = new Date(year, month - 1, day);
+    return compDate > CURRENT_DATE;
+  })();
 
   // Initialize predictions from simulation data if this is the competition being simulated
   useEffect(() => {
@@ -148,9 +152,9 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
       case 'first':
         return competition.lineup;
       case 'second':
-        return competition.lineup.filter(team => team !== predictions.first);
+        return competition.lineup.filter(team => team.id !== predictions.first);
       case 'third':
-        return competition.lineup.filter(team => team !== predictions.first && team !== predictions.second);
+        return competition.lineup.filter(team => team.id !== predictions.first && team.id !== predictions.second);
       default:
         return competition.lineup;
     }
@@ -197,8 +201,9 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
             </h3>
             <div className="grid gap-2">
               {competition.lineup.map((team, index) => (
-                <div key={index} className="bg-slate-800 rounded-lg px-3 py-2 text-slate-300 text-sm">
-                  {team}
+                <div key={index} className="bg-slate-800 rounded-lg px-3 py-2 text-slate-300 text-sm flex items-center gap-2">
+                  {team.logo && <img src={team.logo} alt={team.name} className="w-6 h-6 rounded-full object-cover" />}
+                  <span>{team.name}</span>
                 </div>
               ))}
             </div>
@@ -253,15 +258,24 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
               <div className="space-y-2">
                 <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 rounded-lg px-3 py-2 border border-yellow-600/30">
                   <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
-                  <span className="text-white font-semibold">{competition.placings.first}</span>
+                  <span className="text-white font-semibold flex items-center gap-2">
+                    {competition.placings.first.logo && <img src={competition.placings.first.logo} alt={competition.placings.first.name} className="w-5 h-5 rounded-full object-cover" />}
+                    {competition.placings.first.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 rounded-lg px-3 py-2 border border-slate-500/30">
                   <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
-                  <span className="text-white font-semibold">{competition.placings.second}</span>
+                  <span className="text-white font-semibold flex items-center gap-2">
+                    {competition.placings.second.logo && <img src={competition.placings.second.logo} alt={competition.placings.second.name} className="w-5 h-5 rounded-full object-cover" />}
+                    {competition.placings.second.name}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 rounded-lg px-3 py-2 border border-orange-600/30">
                   <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
-                  <span className="text-white font-semibold">{competition.placings.third}</span>
+                  <span className="text-white font-semibold flex items-center gap-2">
+                    {competition.placings.third.logo && <img src={competition.placings.third.logo} alt={competition.placings.third.name} className="w-5 h-5 rounded-full object-cover" />}
+                    {competition.placings.third.name}
+                  </span>
                 </div>
               </div>
             )}
@@ -274,45 +288,42 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
               Judges
             </h3>
             <div className="grid gap-2">
-              {competition.judges.map((judge, index) => (
-                <div key={index} className="bg-slate-800 rounded-lg px-3 py-2 text-slate-300 text-sm">
-                  {judge}
+              {competition.judges
+                .sort((a, b) => a.category.localeCompare(b.category))
+                .map((judge, index) => (
+                <div key={index} className="bg-slate-800 rounded-lg px-3 py-2">
+                  <div className="text-slate-300 text-sm font-medium">{judge.name}</div>
+                  <div className="text-slate-500 text-xs">{judge.category}</div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Media */}
-          <div>
-            <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <Camera className="h-4 w-4 text-green-400" />
-              Media
-            </h3>
-            <div className="space-y-3">
-              <div>
-                <h4 className="text-slate-400 text-sm mb-2">Photos</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {competition.media.photos.map((photo, index) => (
-                    <div key={index} className="aspect-square rounded-lg overflow-hidden">
-                      <img 
-                        src={`https://images.unsplash.com/${photo}?w=200&h=200&fit=crop&crop=center`}
-                        alt={`Competition photo ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {competition.media.videos.length > 0 && (
-                <div>
-                  <h4 className="text-slate-400 text-sm mb-2">Videos</h4>
-                  <div className="text-slate-500 text-sm">Videos coming soon...</div>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
+        {/* Instagram Link Button */}
+        {competition.instagramlink && (
+          <div className="flex justify-center pb-6">
+            <a
+              href={competition.instagramlink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-bold px-5 py-3 rounded-full shadow-lg hover:scale-105 transition-transform text-lg"
+            >
+              {/* Instagram SVG icon */}
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="24" height="24" rx="6" fill="url(#ig-gradient)"/>
+                <defs>
+                  <linearGradient id="ig-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#F58529"/>
+                    <stop offset="0.5" stopColor="#DD2A7B"/>
+                    <stop offset="1" stopColor="#515BD4"/>
+                  </linearGradient>
+                </defs>
+                <path d="M16.98 3H7.02C4.25 3 3 4.25 3 7.02V16.98C3 19.75 4.25 21 7.02 21H16.98C19.75 21 21 19.75 21 16.98V7.02C21 4.25 19.75 3 16.98 3ZM12 8.38C14 8.38 15.62 10 15.62 12C15.62 14 14 15.62 12 15.62C10 15.62 8.38 14 8.38 12C8.38 10 10 8.38 12 8.38ZM19.12 16.98C19.12 18.12 18.12 19.12 16.98 19.12H7.02C5.88 19.12 4.88 18.12 4.88 16.98V7.02C4.88 5.88 5.88 4.88 7.02 4.88H16.98C18.12 4.88 19.12 5.88 19.12 7.02V16.98ZM17.25 7.25C16.56 7.25 16 6.69 16 6C16 5.31 16.56 4.75 17.25 4.75C17.94 4.75 18.5 5.31 18.5 6C18.5 6.69 17.94 7.25 17.25 7.25Z" fill="white"/>
+              </svg>
+              Instagram
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );

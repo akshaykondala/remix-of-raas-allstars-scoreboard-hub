@@ -2,38 +2,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
+import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw, RefreshCw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { fetchTeams, fetchFromDirectus } from '@/lib/api';
+import { Team, SimulationData, Competition } from '@/lib/types';
+import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 
-interface Team {
-  id: string;
-  name: string;
-  university: string;
-  bidPoints: number;
-  qualified: boolean;
-  locked?: boolean;
-  logo?: string;
-  color: string;
-  history: string[];
-  achievements: string[];
-  founded: string;
-}
-
-interface SimulationData {
-  [competitionId: string]: {
-    competitionName: string;
-    competitionId: string;
-    predictions: {
-      first: string;
-      second: string;
-      third: string;
-    };
-  };
-}
-
-const initialTeams: Team[] = [
+// Fallback teams data in case database connection fails
+const fallbackTeams: Team[] = [
   {
     id: '1',
     name: 'Texas Raas',
@@ -67,195 +46,6 @@ const initialTeams: Team[] = [
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
     founded: '2003',
     logo: '/src/logos/cmu-raasta.jpg'
-  },
-  {
-    id: '3',
-    name: 'UF Gatoraas',
-    university: 'University of Florida',
-    bidPoints: 88,
-    qualified: true,
-    locked: true,
-    color: 'bg-blue-600',
-    history: [
-      'Gatoraas represents the Southeast with pride and energy',
-      'Rising team with incredible growth in recent years',
-      'Fan favorite for high-energy performances'
-    ],
-    achievements: ['Raas All Stars 2023 - 8th Place', 'Regional Champions 2022'],
-    founded: '2008',
-     logo: '/src/logos/uf-gatoraas.jpeg'
-  },
-  {
-    id: '4',
-    name: 'UCLA Nashaa',
-    university: 'University of California, Los Angeles',
-    bidPoints: 85,
-    qualified: true,
-    color: 'bg-blue-800',
-    history: [
-      'UCLA Nashaa brings West Coast flair to traditional Raas',
-      'Known for creative themes and storytelling',
-      'Strong alumni network and support system'
-    ],
-    achievements: ['Raas All Stars 2023 - 5th Place', 'West Coast Champions 2022'],
-    founded: '2004'
-  },
-  {
-    id: '5',
-    name: 'Michigan Maize Mirchi',
-    university: 'University of Michigan',
-    bidPoints: 83,
-    qualified: true,
-    color: 'bg-yellow-600',
-    history: [
-      'Maize Mirchi combines Midwest values with passionate dance',
-      'Consistent top 10 finisher',
-      'Known for team spirit and sportsmanship'
-    ],
-    achievements: ['Raas All Stars 2023 - 7th Place', 'Midwest Champions 2022'],
-    founded: '2006'
-  },
-  {
-    id: '6',
-    name: 'NYU Bhangra',
-    university: 'New York University',
-    bidPoints: 81,
-    qualified: true,
-    color: 'bg-purple-700',
-    history: [
-      'Representing NYC with urban energy and traditional roots',
-      'Known for innovative music mixing',
-      'Strong performance in recent competitions'
-    ],
-    achievements: ['Raas All Stars 2023 - 9th Place', 'Northeast Regional 2022'],
-    founded: '2007'
-  },
-  {
-    id: '7',
-    name: 'Georgia Tech Raas',
-    university: 'Georgia Institute of Technology',
-    bidPoints: 79,
-    qualified: true,
-    color: 'bg-yellow-700',
-    history: [
-      'GT Raas brings engineering precision to dance',
-      'Technical excellence in formations',
-      'Growing stronger each season'
-    ],
-    achievements: ['Regional Qualifier 2023', 'Southeast Champions 2021'],
-    founded: '2009'
-  },
-  {
-    id: '8',
-    name: 'Penn Aatish',
-    university: 'University of Pennsylvania',
-    bidPoints: 77,
-    qualified: true,
-    color: 'bg-red-800',
-    history: [
-      'Penn Aatish represents Ivy League excellence',
-      'Known for academic and artistic balance',
-      'Strong tradition of mentorship'
-    ],
-    achievements: ['Raas All Stars 2022 - 10th Place', 'Regional Finalist 2023'],
-    founded: '2005'
-  },
-  {
-    id: '9',
-    name: 'UIUC Roshni',
-    university: 'University of Illinois Urbana-Champaign',
-    bidPoints: 75,
-    qualified: true,
-    color: 'bg-orange-800',
-    history: [
-      'UIUC Roshni lights up the stage with every performance',
-      'Midwest representation with heart',
-      'Known for emotional storytelling'
-    ],
-    achievements: ['Regional Champions 2023', 'Raas All Stars Debut 2023'],
-    founded: '2010'
-  },
-  {
-    id: '10',
-    name: 'Rutgers Raas',
-    university: 'Rutgers University',
-    bidPoints: 72,
-    qualified: false,
-    color: 'bg-red-600',
-    history: [
-      'Rutgers Raas brings East Coast energy',
-      'Consistent regional competitor',
-      'Building towards All Stars qualification'
-    ],
-    achievements: ['Regional Semi-Finalist 2023', 'State Champions 2022'],
-    founded: '2008'
-  },
-  {
-    id: '11',
-    name: 'USC Zeher',
-    university: 'University of Southern California',
-    bidPoints: 70,
-    qualified: false,
-    color: 'bg-yellow-800',
-    history: [
-      'USC Zeher represents Southern California pride',
-      'Rising team with strong potential',
-      'Known for innovative choreography'
-    ],
-    achievements: ['West Coast Semi-Finalist 2023', 'Regional Qualifier 2022'],
-    founded: '2011'
-  },
-  {
-    id: '12',
-    name: 'Case Western Raas',
-    university: 'Case Western Reserve University',
-    bidPoints: 68,
-    qualified: false,
-    color: 'bg-blue-700',
-    history: [
-      'Case Western brings dedication and precision',
-      'Consistent improvement year over year',
-      'Strong team chemistry and work ethic'
-    ],
-    achievements: ['Regional Competitor 2023', 'University Champions 2022'],
-    founded: '2012'
-  }
-];
-
-// Teams with no bid points
-const noBidTeams: Team[] = [
-  {
-    id: '13',
-    name: 'Virginia Tech Moksh',
-    university: 'Virginia Polytechnic Institute',
-    bidPoints: 0,
-    qualified: false,
-    color: 'bg-orange-700',
-    history: ['Emerging team with strong potential', 'Building competitive program'],
-    achievements: ['Regional Participation 2023'],
-    founded: '2019'
-  },
-  {
-    id: '14',
-    name: 'UNC Tareel Taal',
-    university: 'University of North Carolina',
-    bidPoints: 0,
-    qualified: false,
-    color: 'bg-blue-500',
-    history: ['New competitive team', 'Growing dance program'],
-    achievements: ['University Performance 2023'],
-    founded: '2020'
-  },
-  {
-    id: '15',
-    name: 'Ohio State Raag',
-    university: 'The Ohio State University',
-    bidPoints: 0,
-    qualified: false,
-    color: 'bg-red-500',
-    history: ['Developing team with Big Ten pride', 'Focus on technical improvement'],
-    achievements: ['Regional Participation 2023'],
-    founded: '2018'
   }
 ];
 
@@ -263,9 +53,114 @@ const CUTOFF_POINTS = 5;
 
 const Index = () => {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
-  const [teamsData, setTeamsData] = useState<Team[]>(initialTeams);
+  const [teamsData, setTeamsData] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch teams and competitions from database
+  useEffect(() => {
+    const loadData = async () => {
+      console.log('🔄 Loading fresh data from database...');
+      try {
+        const [teams, competitionsData] = await Promise.all([
+          fetchTeams(),
+          fetchFromDirectus('competitions')
+        ]);
+        
+        // Debug: Log raw API data
+        console.log('📊 Raw teams data:', teams);
+        // Debug: Check for empty data
+        if (!teams.length) {
+          console.error('❌ No teams loaded from API!');
+        }
+        
+        // Debug: Log raw competitions data
+        console.log('📊 Raw competitions data:', competitionsData);
+        if (!competitionsData.length) {
+          console.error('❌ No competitions loaded from API!');
+        }
+        
+        // Map teams data
+        if (teams) {
+          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+          const mappedTeams = teams.map((team: any) => ({
+            id: team.id,
+            name: team.name,
+            university: team.university,
+            city: team.city,
+            logo: team.logo
+              ? (typeof team.logo === 'string'
+                  ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
+                  : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
+              : '',
+            color: team.color || 'bg-slate-600',
+            bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
+            qualified: false, // Will be calculated later
+            competitions_attending: team.competitions_attending || [],
+            achievements: team.achievements || [],
+            history: team.history || [],
+            instagramlink: team.instagramlink || ''
+          }));
+          // Debug: Log mapped data
+          console.log('🎯 Mapped teams data:', mappedTeams);
+          // Debug: Log logo URLs
+          console.log('🖼️ Team logo URLs:', mappedTeams.map(t => ({ name: t.name, logo: t.logo })));
+          // Debug: Check bidPoints type
+          mappedTeams.forEach(team => {
+            if (typeof team.bidPoints !== 'number') {
+              console.warn(`⚠️ bidPoints for ${team.name} is not a number:`, team.bidPoints);
+            }
+          });
+          setTeamsData(mappedTeams);
+        }
+        
+        // Map competitions data
+        if (competitionsData) {
+          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+          const mappedCompetitions = competitionsData.map((comp: any) => ({
+            id: comp.id,
+            name: comp.name,
+            city: comp.city,
+            date: comp.date,
+            logo: comp.logo
+              ? (typeof comp.logo === 'string'
+                  ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
+                  : (comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
+              : '',
+            lineup: Array.isArray(comp.lineup)
+              ? comp.lineup.map((team: any) => typeof team === 'string' ? team : team.name)
+              : [],
+            placings: {
+              first: comp.firstplace || '',
+              second: comp.secondplace || '',
+              third: comp.thirdplace || ''
+            },
+            judges: Array.isArray(comp.judges)
+              ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
+              : [],
+            instagramlink: comp.instagramlink || '',
+            media: { photos: [], videos: [] }
+          }));
+          // Debug: Log mapped competitions
+          console.log('🏆 Mapped competitions:', mappedCompetitions);
+          // Debug: Log logo URLs
+          console.log('🖼️ Competition logo URLs:', mappedCompetitions.map(c => ({ name: c.name, logo: c.logo })));
+          setCompetitions(mappedCompetitions);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to fallback teams if database fails
+        setTeamsData(fallbackTeams);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   // Calculate bid points based on competition results
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
@@ -303,11 +198,13 @@ const Index = () => {
     }));
   };
 
-  // Update teams when simulation data changes
-  useEffect(() => {
-    const updatedTeams = calculateBidPoints(initialTeams, []);
-    setTeamsData(updatedTeams);
-  }, [simulationData]);
+  // Remove or comment out the useEffect that recalculates bid points
+  // useEffect(() => {
+  //   if (teamsData.length > 0) {
+  //     const updatedTeams = calculateBidPoints(teamsData, []);
+  //     setTeamsData(updatedTeams);
+  //   }
+  // }, [simulationData]);
 
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
   const sortedTeams = [...teamsData].sort((a, b) => b.bidPoints - a.bidPoints);
@@ -316,7 +213,13 @@ const Index = () => {
   const qualifiedOtherTeams = sortedTeams.slice(3, 9);
   const notQualifiedTeams = sortedTeams.slice(9);
 
-  const sortedNoBidTeams = [...noBidTeams].sort((a, b) => a.name.localeCompare(b.name));
+  // Debug: Log teamsData before rendering
+  console.log('Rendering teamsData:', teamsData);
+  console.log('Rendering sortedTeams:', sortedTeams);
+  console.log('Rendering topThreeTeams:', topThreeTeams);
+  console.log('Rendering qualifiedOtherTeams:', qualifiedOtherTeams);
+  console.log('Rendering notQualifiedTeams:', notQualifiedTeams);
+
 
   const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData(prev => ({
@@ -326,8 +229,34 @@ const Index = () => {
     setActiveTab('standings');
   };
 
+  const handleCompetitionClick = (competitionData: any) => {
+    // Handle different data types - competitions_attending contains IDs
+    let competitionId = '';
+    if (typeof competitionData === 'string') {
+      competitionId = competitionData;
+    } else if (competitionData && typeof competitionData === 'object') {
+      competitionId = competitionData.id || competitionData;
+    }
+    const competition = competitions.find(comp => comp.id === competitionId);
+    if (competition) {
+      const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
+      console.log('[DEBUG] TeamDetail click - original lineup:', competition.lineup);
+      console.log('[DEBUG] TeamDetail click - mapped lineup:', mappedCompetition.lineup);
+      console.log('[DEBUG] TeamDetail click - mapped placings:', mappedCompetition.placings);
+      setSelectedCompetition(mappedCompetition);
+      setSelectedTeam(null); // Close team detail if open
+    } else {
+      console.log('Competition not found:', competitionId, 'Available competitions:', competitions.map(c => c.id));
+    }
+  };
+
   const clearSimulation = () => {
     setSimulationData({});
+  };
+
+  const refreshData = () => {
+    console.log('🔄 Manual refresh triggered');
+    window.location.reload();
   };
 
   const goToSimulation = () => {
@@ -363,18 +292,36 @@ const Index = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
         {/* Header with Logo */}
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm flex-shrink-0">
-          <div className="flex justify-center items-center px-4 py-2">
-            <img 
-              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-              alt="Raas All Stars Logo" 
-              className="h-12 w-auto"
-            />
+          <div className="flex justify-between items-center px-4 py-2">
+            <div className="flex-1"></div>
+            <div className="flex items-center gap-4">
+              <img 
+                src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+                alt="Raas All Stars Logo" 
+                className="h-12 w-auto"
+              />
+              <button
+                onClick={refreshData}
+                className="bg-blue-600/70 hover:bg-blue-600/90 text-white p-2 rounded-lg transition-colors"
+                title="Refresh data from database"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1"></div>
           </div>
         </div>
 
         <TabsContent value="standings" className="mt-2 flex-1 overflow-y-auto scrollbar-hide pb-20">
-          {/* Simulation Alert */}
-          {simulationCount > 0 && (
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <p className="text-slate-400 mt-2">Loading teams...</p>
+            </div>
+          ) : (
+            <>
+              {/* Simulation Alert */}
+              {simulationCount > 0 && (
             <div className="mx-4 mb-6">
               <div className="bg-gradient-to-r from-blue-600/80 to-purple-600/80 backdrop-blur-sm border border-blue-500/50 rounded-xl p-4 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -500,7 +447,9 @@ const Index = () => {
           {/* Main Leaderboard */}
           <main className="px-4 py-6">
             <div className="grid gap-3">
+              {/* Debug: Log each team before rendering TeamCard */}
               {qualifiedOtherTeams.map((team, index) => {
+                console.log('Rendering TeamCard from qualifiedOtherTeams:', team.name, 'bidPoints:', team.bidPoints);
                 const rank = index + 4;
                 const lockedIn = isLockedIn(team, rank);
                 return (
@@ -563,6 +512,8 @@ const Index = () => {
               </div>
             </div>
           </main>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
@@ -570,6 +521,7 @@ const Index = () => {
             <CompetitionsTab 
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
+              teams={teamsData}
             />
           </div>
         </TabsContent>
@@ -580,15 +532,22 @@ const Index = () => {
 
         <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           <div className="px-4 py-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
-              <p className="text-slate-400 text-sm">
-                A display of every team in the circuit
-              </p>
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="text-slate-400 mt-2">Loading teams...</p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
+                  <p className="text-slate-400 text-sm">
+                    A display of every team in the circuit
+                  </p>
+                </div>
 
-            <div className="grid gap-3">
-              {sortedNoBidTeams.map((team, index) => (
+                <div className="grid gap-3">
+                  {teamsData.map((team, index) => (
                 <div 
                   key={team.id}
                   onClick={() => setSelectedTeam(team)}
@@ -596,7 +555,7 @@ const Index = () => {
                 >
                   {/* Rank Badge */}
                   <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
-                    {teamsData.length + index + 1}th
+                    {index + 1}
                   </div>
 
                   {/* Team Color Strip */}
@@ -645,6 +604,8 @@ const Index = () => {
                 </p>
               </div>
             </div>
+              </>
+            )}
           </div>
         </TabsContent>
 
@@ -687,7 +648,20 @@ const Index = () => {
       {selectedTeam && (
         <TeamDetail 
           team={selectedTeam} 
-          onClose={() => setSelectedTeam(null)} 
+          onClose={() => setSelectedTeam(null)}
+          onCompetitionClick={handleCompetitionClick}
+          competitions={competitions}
+        />
+      )}
+
+      {/* Competition Detail Modal */}
+      {selectedCompetition && (
+        <CompetitionDetail 
+          competition={selectedCompetition} 
+          onClose={() => setSelectedCompetition(null)}
+          onSimulationSet={handleSimulationSet}
+          simulationData={simulationData}
+          teams={teamsData} // <-- pass teamsData for name resolution
         />
       )}
     </div>

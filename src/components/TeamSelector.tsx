@@ -1,8 +1,9 @@
 
 import { useState } from 'react';
 import { ChevronDown, Check, Users } from 'lucide-react';
+import { Team } from '../lib/types';
 
-interface Team {
+interface TeamSelectorTeam {
   id: string;
   name: string;
   university: string;
@@ -13,7 +14,7 @@ interface Team {
   };
 }
 
-const teams: Team[] = [
+const teams: TeamSelectorTeam[] = [
   {
     id: '1',
     name: 'Texas Raas',
@@ -53,8 +54,8 @@ const teams: Team[] = [
 ];
 
 interface TeamSelectorProps {
-  selectedTeam: Team | null;
-  onTeamSelect: (team: Team) => void;
+  selectedTeam: TeamSelectorTeam | null;
+  onTeamSelect: (team: TeamSelectorTeam) => void;
 }
 
 export function TeamSelector({ selectedTeam, onTeamSelect }: TeamSelectorProps) {

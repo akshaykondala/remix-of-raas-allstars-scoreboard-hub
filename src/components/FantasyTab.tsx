@@ -1,15 +1,7 @@
 
 import { useState } from 'react';
 import { Trophy, Target, TrendingUp, Users, Zap } from 'lucide-react';
-
-interface FantasyTeam {
-  id: string;
-  name: string;
-  owner: string;
-  points: number;
-  dancers: string[];
-  weeklyChange: number;
-}
+import { FantasyTeam } from '../lib/types';
 
 const fantasyTeams: FantasyTeam[] = [
   {
