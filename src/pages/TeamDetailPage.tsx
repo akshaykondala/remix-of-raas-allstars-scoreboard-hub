@@ -23,33 +23,54 @@ export const TeamDetailPage = () => {
           fetchFromDirectus('competitions')
         ]);
         
-        // Map teams data
-        if (teamsData) {
-          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-          const mappedTeams = teamsData.map((team: any) => ({
-            id: team.id,
-            name: team.name,
-            university: team.university,
-            city: team.city,
-            logo: team.logo
-              ? (typeof team.logo === 'string'
-                  ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
-                  : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
-              : '',
-            color: team.color || 'bg-slate-600',
-            bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
-            qualified: (Number(team.bidPoints || team.bid_points || team.bidpoints || 0)) >= 5,
-            competitions_attending: team.competitions_attending || [],
-            achievements: team.achievements || [],
-            history: team.history || [],
-            instagramlink: team.instagramlink || ''
-          }));
-          setTeams(mappedTeams);
+        console.log('TeamDetailPage - Loaded teams:', teamsData);
+        console.log('TeamDetailPage - Looking for team ID:', teamId);
+        
+        // Use the mapped data from fetchTeams directly
+        if (teamsData && teamsData.length > 0) {
+          setTeams(teamsData);
+        } else {
+          // Fallback teams if API fails
+          const fallbackTeams = [
+            {
+              id: '1',
+              name: 'Texas Raas',
+              university: 'University of Texas at Austin',
+              bidPoints: 8,
+              qualified: true,
+              locked: true,
+              color: 'bg-orange-600',
+              city: 'Austin, TX',
+              instagramlink: 'https://www.instagram.com/texasraas/',
+              competitions_attending: ['comp1', 'comp2'],
+              history: [],
+              achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
+              founded: '2005',
+              logo: '/src/logos/texas-raas.jpg'
+            },
+            {
+              id: '2',
+              name: 'CMU Raasta',
+              university: 'Carnegie Mellon University',
+              bidPoints: 92,
+              qualified: true,
+              locked: true,
+              color: 'bg-red-700',
+              city: 'Pittsburgh, PA',
+              instagramlink: 'https://www.instagram.com/cmuraasta/',
+              competitions_attending: ['comp1'],
+              history: [],
+              achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
+              founded: '2003',
+              logo: '/src/logos/cmu-raasta.jpg'
+            }
+          ];
+          setTeams(fallbackTeams);
         }
         
         // Map competitions data
         if (competitionsData) {
-          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+          const API_URL = import.meta.env.VITE_DIRECTUS_URL || 'https://your-directus-instance.com';
           const mappedCompetitions = competitionsData.map((comp: any) => ({
             id: comp.id,
             name: comp.name,
@@ -75,9 +96,61 @@ export const TeamDetailPage = () => {
             media: { photos: [], videos: [] }
           }));
           setCompetitions(mappedCompetitions);
+        } else {
+          // Fallback competitions
+          setCompetitions([
+            {
+              id: 'comp1',
+              name: 'Raas All Stars 2024',
+              city: 'New York, NY',
+              date: '2024-03-15',
+              logo: '',
+              lineup: [],
+              placings: { first: '', second: '', third: '' },
+              judges: [],
+              instagramlink: '',
+              media: { photos: [], videos: [] }
+            }
+          ]);
         }
       } catch (error) {
         console.error('Error loading data:', error);
+        // Set fallback data on error
+        const fallbackTeams = [
+          {
+            id: '1',
+            name: 'Texas Raas',
+            university: 'University of Texas at Austin',
+            bidPoints: 8,
+            qualified: true,
+            locked: true,
+            color: 'bg-orange-600',
+            city: 'Austin, TX',
+            instagramlink: 'https://www.instagram.com/texasraas/',
+            competitions_attending: ['comp1', 'comp2'],
+            history: [],
+            achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
+            founded: '2005',
+            logo: '/src/logos/texas-raas.jpg'
+          },
+          {
+            id: '2',
+            name: 'CMU Raasta',
+            university: 'Carnegie Mellon University',
+            bidPoints: 92,
+            qualified: true,
+            locked: true,
+            color: 'bg-red-700',
+            city: 'Pittsburgh, PA',
+            instagramlink: 'https://www.instagram.com/cmuraasta/',
+            competitions_attending: ['comp1'],
+            history: [],
+            achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
+            founded: '2003',
+            logo: '/src/logos/cmu-raasta.jpg'
+          }
+        ];
+        setTeams(fallbackTeams);
       } finally {
         setLoading(false);
       }
@@ -86,11 +159,26 @@ export const TeamDetailPage = () => {
     loadData();
   }, []);
   
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-white mb-4">Loading team details...</h1>
+        </div>
+      </div>
+    );
+  }
+
   if (!team) {
+    console.log('Team not found. Available teams:', teams.map(t => ({ id: t.id, name: t.name })));
+    console.log('Looking for team ID:', teamId);
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-4">Team not found</h1>
+          <p className="text-slate-400 mb-4">
+            Could not find team with ID: {teamId}
+          </p>
           <Button onClick={() => navigate('/')} variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Teams

@@ -1,8 +1,14 @@
-const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-const TOKEN = import.meta.env.VITE_DIRECTUS_TOKEN;
+const API_URL = import.meta.env.VITE_DIRECTUS_URL || 'https://your-directus-instance.com';
+const TOKEN = import.meta.env.VITE_DIRECTUS_TOKEN || '';
 
 export async function fetchFromDirectus(collection: string) {
   try {
+    // If API_URL is not configured, return fallback data
+    if (!API_URL || API_URL === 'https://your-directus-instance.com') {
+      console.warn('Directus URL not configured, using fallback data');
+      return null;
+    }
+    
     let url = `${API_URL}/items/${collection}`;
     // Deep populate lineup for competitions - get the nested team data from junction table
     if (collection === 'competitions') {
@@ -29,7 +35,7 @@ export async function fetchTeams() {
     const data = await fetchFromDirectus('teams');
     if (!data) return [];
     
-    const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+    const API_URL = import.meta.env.VITE_DIRECTUS_URL || 'https://your-directus-instance.com';
     
     return data.map((team: any) => ({
       id: team.id,
