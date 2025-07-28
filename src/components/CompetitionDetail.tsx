@@ -152,9 +152,15 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
       case 'first':
         return competition.lineup;
       case 'second':
-        return competition.lineup.filter(team => team.id !== predictions.first);
+        return competition.lineup.filter(team => {
+          const teamId = typeof team === 'string' ? team : (team as any).id;
+          return teamId !== predictions.first;
+        });
       case 'third':
-        return competition.lineup.filter(team => team.id !== predictions.first && team.id !== predictions.second);
+        return competition.lineup.filter(team => {
+          const teamId = typeof team === 'string' ? team : (team as any).id;
+          return teamId !== predictions.first && teamId !== predictions.second;
+        });
       default:
         return competition.lineup;
     }
@@ -202,8 +208,7 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
             <div className="grid gap-2">
               {competition.lineup.map((team, index) => (
                 <div key={index} className="bg-slate-800 rounded-lg px-3 py-2 text-slate-300 text-sm flex items-center gap-2">
-                  {team.logo && <img src={team.logo} alt={team.name} className="w-6 h-6 rounded-full object-cover" />}
-                  <span>{team.name}</span>
+                  <span>{typeof team === 'string' ? team : (team as any).name}</span>
                 </div>
               ))}
             </div>
@@ -258,23 +263,20 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
               <div className="space-y-2">
                 <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 rounded-lg px-3 py-2 border border-yellow-600/30">
                   <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
-                  <span className="text-white font-semibold flex items-center gap-2">
-                    {competition.placings.first.logo && <img src={competition.placings.first.logo} alt={competition.placings.first.name} className="w-5 h-5 rounded-full object-cover" />}
-                    {competition.placings.first.name}
+                  <span className="text-white font-semibold">
+                    {typeof competition.placings.first === 'string' ? competition.placings.first : (competition.placings.first as any).name}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 rounded-lg px-3 py-2 border border-slate-500/30">
                   <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
-                  <span className="text-white font-semibold flex items-center gap-2">
-                    {competition.placings.second.logo && <img src={competition.placings.second.logo} alt={competition.placings.second.name} className="w-5 h-5 rounded-full object-cover" />}
-                    {competition.placings.second.name}
+                  <span className="text-white font-semibold">
+                    {typeof competition.placings.second === 'string' ? competition.placings.second : (competition.placings.second as any).name}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 rounded-lg px-3 py-2 border border-orange-600/30">
                   <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
-                  <span className="text-white font-semibold flex items-center gap-2">
-                    {competition.placings.third.logo && <img src={competition.placings.third.logo} alt={competition.placings.third.name} className="w-5 h-5 rounded-full object-cover" />}
-                    {competition.placings.third.name}
+                  <span className="text-white font-semibold">
+                    {typeof competition.placings.third === 'string' ? competition.placings.third : (competition.placings.third as any).name}
                   </span>
                 </div>
               </div>
