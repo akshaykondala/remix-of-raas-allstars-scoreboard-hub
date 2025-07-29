@@ -309,6 +309,7 @@ export const TeamDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 animate-slide-in-right">
+      <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
       {/* Header with Back Button */}
       <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
         <div className="px-4 py-3">
@@ -466,6 +467,7 @@ export const TeamDetailPage = () => {
             </a>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
