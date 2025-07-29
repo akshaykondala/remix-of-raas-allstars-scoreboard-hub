@@ -38,7 +38,7 @@ export async function fetchTeams() {
     const API_URL = import.meta.env.VITE_DIRECTUS_URL || 'https://your-directus-instance.com';
     
     return data.map((team: any) => ({
-      id: team.id,
+      id: String(team.id), // Ensure ID is always a string for consistency
       name: team.name,
       university: team.university,
       bidPoints: team.bidpoints || 0,

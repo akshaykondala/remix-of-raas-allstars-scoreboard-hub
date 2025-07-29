@@ -215,6 +215,7 @@ export const TeamDetailPage = () => {
         
         // If we get API data, use it, otherwise keep fallback
         if (teamsData && teamsData.length > 0) {
+          console.log('Setting teams from API:', teamsData.map(t => ({ id: t.id, name: t.name })));
           setTeams(teamsData);
         }
         
