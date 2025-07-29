@@ -192,7 +192,7 @@ const fallbackTeams: Team[] = [
 export const TeamDetailPage = () => {
   const navigate = useNavigate();
   const { teamId } = useParams();
-  const [teams, setTeams] = useState<Team[]>(fallbackTeams); // Initialize with fallback data
+  const [teams, setTeams] = useState<Team[]>([]); // Start empty, load from API
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -213,10 +213,13 @@ export const TeamDetailPage = () => {
         
         console.log('TeamDetailPage - Fetched teams from API:', teamsData);
         
-        // If we get API data, use it, otherwise keep fallback
+        // Use API data if available, otherwise use fallback
         if (teamsData && teamsData.length > 0) {
           console.log('Setting teams from API:', teamsData.map(t => ({ id: t.id, name: t.name })));
           setTeams(teamsData);
+        } else {
+          console.log('Using fallback teams data');
+          setTeams(fallbackTeams);
         }
         
         // Map competitions data
@@ -275,7 +278,7 @@ export const TeamDetailPage = () => {
     loadData();
   }, []);
   
-  if (loading && !team) {
+  if (loading || !team) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -305,7 +308,7 @@ export const TeamDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-900 animate-slide-in-right">
       {/* Header with Back Button */}
       <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
         <div className="px-4 py-3">
