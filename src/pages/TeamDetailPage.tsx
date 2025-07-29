@@ -195,6 +195,7 @@ export const TeamDetailPage = () => {
   const [teams, setTeams] = useState<Team[]>([]); // Start empty, load from API
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
   
   console.log('TeamDetailPage - teamId from URL:', teamId);
   console.log('TeamDetailPage - available teams:', teams.map(t => ({ id: t.id, name: t.name })));
@@ -307,14 +308,21 @@ export const TeamDetailPage = () => {
     );
   }
 
+  const handleBack = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      navigate('/');
+    }, 100); // Wait for animation to complete
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900 translate-x-full animate-slide-in-right">
+    <div className={`fixed inset-0 z-50 bg-slate-900 translate-x-full ${isExiting ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
       <div className="animate-fade-in" style={{ animationDelay: '0.05s' }}>
       {/* Header with Back Button */}
       <div className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
         <div className="px-4 py-3">
           <Button 
-            onClick={() => navigate('/')} 
+            onClick={handleBack}
             variant="ghost" 
             size="sm"
             className="text-slate-300 hover:text-white"
