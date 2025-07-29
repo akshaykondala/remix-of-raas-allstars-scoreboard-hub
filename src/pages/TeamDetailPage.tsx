@@ -312,7 +312,7 @@ export const TeamDetailPage = () => {
     setIsExiting(true);
     setTimeout(() => {
       navigate('/');
-    }, 100); // Wait for animation to complete
+    }, 200); // Wait for animation to complete
   };
 
   return (
