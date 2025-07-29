@@ -205,8 +205,8 @@ const Index = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
-  const [teamsData, setTeamsData] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams); // Start with fallback data
+  const [loading, setLoading] = useState(false); // Don't show loading initially
 
   // Fetch teams and competitions from database
   useEffect(() => {
@@ -302,6 +302,7 @@ const Index = () => {
         console.error('Error loading data:', error);
         // Fallback to fallback teams if database fails
         setTeamsData(fallbackTeams);
+        setCompetitions([]); // Add empty competitions array as fallback
       } finally {
         setLoading(false);
       }
