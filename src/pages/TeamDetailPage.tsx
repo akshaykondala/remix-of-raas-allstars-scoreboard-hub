@@ -26,6 +26,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
     founded: '2005',
+    genderComposition: 'Co-ed',
     logo: '/src/logos/texas-raas.jpg'
   },
   {
@@ -46,6 +47,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
     founded: '2003',
+    genderComposition: 'All Girls',
     logo: '/src/logos/cmu-raasta.jpg'
   },
   {
@@ -66,6 +68,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
     founded: '2008',
+    genderComposition: 'Co-ed',
     logo: '/src/logos/uf-gatoraas.jpeg'
   },
   {
@@ -86,6 +89,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Bollywood Berkeley 2024 - 1st Place', 'Spring Nationals 2023 - 5th Place'],
     founded: '2010',
+    genderComposition: 'All Boys',
     logo: ''
   },
   {
@@ -106,6 +110,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Midwest Magic 2024 - 1st Place', 'Raas All Stars 2022 - 7th Place'],
     founded: '2007',
+    genderComposition: 'Co-ed',
     logo: ''
   },
   {
@@ -126,6 +131,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['East Coast Showdown 2024 - 2nd Place', 'Raas All Stars 2021 - 9th Place'],
     founded: '2006',
+    genderComposition: 'Open',
     logo: ''
   },
   {
@@ -146,6 +152,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas Chaos 2024 - 5th Place', 'Spring Nationals 2023 - 8th Place'],
     founded: '2012',
+    genderComposition: 'Co-ed',
     logo: ''
   },
   {
@@ -166,6 +173,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['East Coast Showdown 2024 - 3rd Place', 'Raas All Stars 2022 - 10th Place'],
     founded: '2009',
+    genderComposition: 'All Girls',
     logo: ''
   },
   {
@@ -186,6 +194,7 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Midwest Magic 2024 - 3rd Place', 'Spring Nationals 2023 - 9th Place'],
     founded: '2015',
+    genderComposition: 'Co-ed',
     logo: ''
   }
 ];

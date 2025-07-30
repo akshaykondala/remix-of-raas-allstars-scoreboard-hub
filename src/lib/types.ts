@@ -13,6 +13,13 @@ export interface Team {
   history: string[];
   achievements: string[];
   founded: string;
+  genderComposition: 'All Girls' | 'All Boys' | 'Co-ed' | 'Open';
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+    website?: string;
+    captain?: string;
+  };
 }
 
 export interface Competition {

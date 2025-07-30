@@ -32,7 +32,13 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
     founded: '2005',
-    logo: '/src/logos/texas-raas.jpg'
+    genderComposition: 'Co-ed',
+    logo: '/src/logos/texas-raas.jpg',
+    contactInfo: {
+      email: 'texasraas@utexas.edu',
+      captain: 'Priya Sharma',
+      website: 'https://www.texasraas.org'
+    }
   },
   {
     id: '2',
@@ -52,7 +58,13 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
     founded: '2003',
-    logo: '/src/logos/cmu-raasta.jpg'
+    genderComposition: 'All Girls',
+    logo: '/src/logos/cmu-raasta.jpg',
+    contactInfo: {
+      email: 'raasta@cmu.edu',
+      captain: 'Ananya Patel',
+      phone: '(412) 555-0123'
+    }
   },
   {
     id: '3',
@@ -72,7 +84,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
     founded: '2008',
-    logo: '/src/logos/uf-gatoraas.jpeg'
+    genderComposition: 'Co-ed',
+    logo: '/src/logos/uf-gatoraas.jpeg',
+    contactInfo: {
+      email: 'gatoraas@ufl.edu',
+      captain: 'Ravi Kumar'
+    }
   },
   {
     id: '4',
@@ -92,7 +109,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Bollywood Berkeley 2024 - 1st Place', 'Spring Nationals 2023 - 5th Place'],
     founded: '2010',
-    logo: ''
+    genderComposition: 'All Boys',
+    logo: '',
+    contactInfo: {
+      email: 'nashaa@ucla.edu',
+      captain: 'Arjun Singh'
+    }
   },
   {
     id: '5',
@@ -112,7 +134,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Midwest Magic 2024 - 1st Place', 'Raas All Stars 2022 - 7th Place'],
     founded: '2007',
-    logo: ''
+    genderComposition: 'Co-ed',
+    logo: '',
+    contactInfo: {
+      email: 'maizemirchi@umich.edu',
+      captain: 'Simran Kaur'
+    }
   },
   {
     id: '6',
@@ -132,7 +159,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['East Coast Showdown 2024 - 2nd Place', 'Raas All Stars 2021 - 9th Place'],
     founded: '2006',
-    logo: ''
+    genderComposition: 'Open',
+    logo: '',
+    contactInfo: {
+      email: 'bhangra@nyu.edu',
+      captain: 'Kiran Mehta'
+    }
   },
   {
     id: '7',
@@ -152,7 +184,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Raas Chaos 2024 - 5th Place', 'Spring Nationals 2023 - 8th Place'],
     founded: '2012',
-    logo: ''
+    genderComposition: 'Co-ed',
+    logo: '',
+    contactInfo: {
+      email: 'raas@gatech.edu',
+      captain: 'Neha Agarwal'
+    }
   },
   {
     id: '8',
@@ -172,7 +209,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['East Coast Showdown 2024 - 3rd Place', 'Raas All Stars 2022 - 10th Place'],
     founded: '2009',
-    logo: ''
+    genderComposition: 'All Girls',
+    logo: '',
+    contactInfo: {
+      email: 'aatish@upenn.edu',
+      captain: 'Meera Shah'
+    }
   },
   {
     id: '9',
@@ -192,7 +234,12 @@ const fallbackTeams: Team[] = [
     ],
     achievements: ['Midwest Magic 2024 - 3rd Place', 'Spring Nationals 2023 - 9th Place'],
     founded: '2015',
-    logo: ''
+    genderComposition: 'Co-ed',
+    logo: '',
+    contactInfo: {
+      email: 'roshni@illinois.edu',
+      captain: 'Aditi Gupta'
+    }
   }
 ];
 
@@ -438,7 +485,7 @@ const Index = () => {
 
         <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           {/* Stationary Logo */}
-          <div className="flex justify-center pt-2 pb-4">
+          <div className="flex justify-center pt-6 pb-8">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
               alt="Raas All Stars Logo" 
