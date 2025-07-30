@@ -276,7 +276,7 @@ const Index = () => {
             logo: comp.logo
               ? (typeof comp.logo === 'string'
                   ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
-                  : (comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
+                  : (comp.logo && typeof comp.logo === 'object' && comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
               : '',
             lineup: Array.isArray(comp.lineup)
               ? comp.lineup.map((team: any) => typeof team === 'string' ? team : team.name)

@@ -9,8 +9,17 @@ export function mapCompetitionTeamsFull(competition, teams) {
     return teams.find(t => t.id === entry || t.id === String(entry) || t.name === entry) || { id: entry, name: entry };
   };
 
+  // Construct logo URL if it's an ID
+  const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+  const logoUrl = competition.logo
+    ? (typeof competition.logo === 'string'
+        ? (competition.logo.startsWith('http') ? competition.logo : `${API_URL}/assets/${competition.logo}`)
+        : (competition.logo && typeof competition.logo === 'object' && competition.logo.url ? competition.logo.url : `${API_URL}/assets/${competition.logo.id}`))
+    : '';
+
   return {
     ...competition,
+    logo: logoUrl,
     lineup: Array.isArray(competition.lineup)
       ? competition.lineup.map(entry => getTeam(entry))
       : [],

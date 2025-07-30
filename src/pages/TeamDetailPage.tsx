@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, Trophy, Calendar, Target, MapPin, Instagram, ExternalLink, Star, Award } from 'lucide-react';
 import { Team, Competition } from '@/lib/types';
 import { Button } from '@/components/ui/button';
+import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 
 // Fallback teams data to ensure routing always works
@@ -196,6 +197,7 @@ export const TeamDetailPage = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
+  const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   
   console.log('TeamDetailPage - teamId from URL:', teamId);
   console.log('TeamDetailPage - available teams:', teams.map(t => ({ id: t.id, name: t.name })));
@@ -405,6 +407,12 @@ export const TeamDetailPage = () => {
                 return (
                   <div 
                     key={index} 
+                    onClick={() => {
+                      if (competition) {
+                        const { media, ...rest } = competition;
+                        setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                      }
+                    }}
                     className={`group rounded-xl p-4 transition-all duration-200 ${
                       competition 
                         ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/50 border border-slate-600/40 cursor-pointer hover:from-slate-700/90 hover:to-slate-600/70' 
@@ -477,6 +485,14 @@ export const TeamDetailPage = () => {
         )}
       </div>
       </div>
+
+      {/* Competition Detail Modal */}
+      {selectedCompetition && (
+        <CompetitionDetail 
+          competition={selectedCompetition} 
+          onClose={() => setSelectedCompetition(null)}
+        />
+      )}
     </div>
   );
 };
