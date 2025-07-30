@@ -470,6 +470,7 @@ const Index = () => {
           const mappedTeams = teams.map((team: any) => ({
             id: team.id,
             name: team.name,
+            founded: team.est,
             university: team.university,
             city: team.city,
             logo: team.logo
@@ -483,7 +484,8 @@ const Index = () => {
             competitions_attending: team.competitions_attending || [],
             achievements: team.achievements || [],
             history: team.history || [],
-            instagramlink: team.instagramlink || ''
+            instagramlink: team.instagramlink || '',
+            genderComposition: team.gender_comp
           }));
           // Debug: Log mapped data
           console.log('🎯 Mapped teams data:', mappedTeams);

@@ -9,6 +9,7 @@ interface TeamCardProps {
   cutoffPoints: number;
   onClick: () => void;
   showLockedIn?: boolean;
+  genderComposition: string;
 }
 
 export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showLockedIn }: TeamCardProps) => {

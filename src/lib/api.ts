@@ -40,6 +40,7 @@ export async function fetchTeams() {
     return data.map((team: any) => ({
       id: String(team.id), // Ensure ID is always a string for consistency
       name: team.name,
+      gender_comp: team.gender_comp,
       university: team.university,
       bidPoints: team.bidpoints || 0,
       qualified: (team.bidpoints || 0) >= 5, // Auto-calculate qualification based on bid points
@@ -50,7 +51,7 @@ export async function fetchTeams() {
       competitions_attending: team.competitions_attending || [],
       history: [], // You can add this field to your database if needed
       achievements: [], // You can add this field to your database if needed
-      founded: '', // You can add this field to your database if needed
+      est: team.est, // You can add this field to your database if needed
       logo: team.logo
         ? (typeof team.logo === 'string'
             ? `${API_URL}/assets/${team.logo}`

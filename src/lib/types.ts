@@ -6,13 +6,14 @@ export interface Team {
   qualified: boolean;
   locked?: boolean;
   logo?: string;
+  est?: number;
   color: string;
   city?: string;
   instagramlink?: string;
   competitions_attending?: string[];
   history: string[];
   achievements: string[];
-  founded: string;
+  founded: number;
   genderComposition: 'All Girls' | 'All Boys' | 'Co-ed' | 'Open';
   contactInfo?: {
     email?: string;
