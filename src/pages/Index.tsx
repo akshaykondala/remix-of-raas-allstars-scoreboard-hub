@@ -522,8 +522,8 @@ const Index = () => {
                       
                       <div className="text-center">
                         <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
-                        <div className="text-white font-semibold text-xs leading-tight mb-2">{topThreeTeams[1]?.name}</div>
-                        <div className="relative">
+                        <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
+                        <div className="relative -mt-1">
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm"></div>
                           <div className="relative bg-gradient-to-r from-blue-500/30 to-purple-500/30 px-3 py-1 rounded-full border border-blue-400/30">
                             <span className="text-white font-bold text-xs tracking-wider">{topThreeTeams[1]?.bidPoints}</span>
@@ -559,8 +559,8 @@ const Index = () => {
                       
                       <div className="text-center">
                         <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
-                        <div className="text-yellow-900 font-bold text-sm leading-tight mb-2">{topThreeTeams[0]?.name}</div>
-                        <div className="relative">
+                        <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
+                        <div className="relative -mt-1">
                           <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/40 to-orange-300/40 rounded-full blur-sm"></div>
                           <div className="relative bg-gradient-to-r from-yellow-200/80 to-orange-200/80 px-4 py-1.5 rounded-full border border-yellow-300/60">
                             <span className="text-yellow-900 font-bold text-sm tracking-wider">{topThreeTeams[0]?.bidPoints}</span>
@@ -596,8 +596,8 @@ const Index = () => {
                       
                       <div className="text-center">
                         <div className="text-orange-200 font-bold text-xs mb-1">3rd</div>
-                        <div className="text-orange-100 font-semibold text-xs leading-tight mb-2">{topThreeTeams[2]?.name}</div>
-                        <div className="relative">
+                        <div className="text-orange-100 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
+                        <div className="relative -mt-1">
                           <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-full blur-sm"></div>
                           <div className="relative bg-gradient-to-r from-orange-400/30 to-red-400/30 px-3 py-1 rounded-full border border-orange-300/30">
                             <span className="text-orange-100 font-bold text-xs tracking-wider">{topThreeTeams[2]?.bidPoints}</span>
@@ -627,14 +627,6 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/5 to-blue-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     
                     <div className="relative flex items-center gap-4">
-                      {/* Floating rank */}
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md group-hover:blur-lg transition-all duration-300"></div>
-                        <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-blue-400/30 rounded-xl flex items-center justify-center group-hover:border-blue-300/50 transition-all duration-300">
-                          <span className="text-blue-300 font-bold text-sm">{rank}</span>
-                        </div>
-                      </div>
-                      
                       {/* Team Logo with glow */}
                       <div className="relative">
                         <div className="absolute inset-0 bg-white/10 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
