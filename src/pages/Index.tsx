@@ -435,16 +435,16 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
-        {/* Floating Logo - Higher Position */}
-        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-30">
-          <img 
-            src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-            alt="Raas All Stars Logo" 
-            className="h-12 w-auto"
-          />
-        </div>
 
-        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20 pt-20">
+        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
+          {/* Stationary Logo */}
+          <div className="flex justify-center pt-2 pb-4">
+            <img 
+              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+              alt="Raas All Stars Logo" 
+              className="h-12 w-auto"
+            />
+          </div>
           {loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
