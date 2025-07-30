@@ -43,7 +43,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Bollywood Berkeley 2024',
-        placement: '2nd Place',
+        placement: '2nd',
         bidPointsEarned: 2,
         cumulativeBidPoints: 2,
         date: '2024-02-15'
@@ -51,7 +51,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Spring Nationals 2024',
-        placement: '1st Place',
+        placement: '1st',
         bidPointsEarned: 4,
         cumulativeBidPoints: 6,
         date: '2024-03-20'
@@ -59,7 +59,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp3',
         competitionName: 'Raas Chaos 2024',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 7,
         date: '2024-04-10'
@@ -67,7 +67,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp4',
         competitionName: 'East Coast Elite 2024',
-        placement: '6th Place',
+        placement: '6th',
         bidPointsEarned: 0,
         cumulativeBidPoints: 7,
         date: '2024-04-25'
@@ -75,7 +75,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp5',
         competitionName: 'Midwest Magic 2024',
-        placement: '2nd Place',
+        placement: '2nd',
         bidPointsEarned: 2,
         cumulativeBidPoints: 9,
         date: '2024-05-05'
@@ -111,7 +111,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Fall Classic 2024',
-        placement: '1st Place',
+        placement: '1st',
         bidPointsEarned: 4,
         cumulativeBidPoints: 4,
         date: '2024-01-20'
@@ -119,7 +119,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Winter Showcase 2024',
-        placement: '1st Place',
+        placement: '1st',
         bidPointsEarned: 4,
         cumulativeBidPoints: 8,
         date: '2024-02-28'
@@ -154,7 +154,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Southeast Showdown 2024',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 1,
         date: '2024-02-05'
@@ -162,7 +162,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Florida State Championship',
-        placement: '1st Place',
+        placement: '1st',
         bidPointsEarned: 4,
         cumulativeBidPoints: 5,
         date: '2024-03-15'
@@ -170,7 +170,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp3',
         competitionName: 'Southern Classic 2024',
-        placement: '2nd Place',
+        placement: '2nd',
         bidPointsEarned: 2,
         cumulativeBidPoints: 7,
         date: '2024-04-20'
@@ -205,7 +205,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'West Coast Classic 2024',
-        placement: '5th Place',
+        placement: '5th',
         bidPointsEarned: 0,
         cumulativeBidPoints: 0,
         date: '2024-01-15'
@@ -213,7 +213,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'California Championships',
-        placement: '1st Place',
+        placement: '1st',
         bidPointsEarned: 4,
         cumulativeBidPoints: 4,
         date: '2024-03-10'
@@ -248,7 +248,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Great Lakes Championship',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 1,
         date: '2024-02-25'
@@ -256,7 +256,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Midwest Regional 2024',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 2,
         date: '2024-04-05'
@@ -264,7 +264,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp3',
         competitionName: 'Spring Finale 2024',
-        placement: '2nd Place',
+        placement: '2nd',
         bidPointsEarned: 2,
         cumulativeBidPoints: 4,
         date: '2024-05-12'
@@ -299,7 +299,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'NYC Metro Championship',
-        placement: '2nd Place',
+        placement: '2nd',
         bidPointsEarned: 2,
         cumulativeBidPoints: 2,
         date: '2024-03-02'
@@ -334,7 +334,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Atlanta Spring Classic',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 1,
         date: '2024-04-14'
@@ -369,7 +369,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Ivy League Championship',
-        placement: '7th Place',
+        placement: '7th',
         bidPointsEarned: 0,
         cumulativeBidPoints: 0,
         date: '2024-02-18'
@@ -377,7 +377,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Philadelphia Regional',
-        placement: '3rd Place',
+        placement: '3rd',
         bidPointsEarned: 1,
         cumulativeBidPoints: 1,
         date: '2024-03-30'
@@ -412,7 +412,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp1',
         competitionName: 'Chicago Winter Classic',
-        placement: '8th Place',
+        placement: '8th',
         bidPointsEarned: 0,
         cumulativeBidPoints: 0,
         date: '2024-01-28'
@@ -420,7 +420,7 @@ const fallbackTeams: Team[] = [
       {
         competitionId: 'comp2',
         competitionName: 'Illinois State Championship',
-        placement: '6th Place',
+        placement: '6th',
         bidPointsEarned: 0,
         cumulativeBidPoints: 0,
         date: '2024-03-25'
