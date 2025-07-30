@@ -435,18 +435,16 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
-        {/* Header with Logo - Compact */}
-        <div className="bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm flex-shrink-0">
-          <div className="flex justify-center items-center px-4 py-1">
-            <img 
-              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-              alt="Raas All Stars Logo" 
-              className="h-8 w-auto opacity-90"
-            />
-          </div>
+        {/* Floating Logo - No Background Bar */}
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+          <img 
+            src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+            alt="Raas All Stars Logo" 
+            className="h-12 w-auto"
+          />
         </div>
 
-        <TabsContent value="standings" className="mt-2 flex-1 overflow-y-auto scrollbar-hide pb-20">
+        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20 pt-20">
           {loading ? (
             <div className="text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -491,11 +489,12 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Flowing Podium - Enhanced Profile Focus */}
-          <section className="px-4 pb-8 pt-4">
+          {/* Top 3 Flowing Podium - Seamless Integration */}
+          <section className="px-4 pb-8">
             <div className="relative">
-              {/* Enhanced flowing background shape */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-800/20 via-slate-700/30 to-slate-800/20 rounded-3xl blur-2xl"></div>
+              {/* Seamless flowing background that extends upward */}
+              <div className="absolute inset-0 -top-16 bg-gradient-to-r from-slate-800/10 via-slate-700/20 to-slate-800/10 rounded-3xl blur-2xl"></div>
+              <div className="absolute inset-0 -top-8 bg-gradient-to-b from-transparent via-slate-700/15 to-slate-800/25 rounded-3xl blur-xl"></div>
               
               <div className="relative flex gap-4 justify-center items-end py-8">
                 {/* 2nd Place */}
