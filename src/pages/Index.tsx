@@ -6,7 +6,7 @@ import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw, RefreshCw } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
@@ -403,10 +403,6 @@ const Index = () => {
     setSimulationData({});
   };
 
-  const refreshData = () => {
-    console.log('🔄 Manual refresh triggered');
-    window.location.reload();
-  };
 
   const goToSimulation = () => {
     const simulationCount = Object.keys(simulationData).length;
@@ -441,23 +437,12 @@ const Index = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
         {/* Header with Logo */}
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm flex-shrink-0">
-          <div className="flex justify-between items-center px-4 py-2">
-            <div className="flex-1"></div>
-            <div className="flex items-center gap-4">
-              <img 
-                src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-                alt="Raas All Stars Logo" 
-                className="h-12 w-auto"
-              />
-              <button
-                onClick={refreshData}
-                className="bg-blue-600/70 hover:bg-blue-600/90 text-white p-2 rounded-lg transition-colors"
-                title="Refresh data from database"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="flex-1"></div>
+          <div className="flex justify-center items-center px-4 py-2">
+            <img 
+              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+              alt="Raas All Stars Logo" 
+              className="h-12 w-auto"
+            />
           </div>
         </div>
 
