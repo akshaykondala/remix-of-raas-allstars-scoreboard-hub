@@ -18,8 +18,16 @@ export interface Team {
     email?: string;
     phone?: string;
     website?: string;
-    captain?: string;
+    captains?: string[];
   };
+  competitionResults?: Array<{
+    competitionId: string;
+    competitionName: string;
+    placement?: string;
+    bidPointsEarned: number;
+    cumulativeBidPoints: number;
+    date?: string;
+  }>;
 }
 
 export interface Competition {

@@ -113,14 +113,20 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
               Contact Information
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-2xl p-4 space-y-3">
-              {team.contactInfo.captain && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/20 rounded-lg p-2">
+              {team.contactInfo.captains && team.contactInfo.captains.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-500/20 rounded-lg p-2 flex-shrink-0">
                     <User className="h-4 w-4 text-blue-400" />
                   </div>
-                  <div>
-                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Team Captain</div>
-                    <div className="text-white font-semibold">{team.contactInfo.captain}</div>
+                  <div className="flex-1">
+                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
+                      {team.contactInfo.captains.length > 1 ? 'Team Captains' : 'Team Captain'}
+                    </div>
+                    <div className="space-y-1">
+                      {team.contactInfo.captains.map((captain, index) => (
+                        <div key={index} className="text-white font-semibold text-sm">{captain}</div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -171,46 +177,83 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
           </div>
         )}
 
-        {/* Enhanced Competitions Section */}
-        {team.competitions_attending && team.competitions_attending.length > 0 && (
+        {/* Competition Timeline with Results */}
+        {team.competitionResults && team.competitionResults.length > 0 && (
           <div className="px-6 pb-6">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center">
               <div className="bg-blue-500/20 rounded-full p-2 mr-3">
                 <Calendar className="h-4 w-4 text-blue-400" />
               </div>
-              Competition Schedule
+              Season Journey
             </h3>
-            <div className="space-y-3">
-              {team.competitions_attending.map((competitionId, index) => {
-                const competition = competitions.find(comp => comp.id === competitionId);
-                const competitionName = competition?.name || `Competition ${competitionId}`;
+            <div className="space-y-4">
+              {team.competitionResults.map((result, index) => {
+                const isFirst = result.placement?.includes('1st');
+                const isSecond = result.placement?.includes('2nd');
+                const isThird = result.placement?.includes('3rd');
+                const earnedPoints = result.bidPointsEarned > 0;
                 
                 return (
                   <div 
-                    key={index} 
-                    className={`group rounded-2xl p-4 transition-all duration-300 ${
-                      competition 
-                        ? 'bg-gradient-to-r from-slate-800/60 to-slate-700/40 border border-slate-600/40 cursor-pointer hover:from-slate-700/80 hover:to-slate-600/60 hover:scale-[1.02]' 
-                        : 'bg-gradient-to-r from-red-900/30 to-red-800/20 border border-red-600/40'
-                    }`}
-                    onClick={() => {
-                      if (competition) {
-                        onCompetitionClick?.(competition);
-                      }
-                    }}
+                    key={index}
+                    className={`relative bg-gradient-to-r ${
+                      earnedPoints 
+                        ? 'from-green-500/10 to-emerald-500/5 border-green-400/30' 
+                        : 'from-slate-800/60 to-slate-700/40 border-slate-600/40'
+                    } border rounded-2xl p-4`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${competition ? 'bg-blue-400' : 'bg-red-400'}`}></div>
-                        <span className={`text-sm font-semibold ${
-                          competition ? 'text-white' : 'text-red-400'
+                    {/* Timeline connector */}
+                    {index < team.competitionResults!.length - 1 && (
+                      <div className="absolute left-6 top-full w-0.5 h-4 bg-slate-600"></div>
+                    )}
+                    
+                    <div className="flex items-start gap-4">
+                      {/* Competition number & status */}
+                      <div className="flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                          earnedPoints 
+                            ? 'bg-green-500/20 text-green-400 border border-green-400/40' 
+                            : 'bg-slate-600/30 text-slate-400 border border-slate-500/40'
                         }`}>
-                          {competitionName}
-                        </span>
+                          {index + 1}
+                        </div>
                       </div>
-                      {competition && (
-                        <ExternalLink className="h-4 w-4 text-slate-400 group-hover:text-white transition-colors" />
-                      )}
+                      
+                      {/* Competition details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="text-white font-semibold text-sm mb-1">{result.competitionName}</h4>
+                            {result.date && (
+                              <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                            )}
+                          </div>
+                          
+                          {/* Placement badge */}
+                          <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            isFirst ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/40' :
+                            isSecond ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
+                            isThird ? 'bg-orange-500/20 text-orange-400 border border-orange-400/40' :
+                            'bg-slate-600/20 text-slate-400 border border-slate-500/40'
+                          }`}>
+                            {result.placement || 'N/A'}
+                          </div>
+                        </div>
+                        
+                        {/* Points breakdown */}
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-400">Points Earned:</span>
+                            <span className={`font-bold ${earnedPoints ? 'text-green-400' : 'text-slate-500'}`}>
+                              +{result.bidPointsEarned}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-400">Season Total:</span>
+                            <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

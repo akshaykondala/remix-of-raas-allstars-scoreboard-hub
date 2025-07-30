@@ -36,9 +36,51 @@ const fallbackTeams: Team[] = [
     logo: '/src/logos/texas-raas.jpg',
     contactInfo: {
       email: 'texasraas@utexas.edu',
-      captain: 'Priya Sharma',
+      captains: ['Priya Sharma', 'Arjun Patel'],
       website: 'https://www.texasraas.org'
-    }
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Bollywood Berkeley 2024',
+        placement: '2nd Place',
+        bidPointsEarned: 2,
+        cumulativeBidPoints: 2,
+        date: '2024-02-15'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Spring Nationals 2024',
+        placement: '1st Place',
+        bidPointsEarned: 4,
+        cumulativeBidPoints: 6,
+        date: '2024-03-20'
+      },
+      {
+        competitionId: 'comp3',
+        competitionName: 'Raas Chaos 2024',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 7,
+        date: '2024-04-10'
+      },
+      {
+        competitionId: 'comp4',
+        competitionName: 'East Coast Elite 2024',
+        placement: '6th Place',
+        bidPointsEarned: 0,
+        cumulativeBidPoints: 7,
+        date: '2024-04-25'
+      },
+      {
+        competitionId: 'comp5',
+        competitionName: 'Midwest Magic 2024',
+        placement: '2nd Place',
+        bidPointsEarned: 2,
+        cumulativeBidPoints: 9,
+        date: '2024-05-05'
+      }
+    ]
   },
   {
     id: '2',
@@ -62,9 +104,27 @@ const fallbackTeams: Team[] = [
     logo: '/src/logos/cmu-raasta.jpg',
     contactInfo: {
       email: 'raasta@cmu.edu',
-      captain: 'Ananya Patel',
+      captains: ['Ananya Patel', 'Kavya Singh', 'Riya Sharma'],
       phone: '(412) 555-0123'
-    }
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Fall Classic 2024',
+        placement: '1st Place',
+        bidPointsEarned: 4,
+        cumulativeBidPoints: 4,
+        date: '2024-01-20'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Winter Showcase 2024',
+        placement: '1st Place',
+        bidPointsEarned: 4,
+        cumulativeBidPoints: 8,
+        date: '2024-02-28'
+      }
+    ]
   },
   {
     id: '3',
@@ -88,8 +148,34 @@ const fallbackTeams: Team[] = [
     logo: '/src/logos/uf-gatoraas.jpeg',
     contactInfo: {
       email: 'gatoraas@ufl.edu',
-      captain: 'Ravi Kumar'
-    }
+      captains: ['Ravi Kumar', 'Deepika Nair']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Southeast Showdown 2024',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 1,
+        date: '2024-02-05'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Florida State Championship',
+        placement: '1st Place',
+        bidPointsEarned: 4,
+        cumulativeBidPoints: 5,
+        date: '2024-03-15'
+      },
+      {
+        competitionId: 'comp3',
+        competitionName: 'Southern Classic 2024',
+        placement: '2nd Place',
+        bidPointsEarned: 2,
+        cumulativeBidPoints: 7,
+        date: '2024-04-20'
+      }
+    ]
   },
   {
     id: '4',
@@ -113,8 +199,26 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'nashaa@ucla.edu',
-      captain: 'Arjun Singh'
-    }
+      captains: ['Arjun Singh']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'West Coast Classic 2024',
+        placement: '5th Place',
+        bidPointsEarned: 0,
+        cumulativeBidPoints: 0,
+        date: '2024-01-15'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'California Championships',
+        placement: '1st Place',
+        bidPointsEarned: 4,
+        cumulativeBidPoints: 4,
+        date: '2024-03-10'
+      }
+    ]
   },
   {
     id: '5',
@@ -138,8 +242,34 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'maizemirchi@umich.edu',
-      captain: 'Simran Kaur'
-    }
+      captains: ['Simran Kaur', 'Vikram Agarwal']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Great Lakes Championship',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 1,
+        date: '2024-02-25'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Midwest Regional 2024',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 2,
+        date: '2024-04-05'
+      },
+      {
+        competitionId: 'comp3',
+        competitionName: 'Spring Finale 2024',
+        placement: '2nd Place',
+        bidPointsEarned: 2,
+        cumulativeBidPoints: 4,
+        date: '2024-05-12'
+      }
+    ]
   },
   {
     id: '6',
@@ -163,8 +293,18 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'bhangra@nyu.edu',
-      captain: 'Kiran Mehta'
-    }
+      captains: ['Kiran Mehta', 'Aiden Chen']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'NYC Metro Championship',
+        placement: '2nd Place',
+        bidPointsEarned: 2,
+        cumulativeBidPoints: 2,
+        date: '2024-03-02'
+      }
+    ]
   },
   {
     id: '7',
@@ -188,8 +328,18 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'raas@gatech.edu',
-      captain: 'Neha Agarwal'
-    }
+      captains: ['Neha Agarwal']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Atlanta Spring Classic',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 1,
+        date: '2024-04-14'
+      }
+    ]
   },
   {
     id: '8',
@@ -213,8 +363,26 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'aatish@upenn.edu',
-      captain: 'Meera Shah'
-    }
+      captains: ['Meera Shah', 'Priya Desai']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Ivy League Championship',
+        placement: '7th Place',
+        bidPointsEarned: 0,
+        cumulativeBidPoints: 0,
+        date: '2024-02-18'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Philadelphia Regional',
+        placement: '3rd Place',
+        bidPointsEarned: 1,
+        cumulativeBidPoints: 1,
+        date: '2024-03-30'
+      }
+    ]
   },
   {
     id: '9',
@@ -238,8 +406,26 @@ const fallbackTeams: Team[] = [
     logo: '',
     contactInfo: {
       email: 'roshni@illinois.edu',
-      captain: 'Aditi Gupta'
-    }
+      captains: ['Aditi Gupta', 'Rohan Patel']
+    },
+    competitionResults: [
+      {
+        competitionId: 'comp1',
+        competitionName: 'Chicago Winter Classic',
+        placement: '8th Place',
+        bidPointsEarned: 0,
+        cumulativeBidPoints: 0,
+        date: '2024-01-28'
+      },
+      {
+        competitionId: 'comp2',
+        competitionName: 'Illinois State Championship',
+        placement: '6th Place',
+        bidPointsEarned: 0,
+        cumulativeBidPoints: 0,
+        date: '2024-03-25'
+      }
+    ]
   }
 ];
 
