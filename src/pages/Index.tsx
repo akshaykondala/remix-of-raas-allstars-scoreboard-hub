@@ -435,8 +435,8 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
-        {/* Floating Logo - No Background Bar */}
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-20">
+        {/* Floating Logo - Higher Position */}
+        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-30">
           <img 
             src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
             alt="Raas All Stars Logo" 
@@ -489,12 +489,12 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Flowing Podium - Seamless Integration */}
+          {/* Top 3 Flowing Podium - Reduced Brightness */}
           <section className="px-4 pb-8">
             <div className="relative">
-              {/* Seamless flowing background that extends upward */}
-              <div className="absolute inset-0 -top-16 bg-gradient-to-r from-slate-800/10 via-slate-700/20 to-slate-800/10 rounded-3xl blur-2xl"></div>
-              <div className="absolute inset-0 -top-8 bg-gradient-to-b from-transparent via-slate-700/15 to-slate-800/25 rounded-3xl blur-xl"></div>
+              {/* Subtle flowing background that doesn't reach the logo */}
+              <div className="absolute inset-0 top-4 bg-gradient-to-r from-slate-800/5 via-slate-700/10 to-slate-800/5 rounded-3xl blur-2xl"></div>
+              <div className="absolute inset-0 top-8 bg-gradient-to-b from-transparent via-slate-700/8 to-slate-800/15 rounded-3xl blur-xl"></div>
               
               <div className="relative flex gap-4 justify-center items-end py-8">
                 {/* 2nd Place */}
@@ -729,18 +729,6 @@ const Index = () => {
               })}
             </div>
 
-            {/* About Section */}
-            <div className="mt-8">
-              <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-lg">
-                <h3 className="text-lg font-bold text-white mb-2">About Raas All Stars</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">
-                  The premier collegiate Raas competition, bringing together 
-                  the top 9 university teams from across the nation. Teams earn bid points 
-                  throughout the season at regional competitions to qualify for this ultimate 
-                  championship event celebrating traditional Gujarati folk dance.
-                </p>
-              </div>
-            </div>
           </main>
             </>
           )}
