@@ -491,146 +491,170 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Teams */}
-          <section className="px-4 py-2">
-            <div className="flex gap-4 justify-center items-end">
+          {/* Top 3 Podium */}
+          <section className="px-4 pb-6">
+            <div className="flex gap-3 justify-center items-end">
               {/* 2nd Place */}
-              <div className="flex-1 max-w-[100px] relative">
-                {/* Top 9 outline effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
+              <div className="flex-1 max-w-[90px]">
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[1])}
-                  className="relative bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl group cursor-pointer"
+                  className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm rounded-2xl p-3 h-32 flex flex-col items-center justify-between border border-slate-600/50 shadow-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  {/* Logo */}
-                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-slate-400 to-slate-500 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
                     {topThreeTeams[1]?.logo ? (
                       <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-7 w-7 text-slate-200" />
+                      <Trophy className="h-6 w-6 text-slate-300" />
                     )}
                   </div>
-                  {/* Team Info */}
                   <div className="text-center">
-                    <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
+                    <div className="text-slate-400 font-bold text-xs mb-0.5">2nd</div>
                     <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
-                    <div className="flex items-center justify-center gap-1">
-                      <Target className="h-3 w-3 text-slate-300" />
-                      <span className="text-white font-semibold text-xs">{topThreeTeams[1]?.bidPoints}</span>
-                    </div>
+                    <div className="text-slate-300 font-bold text-xs">{topThreeTeams[1]?.bidPoints}pts</div>
                   </div>
                 </div>
               </div>
 
-              {/* 1st Place - Taller */}
-              <div className="flex-1 max-w-[120px] relative">
-                {/* Top 9 outline effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
+              {/* 1st Place */}
+              <div className="flex-1 max-w-[100px]">
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[0])}
-                  className="relative bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 group cursor-pointer"
+                  className="bg-gradient-to-br from-yellow-500/95 to-yellow-600/95 backdrop-blur-sm rounded-2xl p-3 h-36 flex flex-col items-center justify-between shadow-xl border border-yellow-400/60 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-yellow-300 to-yellow-400 flex items-center justify-center">
                     {topThreeTeams[0]?.logo ? (
                       <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-8 w-8 text-yellow-700" />
+                      <Trophy className="h-7 w-7 text-yellow-700" />
                     )}
                   </div>
                   <div className="text-center">
-                    <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
+                    <div className="text-yellow-800 font-bold text-sm mb-0.5">1st</div>
                     <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
-                    <div className="flex items-center justify-center gap-1">
-                      <Target className="h-3 w-3 text-yellow-800" />
-                      <span className="text-yellow-900 font-bold text-sm">{topThreeTeams[0]?.bidPoints}</span>
-                    </div>
+                    <div className="text-yellow-800 font-bold text-sm">{topThreeTeams[0]?.bidPoints}pts</div>
                   </div>
                 </div>
               </div>
 
               {/* 3rd Place */}
-              <div className="flex-1 max-w-[100px] relative">
-                {/* Top 9 outline effect */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
+              <div className="flex-1 max-w-[90px]">
                 <div 
                   onClick={() => setSelectedTeam(topThreeTeams[2])}
-                  className="relative bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl group cursor-pointer"
+                  className="bg-gradient-to-br from-orange-600/90 to-orange-700/90 backdrop-blur-sm rounded-2xl p-3 h-32 flex flex-col items-center justify-between border border-orange-500/50 shadow-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
                 >
-                  {/* Logo */}
-                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-orange-300 to-orange-400 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
                     {topThreeTeams[2]?.logo ? (
                       <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
                     ) : (
-                      <Trophy className="h-7 w-7 text-orange-700" />
+                      <Trophy className="h-6 w-6 text-orange-800" />
                     )}
                   </div>
-                  {/* Team Info */}
                   <div className="text-center">
-                    <div className="text-orange-800 font-bold text-xs mb-1">3rd</div>
-                    <div className="text-orange-900 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
-                    <div className="flex items-center justify-center gap-1">
-                      <Target className="h-3 w-3 text-orange-800" />
-                      <span className="text-orange-900 font-semibold text-xs">{topThreeTeams[2]?.bidPoints}</span>
-                    </div>
+                    <div className="text-orange-300 font-bold text-xs mb-0.5">3rd</div>
+                    <div className="text-orange-100 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
+                    <div className="text-orange-200 font-bold text-xs">{topThreeTeams[2]?.bidPoints}pts</div>
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Main Leaderboard */}
-          <main className="px-4 py-6">
-            <div className="grid gap-3">
-              {/* Debug: Log each team before rendering TeamCard */}
+          {/* Seamless Team List */}
+          <main className="px-4">
+            {/* Qualified Teams (4-9) */}
+            <div className="space-y-3 mb-6">
               {qualifiedOtherTeams.map((team, index) => {
-                console.log('Rendering TeamCard from qualifiedOtherTeams:', team.name, 'bidPoints:', team.bidPoints);
                 const rank = index + 4;
-                const lockedIn = isLockedIn(team, rank);
                 return (
-                  <div key={team.id} className="relative">
-                    {/* Modern outline for top 9 teams - similar to simulation warning */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-xl"></div>
-                    <div className="relative bg-slate-800/95 backdrop-blur-sm border border-blue-500/50 rounded-xl shadow-lg">
-                      <TeamCard
-                        team={team}
-                        rank={rank}
-                        isQualified={true}
-                        cutoffPoints={CUTOFF_POINTS}
-                        onClick={() => setSelectedTeam(team)}
-                        showLockedIn={lockedIn}
-                      />
+                  <div 
+                    key={team.id}
+                    onClick={() => setSelectedTeam(team)}
+                    className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:bg-slate-800/80 hover:border-slate-600/70 active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Rank */}
+                      <div className="w-8 h-8 bg-blue-600/20 border border-blue-500/40 rounded-lg flex items-center justify-center">
+                        <span className="text-blue-400 font-bold text-sm">{rank}</span>
+                      </div>
+                      
+                      {/* Team Logo */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center flex-shrink-0">
+                        {team.logo ? (
+                          <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Trophy className="h-5 w-5 text-slate-400" />
+                        )}
+                      </div>
+                      
+                      {/* Team Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-semibold text-sm truncate">{team.name}</h3>
+                        <p className="text-slate-400 text-xs truncate">{team.university}</p>
+                      </div>
+                      
+                      {/* Points */}
+                      <div className="flex items-center gap-1 bg-blue-600/20 px-3 py-1 rounded-full">
+                        <Target className="h-3 w-3 text-blue-400" />
+                        <span className="text-blue-400 font-bold text-sm">{team.bidPoints}</span>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Modern Cutoff Line */}
-            <div className="my-6 relative">
-              <div className="flex items-center justify-center">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
-                <div className="mx-4 px-4 py-2 bg-slate-800 border border-slate-600 rounded-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                    <span className="text-slate-300 font-medium text-sm"> RAS Cutoff</span>
-                    <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                  </div>
+            {/* Cutoff Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-600/50"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <div className="bg-slate-900 px-4 py-2 border border-slate-600/50 rounded-full">
+                  <span className="text-slate-400 font-medium text-xs">RAS Cutoff</span>
                 </div>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
               </div>
             </div>
 
-            <div className="grid gap-3">
-              {notQualifiedTeams.map((team, index) => (
-                <TeamCard
-                  key={team.id}
-                  team={team}
-                  rank={index + 10}
-                  isQualified={false}
-                  cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => setSelectedTeam(team)}
-                />
-              ))}
+            {/* Non-Qualified Teams */}
+            <div className="space-y-3">
+              {notQualifiedTeams.map((team, index) => {
+                const rank = index + 10;
+                return (
+                  <div 
+                    key={team.id}
+                    onClick={() => setSelectedTeam(team)}
+                    className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:bg-slate-800/60 hover:border-slate-600/50 active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Rank */}
+                      <div className="w-8 h-8 bg-slate-600/20 border border-slate-500/30 rounded-lg flex items-center justify-center">
+                        <span className="text-slate-500 font-bold text-sm">{rank}</span>
+                      </div>
+                      
+                      {/* Team Logo */}
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700/50 flex items-center justify-center flex-shrink-0">
+                        {team.logo ? (
+                          <img src={team.logo} alt={team.name} className="w-full h-full object-cover opacity-70" />
+                        ) : (
+                          <Trophy className="h-5 w-5 text-slate-500" />
+                        )}
+                      </div>
+                      
+                      {/* Team Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-slate-300 font-semibold text-sm truncate">{team.name}</h3>
+                        <p className="text-slate-500 text-xs truncate">{team.university}</p>
+                      </div>
+                      
+                      {/* Points */}
+                      <div className="flex items-center gap-1 bg-slate-600/20 px-3 py-1 rounded-full">
+                        <Target className="h-3 w-3 text-slate-500" />
+                        <span className="text-slate-400 font-bold text-sm">{team.bidPoints}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* About Section */}
