@@ -491,68 +491,103 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Podium */}
-          <section className="px-4 pb-6">
-            <div className="flex gap-3 justify-center items-end">
-              {/* 2nd Place */}
-              <div className="flex-1 max-w-[90px]">
-                <div 
-                  onClick={() => setSelectedTeam(topThreeTeams[1])}
-                  className="bg-gradient-to-br from-slate-700/90 to-slate-800/90 backdrop-blur-sm rounded-2xl p-3 h-32 flex flex-col items-center justify-between border border-slate-600/50 shadow-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
-                    {topThreeTeams[1]?.logo ? (
-                      <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Trophy className="h-6 w-6 text-slate-300" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <div className="text-slate-400 font-bold text-xs mb-0.5">2nd</div>
-                    <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
-                    <div className="text-slate-300 font-bold text-xs">{topThreeTeams[1]?.bidPoints}pts</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 1st Place */}
-              <div className="flex-1 max-w-[100px]">
-                <div 
-                  onClick={() => setSelectedTeam(topThreeTeams[0])}
-                  className="bg-gradient-to-br from-yellow-500/95 to-yellow-600/95 backdrop-blur-sm rounded-2xl p-3 h-36 flex flex-col items-center justify-between shadow-xl border border-yellow-400/60 cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-yellow-300 to-yellow-400 flex items-center justify-center">
-                    {topThreeTeams[0]?.logo ? (
-                      <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Trophy className="h-7 w-7 text-yellow-700" />
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <div className="text-yellow-800 font-bold text-sm mb-0.5">1st</div>
-                    <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
-                    <div className="text-yellow-800 font-bold text-sm">{topThreeTeams[0]?.bidPoints}pts</div>
+          {/* Top 3 Flowing Podium */}
+          <section className="px-4 pb-8">
+            <div className="relative">
+              {/* Flowing background shape */}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-800/30 via-slate-700/20 to-slate-800/30 rounded-3xl blur-xl"></div>
+              
+              <div className="relative flex gap-2 justify-center items-end py-6">
+                {/* 2nd Place */}
+                <div className="flex-1 max-w-[90px]">
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[1])}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Floating effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-500/40 to-slate-700/40 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                    
+                    <div className="relative bg-gradient-to-br from-slate-600/80 to-slate-800/90 backdrop-blur-sm rounded-2xl p-3 h-28 flex flex-col items-center justify-between border border-slate-500/30 group-hover:border-slate-400/50 transition-all duration-300 group-hover:scale-105">
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center">
+                        {topThreeTeams[1]?.logo ? (
+                          <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Trophy className="h-5 w-5 text-slate-200" />
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-300 font-bold text-[10px] mb-0.5">2nd</div>
+                        <div className="text-white font-semibold text-[10px] leading-tight mb-1">{topThreeTeams[1]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm"></div>
+                          <div className="relative bg-gradient-to-r from-blue-500/30 to-purple-500/30 px-2 py-0.5 rounded-full border border-blue-400/30">
+                            <span className="text-white font-bold text-[10px] tracking-wider">{topThreeTeams[1]?.bidPoints}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 3rd Place */}
-              <div className="flex-1 max-w-[90px]">
-                <div 
-                  onClick={() => setSelectedTeam(topThreeTeams[2])}
-                  className="bg-gradient-to-br from-orange-600/90 to-orange-700/90 backdrop-blur-sm rounded-2xl p-3 h-32 flex flex-col items-center justify-between border border-orange-500/50 shadow-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
-                >
-                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
-                    {topThreeTeams[2]?.logo ? (
-                      <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Trophy className="h-6 w-6 text-orange-800" />
-                    )}
+                {/* 1st Place - Elevated */}
+                <div className="flex-1 max-w-[100px] -mt-4">
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[0])}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Glowing effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/50 to-orange-500/50 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    
+                    <div className="relative bg-gradient-to-br from-yellow-400/90 to-orange-500/90 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/50 group-hover:border-yellow-200/70 transition-all duration-300 group-hover:scale-105">
+                      <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-yellow-200 to-yellow-400 flex items-center justify-center">
+                        {topThreeTeams[0]?.logo ? (
+                          <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Trophy className="h-6 w-6 text-yellow-700" />
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-yellow-800 font-bold text-xs mb-1">1st</div>
+                        <div className="text-yellow-900 font-bold text-xs leading-tight mb-2">{topThreeTeams[0]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/40 to-orange-300/40 rounded-full blur-sm"></div>
+                          <div className="relative bg-gradient-to-r from-yellow-200/80 to-orange-200/80 px-3 py-1 rounded-full border border-yellow-300/60">
+                            <span className="text-yellow-900 font-bold text-xs tracking-wider">{topThreeTeams[0]?.bidPoints}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-orange-300 font-bold text-xs mb-0.5">3rd</div>
-                    <div className="text-orange-100 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
-                    <div className="text-orange-200 font-bold text-xs">{topThreeTeams[2]?.bidPoints}pts</div>
+                </div>
+
+                {/* 3rd Place */}
+                <div className="flex-1 max-w-[90px]">
+                  <div 
+                    onClick={() => setSelectedTeam(topThreeTeams[2])}
+                    className="relative group cursor-pointer"
+                  >
+                    {/* Floating effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/40 to-red-600/40 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                    
+                    <div className="relative bg-gradient-to-br from-orange-500/80 to-red-600/90 backdrop-blur-sm rounded-2xl p-3 h-28 flex flex-col items-center justify-between border border-orange-400/30 group-hover:border-orange-300/50 transition-all duration-300 group-hover:scale-105">
+                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center">
+                        {topThreeTeams[2]?.logo ? (
+                          <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Trophy className="h-5 w-5 text-orange-800" />
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <div className="text-orange-200 font-bold text-[10px] mb-0.5">3rd</div>
+                        <div className="text-orange-100 font-semibold text-[10px] leading-tight mb-1">{topThreeTeams[2]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-full blur-sm"></div>
+                          <div className="relative bg-gradient-to-r from-orange-400/30 to-red-400/30 px-2 py-0.5 rounded-full border border-orange-300/30">
+                            <span className="text-orange-100 font-bold text-[10px] tracking-wider">{topThreeTeams[2]?.bidPoints}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -562,40 +597,54 @@ const Index = () => {
           {/* Seamless Team List */}
           <main className="px-4">
             {/* Qualified Teams (4-9) */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-2 mb-6">
               {qualifiedOtherTeams.map((team, index) => {
                 const rank = index + 4;
                 return (
                   <div 
                     key={team.id}
                     onClick={() => setSelectedTeam(team)}
-                    className="bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:bg-slate-800/80 hover:border-slate-600/70 active:scale-[0.98]"
+                    className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/70 hover:border-slate-600/50 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <div className="flex items-center gap-4">
-                      {/* Rank */}
-                      <div className="w-8 h-8 bg-blue-600/20 border border-blue-500/40 rounded-lg flex items-center justify-center">
-                        <span className="text-blue-400 font-bold text-sm">{rank}</span>
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/5 to-blue-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    
+                    <div className="relative flex items-center gap-4">
+                      {/* Floating rank */}
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-blue-500/20 rounded-xl blur-md group-hover:blur-lg transition-all duration-300"></div>
+                        <div className="relative w-10 h-10 bg-gradient-to-br from-blue-500/30 to-purple-500/30 border border-blue-400/30 rounded-xl flex items-center justify-center group-hover:border-blue-300/50 transition-all duration-300">
+                          <span className="text-blue-300 font-bold text-sm">{rank}</span>
+                        </div>
                       </div>
                       
-                      {/* Team Logo */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center flex-shrink-0">
-                        {team.logo ? (
-                          <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Trophy className="h-5 w-5 text-slate-400" />
-                        )}
+                      {/* Team Logo with glow */}
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-white/10 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                          {team.logo ? (
+                            <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Trophy className="h-6 w-6 text-slate-400" />
+                          )}
+                        </div>
                       </div>
                       
                       {/* Team Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-sm truncate">{team.name}</h3>
-                        <p className="text-slate-400 text-xs truncate">{team.university}</p>
+                        <h3 className="text-white font-semibold text-base truncate group-hover:text-blue-100 transition-colors duration-300">{team.name}</h3>
+                        <p className="text-slate-400 text-sm truncate group-hover:text-slate-300 transition-colors duration-300">{team.university}</p>
                       </div>
                       
-                      {/* Points */}
-                      <div className="flex items-center gap-1 bg-blue-600/20 px-3 py-1 rounded-full">
-                        <Target className="h-3 w-3 text-blue-400" />
-                        <span className="text-blue-400 font-bold text-sm">{team.bidPoints}</span>
+                      {/* Modern Points Display */}
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                        <div className="relative bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm px-4 py-2 rounded-2xl border border-blue-400/20 group-hover:border-blue-300/40 transition-all duration-300">
+                          <div className="flex flex-col items-center">
+                            <div className="text-blue-300 font-black text-lg leading-none group-hover:text-blue-200 transition-colors duration-300">{team.bidPoints}</div>
+                            <div className="text-blue-400/70 font-medium text-[10px] uppercase tracking-widest">points</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -606,50 +655,56 @@ const Index = () => {
             {/* Cutoff Divider */}
             <div className="relative mb-6">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-600/50"></div>
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-500/50 to-transparent"></div>
               </div>
               <div className="relative flex justify-center">
-                <div className="bg-slate-900 px-4 py-2 border border-slate-600/50 rounded-full">
-                  <span className="text-slate-400 font-medium text-xs">RAS Cutoff</span>
+                <div className="bg-slate-900 px-6 py-2 border border-slate-600/30 rounded-2xl backdrop-blur-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                    <span className="text-slate-400 font-medium text-xs uppercase tracking-wider">RAS Cutoff</span>
+                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full"></div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Non-Qualified Teams */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {notQualifiedTeams.map((team, index) => {
                 const rank = index + 10;
                 return (
                   <div 
                     key={team.id}
                     onClick={() => setSelectedTeam(team)}
-                    className="bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:bg-slate-800/60 hover:border-slate-600/50 active:scale-[0.98]"
+                    className="group relative bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/40 hover:border-slate-600/30 hover:scale-[1.01] active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-4">
-                      {/* Rank */}
-                      <div className="w-8 h-8 bg-slate-600/20 border border-slate-500/30 rounded-lg flex items-center justify-center">
+                      {/* Muted rank */}
+                      <div className="w-10 h-10 bg-slate-600/20 border border-slate-500/20 rounded-xl flex items-center justify-center">
                         <span className="text-slate-500 font-bold text-sm">{rank}</span>
                       </div>
                       
                       {/* Team Logo */}
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-700/50 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                         {team.logo ? (
-                          <img src={team.logo} alt={team.name} className="w-full h-full object-cover opacity-70" />
+                          <img src={team.logo} alt={team.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                         ) : (
-                          <Trophy className="h-5 w-5 text-slate-500" />
+                          <Trophy className="h-6 w-6 text-slate-500" />
                         )}
                       </div>
                       
                       {/* Team Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-slate-300 font-semibold text-sm truncate">{team.name}</h3>
-                        <p className="text-slate-500 text-xs truncate">{team.university}</p>
+                        <h3 className="text-slate-300 font-semibold text-base truncate group-hover:text-slate-200 transition-colors duration-300">{team.name}</h3>
+                        <p className="text-slate-500 text-sm truncate group-hover:text-slate-400 transition-colors duration-300">{team.university}</p>
                       </div>
                       
-                      {/* Points */}
-                      <div className="flex items-center gap-1 bg-slate-600/20 px-3 py-1 rounded-full">
-                        <Target className="h-3 w-3 text-slate-500" />
-                        <span className="text-slate-400 font-bold text-sm">{team.bidPoints}</span>
+                      {/* Muted Points Display */}
+                      <div className="bg-slate-600/20 backdrop-blur-sm px-4 py-2 rounded-2xl border border-slate-500/20">
+                        <div className="flex flex-col items-center">
+                          <div className="text-slate-400 font-black text-lg leading-none">{team.bidPoints}</div>
+                          <div className="text-slate-500/70 font-medium text-[10px] uppercase tracking-widest">points</div>
+                        </div>
                       </div>
                     </div>
                   </div>
