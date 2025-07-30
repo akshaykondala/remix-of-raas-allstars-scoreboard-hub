@@ -435,13 +435,13 @@ const Index = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
-        {/* Header with Logo */}
-        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent backdrop-blur-sm flex-shrink-0">
-          <div className="flex justify-center items-center px-4 py-2">
+        {/* Header with Logo - Compact */}
+        <div className="bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm flex-shrink-0">
+          <div className="flex justify-center items-center px-4 py-1">
             <img 
               src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
               alt="Raas All Stars Logo" 
-              className="h-12 w-auto"
+              className="h-8 w-auto opacity-90"
             />
           </div>
         </div>
@@ -491,37 +491,43 @@ const Index = () => {
             </div>
           )}
 
-          {/* Top 3 Flowing Podium */}
-          <section className="px-4 pb-8">
+          {/* Top 3 Flowing Podium - Enhanced Profile Focus */}
+          <section className="px-4 pb-8 pt-4">
             <div className="relative">
-              {/* Flowing background shape */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-800/30 via-slate-700/20 to-slate-800/30 rounded-3xl blur-xl"></div>
+              {/* Enhanced flowing background shape */}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-800/20 via-slate-700/30 to-slate-800/20 rounded-3xl blur-2xl"></div>
               
-              <div className="relative flex gap-2 justify-center items-end py-6">
+              <div className="relative flex gap-4 justify-center items-end py-8">
                 {/* 2nd Place */}
-                <div className="flex-1 max-w-[90px]">
+                <div className="flex-1 max-w-[95px]">
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[1])}
                     className="relative group cursor-pointer"
                   >
-                    {/* Floating effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-500/40 to-slate-700/40 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                    {/* Enhanced floating effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-500/30 to-slate-700/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
                     
-                    <div className="relative bg-gradient-to-br from-slate-600/80 to-slate-800/90 backdrop-blur-sm rounded-2xl p-3 h-28 flex flex-col items-center justify-between border border-slate-500/30 group-hover:border-slate-400/50 transition-all duration-300 group-hover:scale-105">
-                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center">
-                        {topThreeTeams[1]?.logo ? (
-                          <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Trophy className="h-5 w-5 text-slate-200" />
-                        )}
+                    <div className="relative bg-gradient-to-br from-slate-600/70 to-slate-800/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/20 group-hover:border-slate-400/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
+                      
+                      {/* Featured Profile Picture */}
+                      <div className="relative -mt-6 mb-2">
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-400/50 to-slate-600/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-slate-300 to-slate-500 flex items-center justify-center border-2 border-slate-400/50 group-hover:border-slate-300/70 transition-all duration-500">
+                          {topThreeTeams[1]?.logo ? (
+                            <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Trophy className="h-8 w-8 text-slate-200" />
+                          )}
+                        </div>
                       </div>
+                      
                       <div className="text-center">
-                        <div className="text-slate-300 font-bold text-[10px] mb-0.5">2nd</div>
-                        <div className="text-white font-semibold text-[10px] leading-tight mb-1">{topThreeTeams[1]?.name}</div>
+                        <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
+                        <div className="text-white font-semibold text-xs leading-tight mb-2">{topThreeTeams[1]?.name}</div>
                         <div className="relative">
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-blue-500/30 to-purple-500/30 px-2 py-0.5 rounded-full border border-blue-400/30">
-                            <span className="text-white font-bold text-[10px] tracking-wider">{topThreeTeams[1]?.bidPoints}</span>
+                          <div className="relative bg-gradient-to-r from-blue-500/30 to-purple-500/30 px-3 py-1 rounded-full border border-blue-400/30">
+                            <span className="text-white font-bold text-xs tracking-wider">{topThreeTeams[1]?.bidPoints}</span>
                           </div>
                         </div>
                       </div>
@@ -529,30 +535,36 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* 1st Place - Elevated */}
-                <div className="flex-1 max-w-[100px] -mt-4">
+                {/* 1st Place - Hero Profile */}
+                <div className="flex-1 max-w-[110px] -mt-8">
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[0])}
                     className="relative group cursor-pointer"
                   >
-                    {/* Glowing effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/50 to-orange-500/50 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                    {/* Epic glowing effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 to-orange-500/60 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
                     
-                    <div className="relative bg-gradient-to-br from-yellow-400/90 to-orange-500/90 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/50 group-hover:border-yellow-200/70 transition-all duration-300 group-hover:scale-105">
-                      <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-yellow-200 to-yellow-400 flex items-center justify-center">
-                        {topThreeTeams[0]?.logo ? (
-                          <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Trophy className="h-6 w-6 text-yellow-700" />
-                        )}
+                    <div className="relative bg-gradient-to-br from-yellow-400/85 to-orange-500/95 backdrop-blur-md rounded-3xl p-5 h-40 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/40 group-hover:border-yellow-200/60 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-3">
+                      
+                      {/* Hero Profile Picture */}
+                      <div className="relative -mt-8 mb-3">
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/60 to-orange-400/60 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+                        <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-yellow-200 to-yellow-400 flex items-center justify-center border-3 border-yellow-300/60 group-hover:border-yellow-200/80 transition-all duration-500">
+                          {topThreeTeams[0]?.logo ? (
+                            <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Trophy className="h-10 w-10 text-yellow-700" />
+                          )}
+                        </div>
                       </div>
+                      
                       <div className="text-center">
-                        <div className="text-yellow-800 font-bold text-xs mb-1">1st</div>
-                        <div className="text-yellow-900 font-bold text-xs leading-tight mb-2">{topThreeTeams[0]?.name}</div>
+                        <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
+                        <div className="text-yellow-900 font-bold text-sm leading-tight mb-2">{topThreeTeams[0]?.name}</div>
                         <div className="relative">
                           <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/40 to-orange-300/40 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-yellow-200/80 to-orange-200/80 px-3 py-1 rounded-full border border-yellow-300/60">
-                            <span className="text-yellow-900 font-bold text-xs tracking-wider">{topThreeTeams[0]?.bidPoints}</span>
+                          <div className="relative bg-gradient-to-r from-yellow-200/80 to-orange-200/80 px-4 py-1.5 rounded-full border border-yellow-300/60">
+                            <span className="text-yellow-900 font-bold text-sm tracking-wider">{topThreeTeams[0]?.bidPoints}</span>
                           </div>
                         </div>
                       </div>
@@ -561,29 +573,35 @@ const Index = () => {
                 </div>
 
                 {/* 3rd Place */}
-                <div className="flex-1 max-w-[90px]">
+                <div className="flex-1 max-w-[95px]">
                   <div 
                     onClick={() => setSelectedTeam(topThreeTeams[2])}
                     className="relative group cursor-pointer"
                   >
-                    {/* Floating effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/40 to-red-600/40 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                    {/* Enhanced floating effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 to-red-600/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
                     
-                    <div className="relative bg-gradient-to-br from-orange-500/80 to-red-600/90 backdrop-blur-sm rounded-2xl p-3 h-28 flex flex-col items-center justify-between border border-orange-400/30 group-hover:border-orange-300/50 transition-all duration-300 group-hover:scale-105">
-                      <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center">
-                        {topThreeTeams[2]?.logo ? (
-                          <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Trophy className="h-5 w-5 text-orange-800" />
-                        )}
+                    <div className="relative bg-gradient-to-br from-orange-500/70 to-red-600/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/20 group-hover:border-orange-300/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
+                      
+                      {/* Featured Profile Picture */}
+                      <div className="relative -mt-6 mb-2">
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-400/50 to-red-500/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center border-2 border-orange-400/50 group-hover:border-orange-300/70 transition-all duration-500">
+                          {topThreeTeams[2]?.logo ? (
+                            <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Trophy className="h-8 w-8 text-orange-800" />
+                          )}
+                        </div>
                       </div>
+                      
                       <div className="text-center">
-                        <div className="text-orange-200 font-bold text-[10px] mb-0.5">3rd</div>
-                        <div className="text-orange-100 font-semibold text-[10px] leading-tight mb-1">{topThreeTeams[2]?.name}</div>
+                        <div className="text-orange-200 font-bold text-xs mb-1">3rd</div>
+                        <div className="text-orange-100 font-semibold text-xs leading-tight mb-2">{topThreeTeams[2]?.name}</div>
                         <div className="relative">
                           <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-orange-400/30 to-red-400/30 px-2 py-0.5 rounded-full border border-orange-300/30">
-                            <span className="text-orange-100 font-bold text-[10px] tracking-wider">{topThreeTeams[2]?.bidPoints}</span>
+                          <div className="relative bg-gradient-to-r from-orange-400/30 to-red-400/30 px-3 py-1 rounded-full border border-orange-300/30">
+                            <span className="text-orange-100 font-bold text-xs tracking-wider">{topThreeTeams[2]?.bidPoints}</span>
                           </div>
                         </div>
                       </div>
