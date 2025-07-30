@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { X, Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Palette, Star, Award } from 'lucide-react';
 import { Team, Competition } from '@/lib/types';
 
@@ -10,14 +11,20 @@ interface TeamDetailProps {
 }
 
 export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [] }: TeamDetailProps) => {
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleClose = () => {
+    setIsExiting(true);
+    setTimeout(onClose, 200); // Match the animation duration
+  };
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 rounded-2xl shadow-2xl w-full max-w-md max-h-[95vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex">
+      <div className={`bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 shadow-2xl w-full max-h-full overflow-hidden ${isExiting ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
         <div className="max-h-[95vh] overflow-y-auto scrollbar-hide">
         {/* Compact Header */}
         <div className="relative bg-gradient-to-r from-blue-600/10 to-purple-600/10 p-4">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-3 right-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-full p-1.5 transition-all duration-200"
           >
             <X size={16} />

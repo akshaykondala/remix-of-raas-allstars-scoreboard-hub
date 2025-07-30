@@ -514,7 +514,7 @@ const Index = () => {
                 {/* Top 9 outline effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
-                  onClick={() => navigate(`/team/${topThreeTeams[1].id}`)}
+                  onClick={() => setSelectedTeam(topThreeTeams[1])}
                   className="relative bg-gradient-to-b from-slate-600/80 to-slate-700/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-slate-500/50 shadow-xl group cursor-pointer"
                 >
                   {/* Logo */}
@@ -542,7 +542,7 @@ const Index = () => {
                 {/* Top 9 outline effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
-                  onClick={() => navigate(`/team/${topThreeTeams[0].id}`)}
+                  onClick={() => setSelectedTeam(topThreeTeams[0])}
                   className="relative bg-gradient-to-b from-yellow-500/90 to-yellow-600/90 backdrop-blur-sm rounded-2xl p-4 h-40 flex flex-col items-center justify-between shadow-xl border border-yellow-400/50 group cursor-pointer"
                 >
                   <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg bg-gradient-to-b from-yellow-300 to-yellow-400 flex items-center justify-center">
@@ -568,7 +568,7 @@ const Index = () => {
                 {/* Top 9 outline effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600/80 to-purple-600/80 rounded-2xl"></div>
                 <div 
-                  onClick={() => navigate(`/team/${topThreeTeams[2].id}`)}
+                  onClick={() => setSelectedTeam(topThreeTeams[2])}
                   className="relative bg-gradient-to-b from-orange-500/80 to-orange-600/80 backdrop-blur-sm rounded-2xl p-4 h-36 flex flex-col items-center justify-between border border-orange-400/50 shadow-xl group cursor-pointer"
                 >
                   {/* Logo */}
@@ -611,7 +611,7 @@ const Index = () => {
                         rank={rank}
                         isQualified={true}
                         cutoffPoints={CUTOFF_POINTS}
-                        onClick={() => navigate(`/team/${team.id}`)}
+                        onClick={() => setSelectedTeam(team)}
                         showLockedIn={lockedIn}
                       />
                     </div>
@@ -643,7 +643,7 @@ const Index = () => {
                   rank={index + 10}
                   isQualified={false}
                   cutoffPoints={CUTOFF_POINTS}
-                  onClick={() => navigate(`/team/${team.id}`)}
+                  onClick={() => setSelectedTeam(team)}
                 />
               ))}
             </div>
@@ -699,7 +699,7 @@ const Index = () => {
                   {teamsData.map((team, index) => (
                 <div 
                   key={team.id}
-                  onClick={() => navigate(`/team/${team.id}`)}
+                  onClick={() => setSelectedTeam(team)}
                   className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
                 >
                   {/* Rank Badge */}
