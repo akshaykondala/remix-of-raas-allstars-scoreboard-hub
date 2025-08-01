@@ -6,7 +6,6 @@ export interface Team {
   qualified: boolean;
   locked?: boolean;
   logo?: string;
-  est?: number;
   color: string;
   city?: string;
   instagramlink?: string;
@@ -43,6 +42,9 @@ export interface Competition {
     second: string;
     third: string;
   };
+  firstplace?: string;
+  secondplace?: string;
+  thirdplace?: string;
   judges: Array<{ name: string; category: string }>;
   instagramlink?: string;
   media: {

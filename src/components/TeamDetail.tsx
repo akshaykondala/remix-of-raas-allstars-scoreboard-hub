@@ -113,7 +113,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
               Contact Information
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-2xl p-4 space-y-3">
-              {team.contactInfo.captains && team.contactInfo.captains.length > 0 && (
+              {team.contactInfo?.captains && Array.isArray(team.contactInfo.captains) && team.contactInfo.captains.length > 0 && (
                 <div className="flex items-start gap-3">
                   <div className="bg-blue-500/20 rounded-lg p-2 flex-shrink-0">
                     <User className="h-4 w-4 text-blue-400" />
@@ -178,7 +178,10 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
         )}
 
         {/* Competition Timeline with Results */}
-        {team.competitionResults && team.competitionResults.length > 0 && (
+        {(() => {
+          console.log('TeamDetail - competitionResults for', team.name, ':', team.competitionResults);
+          return team.competitionResults && team.competitionResults.length > 0;
+        })() && (
           <div className="px-6 pb-6">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center">
               <div className="bg-blue-500/20 rounded-full p-2 mr-3">
@@ -196,11 +199,15 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                 return (
                   <div 
                     key={index}
+                    onClick={() => {
+                      console.log('Clicking competition:', result.competitionId, 'type:', typeof result.competitionId);
+                      onCompetitionClick && onCompetitionClick(result.competitionId);
+                    }}
                     className={`relative bg-gradient-to-r ${
                       earnedPoints 
                         ? 'from-green-500/10 to-emerald-500/5 border-green-400/30' 
                         : 'from-slate-800/60 to-slate-700/40 border-slate-600/40'
-                    } border rounded-2xl p-4`}
+                    } border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-transform duration-200`}
                   >
                     {/* Timeline connector */}
                     {index < team.competitionResults!.length - 1 && (
@@ -223,7 +230,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h4 className="text-white font-semibold text-sm mb-1">{result.competitionName}</h4>
+                            <h4 className="text-white font-semibold text-sm mb-1 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
                             {result.date && (
                               <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                             )}
@@ -285,6 +292,30 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
             {team.achievements.length > 3 && (
               <div className="text-sm text-slate-400 text-center py-2">+{team.achievements.length - 3} more achievements</div>
             )}
+          </div>
+        </div>
+        )}
+
+        {/* Team History Section */}
+        {team.history && team.history.length > 0 && (
+        <div className="px-6 pb-6">
+          <h3 className="text-lg font-bold text-white mb-4 flex items-center">
+            <div className="bg-blue-500/20 rounded-full p-2 mr-3">
+              <Star className="h-4 w-4 text-blue-400" />
+            </div>
+            Team History
+          </h3>
+          <div className="space-y-3">
+            {team.history.map((historyItem, index) => (
+              <div key={index} className="bg-gradient-to-r from-blue-500/15 to-indigo-500/10 border border-blue-400/30 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="bg-blue-500/20 rounded-lg p-2 flex-shrink-0">
+                    <Star className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <span className="text-slate-200 text-sm leading-relaxed font-medium">{historyItem}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         )}

@@ -31,7 +31,7 @@ const fallbackTeams: Team[] = [
       'Known for innovative choreography and strong storytelling'
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
-    founded: '2005',
+    founded: 2005,
     genderComposition: 'Co-ed',
     logo: '/src/logos/texas-raas.jpg',
     contactInfo: {
@@ -99,7 +99,7 @@ const fallbackTeams: Team[] = [
       'Known for clean formations and synchronized movements'
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
-    founded: '2003',
+    founded: 2003,
     genderComposition: 'All Girls',
     logo: '/src/logos/cmu-raasta.jpg',
     contactInfo: {
@@ -143,7 +143,7 @@ const fallbackTeams: Team[] = [
       'Consistent top performer in regional competitions'
     ],
     achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
-    founded: '2008',
+    founded: 2008,
     genderComposition: 'Co-ed',
     logo: '/src/logos/uf-gatoraas.jpeg',
     contactInfo: {
@@ -194,7 +194,7 @@ const fallbackTeams: Team[] = [
       'Strong presence in California competitions'
     ],
     achievements: ['Bollywood Berkeley 2024 - 1st Place', 'Spring Nationals 2023 - 5th Place'],
-    founded: '2010',
+    founded: 2010,
     genderComposition: 'All Boys',
     logo: '',
     contactInfo: {
@@ -237,7 +237,7 @@ const fallbackTeams: Team[] = [
       'Consistent performer in regional competitions'
     ],
     achievements: ['Midwest Magic 2024 - 1st Place', 'Raas All Stars 2022 - 7th Place'],
-    founded: '2007',
+    founded: 2007,
     genderComposition: 'Co-ed',
     logo: '',
     contactInfo: {
@@ -288,7 +288,7 @@ const fallbackTeams: Team[] = [
       'Strong presence in East Coast competitions'
     ],
     achievements: ['East Coast Showdown 2024 - 2nd Place', 'Raas All Stars 2021 - 9th Place'],
-    founded: '2006',
+    founded: 2006,
     genderComposition: 'Open',
     logo: '',
     contactInfo: {
@@ -323,7 +323,7 @@ const fallbackTeams: Team[] = [
       'Rising star in the collegiate Raas circuit'
     ],
     achievements: ['Raas Chaos 2024 - 5th Place', 'Spring Nationals 2023 - 8th Place'],
-    founded: '2012',
+    founded: 2012,
     genderComposition: 'Co-ed',
     logo: '',
     contactInfo: {
@@ -358,7 +358,7 @@ const fallbackTeams: Team[] = [
       'Consistent performer in regional competitions'
     ],
     achievements: ['East Coast Showdown 2024 - 3rd Place', 'Raas All Stars 2022 - 10th Place'],
-    founded: '2009',
+    founded: 2009,
     genderComposition: 'All Girls',
     logo: '',
     contactInfo: {
@@ -401,7 +401,7 @@ const fallbackTeams: Team[] = [
       'Emerging talent in the collegiate Raas circuit'
     ],
     achievements: ['Midwest Magic 2024 - 3rd Place', 'Spring Nationals 2023 - 9th Place'],
-    founded: '2015',
+    founded: 2015,
     genderComposition: 'Co-ed',
     logo: '',
     contactInfo: {
@@ -470,7 +470,7 @@ const Index = () => {
           const mappedTeams = teams.map((team: any) => ({
             id: team.id,
             name: team.name,
-            founded: team.est,
+            founded: team.founded || team.est || 0,
             university: team.university,
             city: team.city,
             logo: team.logo
@@ -478,14 +478,105 @@ const Index = () => {
                   ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
                   : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
               : '',
-            color: team.color || 'bg-slate-600',
+            color: team.color || team.theme || 'bg-slate-600',
             bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
-            qualified: false, // Will be calculated later
-            competitions_attending: team.competitions_attending || [],
-            achievements: team.achievements || [],
+            qualified: (team.bidPoints || team.bid_points || team.bidpoints || 0) >= 5,
+            competitions_attending: Array.isArray(team.competitions_attending) 
+              ? team.competitions_attending.map((comp: any) => 
+                  typeof comp === 'string' ? comp : comp.name || comp.id || comp
+                )
+              : [],
+            achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
             history: team.history || [],
             instagramlink: team.instagramlink || '',
-            genderComposition: team.gender_comp
+            genderComposition: team.genderComposition || team.gender_comp,
+            contactInfo: {
+              email: team.contactInfo?.email || team.contact_info || team.email || '',
+              phone: team.contactInfo?.phone || team.phone || '',
+              website: team.contactInfo?.website || team.website || '',
+              captains: Array.isArray(team.contactInfo?.captains) ? team.contactInfo.captains : 
+                       Array.isArray(team.captains) ? team.captains : 
+                       (typeof (team.contactInfo?.captains || team.captains) === 'string' && 
+                        (team.contactInfo?.captains || team.captains).includes('[') && 
+                        (team.contactInfo?.captains || team.captains).includes(']')) 
+                          ? (team.contactInfo?.captains || team.captains).replace(/[\[\]]/g, '').split(',').map(c => c.trim())
+                          : (team.contactInfo?.captains || team.captains ? [team.contactInfo?.captains || team.captains] : [])
+            },
+            competitionResults: (() => {
+              if (team.competitionResults && Array.isArray(team.competitionResults)) {
+                return team.competitionResults;
+              }
+              
+              // Generate competition results from competitions_attending using actual placings
+              if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
+                let cumulativePoints = 0;
+                return team.competitions_attending.map((compId: any, index: number) => {
+                  // Find competition by ID from the competitions array
+                  const competition = competitions.find((c: any) => c.id === compId);
+                  if (!competition) return null;
+                  
+                  // Find team's placement in this competition
+                  let placement = 'N/A';
+                  let pointsEarned = 0;
+                  
+                  if (competition.firstplace === team.id) {
+                    placement = '1st';
+                    pointsEarned = 4;
+                  } else if (competition.secondplace === team.id) {
+                    placement = '2nd';
+                    pointsEarned = 2;
+                  } else if (competition.thirdplace === team.id) {
+                    placement = '3rd';
+                    pointsEarned = 1;
+                  }
+                  
+                  return {
+                    competitionId: compId,
+                    competitionName: competition.name,
+                    placement: placement,
+                    bidPointsEarned: pointsEarned,
+                    cumulativeBidPoints: 0, // Will be recalculated after sorting
+                    date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
+                  };
+                }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                
+                // Recalculate cumulative points in chronological order
+                let runningTotal = 0;
+                return team.competitions_attending.map((compId: any, index: number) => {
+                  // Find competition by ID from the competitions array
+                  const competition = competitions.find((c: any) => c.id === compId);
+                  if (!competition) return null;
+                  
+                                     // Find team's placement in this competition
+                   let placement = 'N/A';
+                   let pointsEarned = 0;
+                   
+                   if (competition.firstplace === team.id) {
+                     placement = '1st';
+                     pointsEarned = 4;
+                   } else if (competition.secondplace === team.id) {
+                     placement = '2nd';
+                     pointsEarned = 2;
+                   } else if (competition.thirdplace === team.id) {
+                     placement = '3rd';
+                     pointsEarned = 1;
+                   }
+                  
+                  runningTotal += pointsEarned;
+                  
+                  return {
+                    competitionId: compId,
+                    competitionName: competition.name,
+                    placement: placement,
+                    bidPointsEarned: pointsEarned,
+                    cumulativeBidPoints: runningTotal,
+                    date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
+                  };
+                }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              }
+              
+              return [];
+            })()
           }));
           // Debug: Log mapped data
           console.log('🎯 Mapped teams data:', mappedTeams);
@@ -614,14 +705,18 @@ const Index = () => {
   };
 
   const handleCompetitionClick = (competitionData: any) => {
+    console.log('handleCompetitionClick received:', competitionData, 'type:', typeof competitionData);
     // Handle different data types - competitions_attending contains IDs
     let competitionId = '';
     if (typeof competitionData === 'string') {
       competitionId = competitionData;
     } else if (competitionData && typeof competitionData === 'object') {
       competitionId = competitionData.id || competitionData;
+    } else if (typeof competitionData === 'number') {
+      competitionId = String(competitionData);
     }
-    const competition = competitions.find(comp => comp.id === competitionId);
+    console.log('Processed competitionId:', competitionId);
+    const competition = competitions.find(comp => String(comp.id) === String(competitionId));
     if (competition) {
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
       console.log('[DEBUG] TeamDetail click - original lineup:', competition.lineup);
