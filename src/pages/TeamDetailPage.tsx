@@ -250,11 +250,7 @@ export const TeamDetailPage = () => {
             lineup: Array.isArray(comp.lineup)
               ? comp.lineup.map((team: any) => typeof team === 'string' ? team : team.name)
               : [],
-            placings: {
-              first: comp.firstplace || '',
-              second: comp.secondplace || '',
-              third: comp.thirdplace || ''
-            },
+
             judges: Array.isArray(comp.judges)
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
@@ -272,7 +268,7 @@ export const TeamDetailPage = () => {
               date: '2024-03-15',
               logo: '',
               lineup: [],
-              placings: { first: '', second: '', third: '' },
+
               judges: [],
               instagramlink: '',
               media: { photos: [], videos: [] }
@@ -500,6 +496,7 @@ export const TeamDetailPage = () => {
         <CompetitionDetail 
           competition={selectedCompetition} 
           onClose={() => setSelectedCompetition(null)}
+          teams={teams}
         />
       )}
     </div>

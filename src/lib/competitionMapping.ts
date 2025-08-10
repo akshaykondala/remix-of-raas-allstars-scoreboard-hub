@@ -23,10 +23,5 @@ export function mapCompetitionTeamsFull(competition, teams) {
     lineup: Array.isArray(competition.lineup)
       ? competition.lineup.map(entry => getTeam(entry))
       : [],
-    placings: {
-      first: getTeam(competition.placings?.first),
-      second: getTeam(competition.placings?.second),
-      third: getTeam(competition.placings?.third),
-    },
   };
 } 

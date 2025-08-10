@@ -607,11 +607,7 @@ const Index = () => {
             lineup: Array.isArray(comp.lineup)
               ? comp.lineup.map((team: any) => typeof team === 'string' ? team : team.name)
               : [],
-            placings: {
-              first: comp.firstplace || '',
-              second: comp.secondplace || '',
-              third: comp.thirdplace || ''
-            },
+
             judges: Array.isArray(comp.judges)
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
@@ -646,18 +642,10 @@ const Index = () => {
       pointsMap[team.name] = 0;
     });
 
-    // Add points from completed competitions
-    competitions.forEach(comp => {
-      if (comp.placings.first) {
-        pointsMap[comp.placings.first] = (pointsMap[comp.placings.first] || 0) + 4;
-      }
-      if (comp.placings.second) {
-        pointsMap[comp.placings.second] = (pointsMap[comp.placings.second] || 0) + 2;
-      }
-      if (comp.placings.third) {
-        pointsMap[comp.placings.third] = (pointsMap[comp.placings.third] || 0) + 1;
-      }
-    });
+    // Add points from completed competitions (currently no placings data)
+    // competitions.forEach(comp => {
+    //   // Points will be added from simulation data instead
+    // });
 
     // Add simulation points if active
     Object.values(simulationData).forEach(simulation => {
@@ -721,7 +709,7 @@ const Index = () => {
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
       console.log('[DEBUG] TeamDetail click - original lineup:', competition.lineup);
       console.log('[DEBUG] TeamDetail click - mapped lineup:', mappedCompetition.lineup);
-      console.log('[DEBUG] TeamDetail click - mapped placings:', mappedCompetition.placings);
+
       setSelectedCompetition(mappedCompetition);
       setSelectedTeam(null); // Close team detail if open
     } else {

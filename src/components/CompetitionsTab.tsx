@@ -22,11 +22,7 @@ const competitions: Competition[] = [
     date: '2024-01-15',
     logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
     lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish'],
-    placings: {
-      first: 'Texas Raas',
-      second: 'CMU Raasta',
-      third: 'UF Gatoraas'
-    },
+
     judges: ['Rajesh Patel', 'Priya Sharma', 'Arjun Kumar'],
     media: {
       photos: ['photo-1488590528505-98d2b5aba04b', 'photo-1518770660439-4636190af475'],
@@ -40,11 +36,7 @@ const competitions: Competition[] = [
     date: '2024-02-03',
     logo: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=400&fit=crop&crop=center',
     lineup: ['UCLA Nashaa', 'USC Zeher', 'Texas Raas', 'Michigan Maize Mirchi', 'CMU Raasta', 'NYU Bhangra', 'Penn Aatish', 'UIUC Roshni'],
-    placings: {
-      first: 'UCLA Nashaa',
-      second: 'Texas Raas',
-      third: 'CMU Raasta'
-    },
+
     judges: ['Neha Gupta', 'Vikram Singh', 'Anjali Mehta'],
     media: {
       photos: ['photo-1486312338219-ce68d2c6f44d', 'photo-1581091226825-a6a2a5aee158'],
@@ -58,11 +50,7 @@ const competitions: Competition[] = [
     date: '2024-02-17',
     logo: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=400&fit=crop&crop=center',
     lineup: ['NYU Bhangra', 'Penn Aatish', 'Rutgers Raas', 'CMU Raasta', 'Case Western Raas', 'Texas Raas', 'UF Gatoraas', 'Michigan Maize Mirchi'],
-    placings: {
-      first: 'CMU Raasta',
-      second: 'NYU Bhangra',
-      third: 'Penn Aatish'
-    },
+
     judges: ['Rahul Khanna', 'Kavya Reddy', 'Deepak Joshi'],
     media: {
       photos: ['photo-1518770660439-4636190af475', 'photo-1461749280684-dccba630e2f6'],
@@ -76,11 +64,7 @@ const competitions: Competition[] = [
     date: '2024-03-02',
     logo: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop&crop=center',
     lineup: ['Michigan Maize Mirchi', 'UIUC Roshni', 'Case Western Raas', 'Texas Raas', 'CMU Raasta', 'NYU Bhangra', 'UF Gatoraas', 'UCLA Nashaa'],
-    placings: {
-      first: 'Michigan Maize Mirchi',
-      second: 'Texas Raas',
-      third: 'UIUC Roshni'
-    },
+
     judges: ['Sanjay Patel', 'Meera Nair', 'Karan Thakur'],
     media: {
       photos: ['photo-1486312338219-ce68d2c6f44d', 'photo-1488590528505-98d2b5aba04b'],
@@ -94,11 +78,7 @@ const competitions: Competition[] = [
     date: '2025-03-15',
     logo: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center',
     lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish'],
-    placings: {
-      first: '',  
-      second: '',
-      third: ''
-    },
+
     judges: ['TBD'],
     media: {
       photos: [],
@@ -112,11 +92,7 @@ const competitions: Competition[] = [
     date: '2025-04-15',
     logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
     lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish', 'UIUC Roshni'],
-    placings: {
-      first: '',
-      second: '',
-      third: ''
-    },
+
     judges: ['TBD'],
     media: {
       photos: [],
@@ -224,7 +200,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
         const mappedComp = mapCompetitionTeamsFull(item, teams);
         console.log('[DEBUG] Raw item.lineup:', item.lineup);
         console.log('[DEBUG] Mapped lineup:', mappedComp.lineup);
-        console.log('[DEBUG] Mapped placings:', mappedComp.placings);
+
         return mappedComp;
       });
   
@@ -320,7 +296,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
-              <p className="text-slate-400 text-sm mb-6 text-center">Predict the top 3 placings for this competition</p>
+              <p className="text-slate-400 text-sm mb-6 text-center">Predict the top 3 teams for this competition</p>
               
               <div className="space-y-4 mb-6">
                 <SimulationDropdown
@@ -455,6 +431,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
           onClose={() => setSelectedCompetition(null)}
           onSimulationSet={onSimulationSet}
           simulationData={simulationData}
+          teams={teams}
         />
         </>
       )}

@@ -36,12 +36,11 @@ export interface Competition {
   city: string;
   date: string;
   logo: string;
-  lineup: string[];
-  placings: {
-    first: string;
-    second: string;
-    third: string;
-  };
+  lineup: Array<{
+    id: Team;
+    name: string;
+  }>;
+
   firstplace?: string;
   secondplace?: string;
   thirdplace?: string;

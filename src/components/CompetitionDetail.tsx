@@ -12,7 +12,10 @@ interface CompetitionDetailProps {
 }
 
 interface SimulationDropdownProps {
-  teams: any[]; // now array of team objects
+  teams: Array<{
+    id: Team | string;
+    name: string;
+  }>;
   selectedTeam: string;
   onSelect: (team: string) => void;
   placeholder: string;
@@ -54,25 +57,40 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
         </div>
         <span className="text-white font-semibold flex-1 truncate text-sm">
-          {teams.find(t => t.id === selectedTeam)?.name || placeholder}
+          {(() => {
+            const team = teams.find(t => {
+              if (typeof t.id === 'string') return t.id === selectedTeam;
+              if (typeof t.id === 'object' && 'id' in t.id) return t.id.id === selectedTeam;
+              return false;
+            });
+            if (!team) return placeholder;
+            if (typeof team.id === 'string') return team.id;
+            if (typeof team.id === 'object' && 'name' in team.id) return team.id.name;
+            return team.name || placeholder;
+          })()}
         </span>
         <ChevronDown className={`h-4 w-4 text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
-          {teams.map((team) => (
-            <button
-              key={team.id}
-              onClick={() => {
-                onSelect(team.id);
-                setIsOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
-            >
-              {team.name}
-            </button>
-          ))}
+          {teams.map((team) => {
+            const teamId = typeof team.id === 'string' ? team.id : (team.id as Team).id;
+            const teamName = typeof team.id === 'string' ? team.id : (team.id as Team).name;
+            
+            return (
+              <button
+                key={teamId}
+                onClick={() => {
+                  onSelect(teamId);
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
+              >
+                {teamName}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -120,9 +138,9 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
       setPredictions(simulationData[competition.id].predictions);
     } else {
       setPredictions({
-        first: competition.placings.first || '',
-        second: competition.placings.second || '',
-        third: competition.placings.third || ''
+        first: '',
+        second: '',
+        third: ''
       });
     }
   }, [simulationData, competition]);
@@ -153,18 +171,29 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
         return competition.lineup;
       case 'second':
         return competition.lineup.filter(team => {
-          const teamId = typeof team === 'string' ? team : (team as any).id;
+          const teamId = typeof team.id === 'string' ? team.id : (team.id as Team).id;
           return teamId !== predictions.first;
         });
       case 'third':
         return competition.lineup.filter(team => {
-          const teamId = typeof team === 'string' ? team : (team as any).id;
+          const teamId = typeof team.id === 'string' ? team.id : (team.id as Team).id;
           return teamId !== predictions.first && teamId !== predictions.second;
         });
       default:
         return competition.lineup;
     }
   };
+
+  // Function to resolve team IDs to team objects for placings
+  const getPlacingTeam = (teamId: string | number) => {
+    if (!teamId || !teams.length) return null;
+    return teams.find(team => team.id === String(teamId) || team.id === teamId);
+  };
+
+  // Get the actual placing teams
+  const firstPlaceTeam = getPlacingTeam(competition.firstplace);
+  const secondPlaceTeam = getPlacingTeam(competition.secondplace);
+  const thirdPlaceTeam = getPlacingTeam(competition.thirdplace);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -208,7 +237,9 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
             <div className="grid gap-2">
               {competition.lineup.map((team, index) => (
                 <div key={index} className="bg-slate-800 rounded-lg px-3 py-2 text-slate-300 text-sm flex items-center gap-2">
-                  <span>{typeof team === 'string' ? team : (team as any).name}</span>
+                  <span>
+                    {typeof team.id === 'string' ? team.id : (team.id as Team).name}
+                  </span>
                 </div>
               ))}
             </div>
@@ -260,25 +291,39 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
                 )}
               </div>
             ) : (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 rounded-lg px-3 py-2 border border-yellow-600/30">
-                  <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
-                  <span className="text-white font-semibold">
-                    {typeof competition.placings.first === 'string' ? competition.placings.first : (competition.placings.first as any).name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 rounded-lg px-3 py-2 border border-slate-500/30">
-                  <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
-                  <span className="text-white font-semibold">
-                    {typeof competition.placings.second === 'string' ? competition.placings.second : (competition.placings.second as any).name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 rounded-lg px-3 py-2 border border-orange-600/30">
-                  <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
-                  <span className="text-white font-semibold">
-                    {typeof competition.placings.third === 'string' ? competition.placings.third : (competition.placings.third as any).name}
-                  </span>
-                </div>
+              <div className="space-y-3">
+                {firstPlaceTeam && (
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-lg px-3 py-2">
+                    <div className="w-6 h-6 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
+                    <div className="flex-1">
+                      <div className="text-white font-semibold text-sm">{firstPlaceTeam.name}</div>
+                      <div className="text-yellow-400 text-xs">{firstPlaceTeam.university}</div>
+                    </div>
+                  </div>
+                )}
+                {secondPlaceTeam && (
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-lg px-3 py-2">
+                    <div className="w-6 h-6 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
+                    <div className="flex-1">
+                      <div className="text-white font-semibold text-sm">{secondPlaceTeam.name}</div>
+                      <div className="text-slate-400 text-xs">{secondPlaceTeam.university}</div>
+                    </div>
+                  </div>
+                )}
+                {thirdPlaceTeam && (
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-lg px-3 py-2">
+                    <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
+                    <div className="flex-1">
+                      <div className="text-white font-semibold text-sm">{thirdPlaceTeam.name}</div>
+                      <div className="text-orange-400 text-xs">{thirdPlaceTeam.university}</div>
+                    </div>
+                  </div>
+                )}
+                {!firstPlaceTeam && !secondPlaceTeam && !thirdPlaceTeam && (
+                  <div className="text-slate-400 text-sm text-center py-4">
+                    No results available yet
+                  </div>
+                )}
               </div>
             )}
           </div>
