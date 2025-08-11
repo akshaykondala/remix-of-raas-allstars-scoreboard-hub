@@ -1,5 +1,5 @@
 
-import { MapPin, Calendar, Users } from 'lucide-react';
+import { MapPin, Calendar, Users, Trophy } from 'lucide-react';
 import { Competition } from '@/lib/types';
 
 interface CompetitionCardProps {
@@ -67,6 +67,17 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
               </span>
               <span className="text-slate-400 text-sm hidden sm:inline">teams</span>
               <span className="text-slate-400 text-sm sm:hidden">teams</span>
+            </div>
+            
+            {/* Bid Status Badge */}
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+              competition.bid_status 
+                ? 'bg-green-500/20 text-green-300 border border-green-400/30' 
+                : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
+            }`}>
+              <Trophy className="h-3 w-3" />
+              <span className="hidden sm:inline">{competition.bid_status ? 'Bid' : 'Non-Bid'}</span>
+              <span className="sm:hidden">{competition.bid_status ? 'B' : 'N'}</span>
             </div>
           </div>
         </div>

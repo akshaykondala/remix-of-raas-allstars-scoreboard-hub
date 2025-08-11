@@ -5,6 +5,7 @@ import { Team, Competition } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
+import { mapCompetitionTeamsFull } from '@/lib/competitionMapping';
 
 // Fallback teams data to ensure routing always works
 const fallbackTeams: Team[] = [
@@ -25,7 +26,7 @@ const fallbackTeams: Team[] = [
       'Known for innovative choreography and strong storytelling'
     ],
     achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
-    founded: '2005',
+    founded: 2005,
     genderComposition: 'Co-ed',
     logo: '/src/logos/texas-raas.jpg'
   },
@@ -46,7 +47,7 @@ const fallbackTeams: Team[] = [
       'Known for clean formations and synchronized movements'
     ],
     achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
-    founded: '2003',
+    founded: 2003,
     genderComposition: 'All Girls',
     logo: '/src/logos/cmu-raasta.jpg'
   },
@@ -67,7 +68,7 @@ const fallbackTeams: Team[] = [
       'Consistent top performer in regional competitions'
     ],
     achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
-    founded: '2008',
+    founded: 2008,
     genderComposition: 'Co-ed',
     logo: '/src/logos/uf-gatoraas.jpeg'
   },
@@ -214,6 +215,13 @@ export const TeamDetailPage = () => {
   const team = teams.find(t => t.id === teamId);
   console.log('TeamDetailPage - found team:', team?.name || 'NOT FOUND');
 
+  // Handle team clicks from competition detail
+  const handleTeamClick = (clickedTeam: Team) => {
+    console.log('🎯 TeamDetailPage: Team clicked:', clickedTeam.name);
+    // Navigate to the clicked team's detail page
+    navigate(`/team/${clickedTeam.id}`);
+  };
+
   // Fetch additional data to enhance fallback data
   useEffect(() => {
     const loadData = async () => {
@@ -255,6 +263,7 @@ export const TeamDetailPage = () => {
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
             instagramlink: comp.instagramlink || '',
+            bid_status: comp.bid_status || false,
             media: { photos: [], videos: [] }
           }));
           setCompetitions(mappedCompetitions);
@@ -271,6 +280,7 @@ export const TeamDetailPage = () => {
 
               judges: [],
               instagramlink: '',
+              bid_status: false,
               media: { photos: [], videos: [] }
             }
           ]);
@@ -414,8 +424,9 @@ export const TeamDetailPage = () => {
                     key={index} 
                     onClick={() => {
                       if (competition) {
-                        const { media, ...rest } = competition;
-                        setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                        // Transform the competition data through the full pipeline
+                        const transformedCompetition = mapCompetitionTeamsFull(competition, teams);
+                        setSelectedCompetition(transformedCompetition);
                       }
                     }}
                     className={`group rounded-xl p-4 transition-all duration-200 ${
@@ -497,6 +508,7 @@ export const TeamDetailPage = () => {
           competition={selectedCompetition} 
           onClose={() => setSelectedCompetition(null)}
           teams={teams}
+          onTeamClick={handleTeamClick}
         />
       )}
     </div>

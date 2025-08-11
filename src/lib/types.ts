@@ -46,6 +46,7 @@ export interface Competition {
   thirdplace?: string;
   judges: Array<{ name: string; category: string }>;
   instagramlink?: string;
+  bid_status: boolean;
   media: {
     photos: string[];
     videos: string[];

@@ -433,13 +433,51 @@ const CUTOFF_POINTS = 5;
 
 const Index = () => {
   const navigate = useNavigate();
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
-  const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
+  
+  // Modal stack management
+  interface ModalEntry {
+    id: string;
+    type: 'team' | 'competition';
+    data: any;
+    zIndex: number;
+  }
+  
+  const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams); // Start with fallback data
+  const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]); // Store original data
   const [loading, setLoading] = useState(false); // Don't show loading initially
+
+  // Modal stack utility functions
+  const pushModal = (type: 'team' | 'competition', data: any) => {
+    const newModal: ModalEntry = {
+      id: `${type}-${Date.now()}-${Math.random()}`,
+      type,
+      data,
+      zIndex: 50 + (modalStack.length * 10)
+    };
+    setModalStack(prev => [...prev, newModal]);
+    console.log('📱 Pushed modal to stack:', { type, zIndex: newModal.zIndex, stackDepth: modalStack.length + 1 });
+  };
+
+  const popModal = () => {
+    setModalStack(prev => {
+      const newStack = prev.slice(0, -1);
+      console.log('📱 Popped modal from stack. New depth:', newStack.length);
+      return newStack;
+    });
+  };
+
+  const clearModalStack = () => {
+    setModalStack([]);
+    console.log('📱 Cleared entire modal stack');
+  };
+
+  // Helper functions to get current modals
+  const getCurrentTeam = () => modalStack.find(modal => modal.type === 'team')?.data || null;
+  const getCurrentCompetition = () => modalStack.find(modal => modal.type === 'competition')?.data || null;
 
   // Fetch teams and competitions from database
   useEffect(() => {
@@ -460,11 +498,48 @@ const Index = () => {
         
         // Debug: Log raw competitions data
         console.log('📊 Raw competitions data:', competitionsData);
+        console.log('📊 Raw competitions data length:', competitionsData?.length);
+        console.log('📊 Raw competitions data sample:', competitionsData?.slice(0, 2));
         if (!competitionsData.length) {
           console.error('❌ No competitions loaded from API!');
         }
         
-        // Map teams data
+        // Map competitions data FIRST
+        let mappedCompetitions: any[] = [];
+        if (competitionsData) {
+          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+          mappedCompetitions = competitionsData.map((comp: any) => ({
+            id: comp.id,
+            name: comp.name,
+            city: comp.city,
+            date: comp.date,
+            logo: comp.logo
+              ? (typeof comp.logo === 'string'
+                  ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
+                  : (comp.logo && typeof comp.logo === 'object' && comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
+              : '',
+            lineup: comp.lineup || [],
+            firstplace: comp.firstplace,
+            secondplace: comp.secondplace,
+            thirdplace: comp.thirdplace,
+            judges: Array.isArray(comp.judges)
+              ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
+              : [],
+            instagramlink: comp.instagramlink || '',
+            media: { photos: [], videos: [] }
+          }));
+          // Debug: Log mapped competitions
+          console.log('🏆 Mapped competitions:', mappedCompetitions);
+          console.log('🏆 Mapped competitions length:', mappedCompetitions.length);
+          console.log('🏆 First few mapped competitions:', mappedCompetitions.slice(0, 2));
+          // Debug: Log logo URLs
+          console.log('🖼️ Competition logo URLs:', mappedCompetitions.map(c => ({ name: c.name, logo: c.logo })));
+          console.log('🎯 Setting competitions state with mapped competitions');
+          setCompetitions(mappedCompetitions);
+          console.log('✅ Competitions state set');
+        }
+        
+        // Map teams data AFTER competitions are available
         if (teams) {
           const API_URL = import.meta.env.VITE_DIRECTUS_URL;
           const mappedTeams = teams.map((team: any) => ({
@@ -511,21 +586,24 @@ const Index = () => {
               if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
                 let cumulativePoints = 0;
                 return team.competitions_attending.map((compId: any, index: number) => {
-                  // Find competition by ID from the competitions array
-                  const competition = competitions.find((c: any) => c.id === compId);
-                  if (!competition) return null;
+                  // Find competition by ID from the mapped competitions array
+                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
+                  if (!competition) {
+                    console.warn(`⚠️ Competition not found for team ${team.name}, compId: ${compId}`);
+                    return null;
+                  }
                   
                   // Find team's placement in this competition
                   let placement = 'N/A';
                   let pointsEarned = 0;
                   
-                  if (competition.firstplace === team.id) {
+                  if (String(competition.firstplace) === String(team.id)) {
                     placement = '1st';
                     pointsEarned = 4;
-                  } else if (competition.secondplace === team.id) {
+                  } else if (String(competition.secondplace) === String(team.id)) {
                     placement = '2nd';
                     pointsEarned = 2;
-                  } else if (competition.thirdplace === team.id) {
+                  } else if (String(competition.thirdplace) === String(team.id)) {
                     placement = '3rd';
                     pointsEarned = 1;
                   }
@@ -543,21 +621,21 @@ const Index = () => {
                 // Recalculate cumulative points in chronological order
                 let runningTotal = 0;
                 return team.competitions_attending.map((compId: any, index: number) => {
-                  // Find competition by ID from the competitions array
-                  const competition = competitions.find((c: any) => c.id === compId);
+                  // Find competition by ID from the mapped competitions array
+                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
                   if (!competition) return null;
                   
                                      // Find team's placement in this competition
                    let placement = 'N/A';
                    let pointsEarned = 0;
                    
-                   if (competition.firstplace === team.id) {
+                   if (String(competition.firstplace) === String(team.id)) {
                      placement = '1st';
                      pointsEarned = 4;
-                   } else if (competition.secondplace === team.id) {
+                   } else if (String(competition.secondplace) === String(team.id)) {
                      placement = '2nd';
                      pointsEarned = 2;
-                   } else if (competition.thirdplace === team.id) {
+                   } else if (String(competition.thirdplace) === String(team.id)) {
                      placement = '3rd';
                      pointsEarned = 1;
                    }
@@ -589,36 +667,7 @@ const Index = () => {
             }
           });
           setTeamsData(mappedTeams);
-        }
-        
-        // Map competitions data
-        if (competitionsData) {
-          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-          const mappedCompetitions = competitionsData.map((comp: any) => ({
-            id: comp.id,
-            name: comp.name,
-            city: comp.city,
-            date: comp.date,
-            logo: comp.logo
-              ? (typeof comp.logo === 'string'
-                  ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
-                  : (comp.logo && typeof comp.logo === 'object' && comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
-              : '',
-            lineup: Array.isArray(comp.lineup)
-              ? comp.lineup.map((team: any) => typeof team === 'string' ? team : team.name)
-              : [],
-
-            judges: Array.isArray(comp.judges)
-              ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
-              : [],
-            instagramlink: comp.instagramlink || '',
-            media: { photos: [], videos: [] }
-          }));
-          // Debug: Log mapped competitions
-          console.log('🏆 Mapped competitions:', mappedCompetitions);
-          // Debug: Log logo URLs
-          console.log('🖼️ Competition logo URLs:', mappedCompetitions.map(c => ({ name: c.name, logo: c.logo })));
-          setCompetitions(mappedCompetitions);
+          setOriginalTeamsData(mappedTeams); // Store original data
         }
       } catch (error) {
         console.error('Error loading data:', error);
@@ -635,11 +684,13 @@ const Index = () => {
 
   // Calculate bid points based on competition results
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
-    const pointsMap: { [teamName: string]: number } = {};
+    const pointsMap: { [teamId: string]: number } = {};
     
-    // Initialize all teams with 0 points
+    // Initialize all teams with their original bid points
     teams.forEach(team => {
-      pointsMap[team.name] = 0;
+      // Find the original team data to get the base bid points
+      const originalTeam = originalTeamsData.find(ot => ot.id === team.id);
+      pointsMap[team.id] = originalTeam ? originalTeam.bidPoints : (team.bidPoints || 0);
     });
 
     // Add points from completed competitions (currently no placings data)
@@ -649,25 +700,40 @@ const Index = () => {
 
     // Add simulation points if active
     Object.values(simulationData).forEach(simulation => {
-      pointsMap[simulation.predictions.first] = (pointsMap[simulation.predictions.first] || 0) + 4;
-      pointsMap[simulation.predictions.second] = (pointsMap[simulation.predictions.second] || 0) + 2;
-      pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
+      // simulation.predictions contains team IDs, not names
+      if (simulation.predictions.first) {
+        pointsMap[simulation.predictions.first] = (pointsMap[simulation.predictions.first] || 0) + 4;
+      }
+      if (simulation.predictions.second) {
+        pointsMap[simulation.predictions.second] = (pointsMap[simulation.predictions.second] || 0) + 2;
+      }
+      if (simulation.predictions.third) {
+        pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
+      }
     });
 
     return teams.map(team => ({
       ...team,
-      bidPoints: pointsMap[team.name] || 0,
-      qualified: (pointsMap[team.name] || 0) >= CUTOFF_POINTS
+      bidPoints: pointsMap[team.id] || 0,
+      qualified: (pointsMap[team.id] || 0) >= CUTOFF_POINTS
     }));
   };
 
-  // Remove or comment out the useEffect that recalculates bid points
-  // useEffect(() => {
-  //   if (teamsData.length > 0) {
-  //     const updatedTeams = calculateBidPoints(teamsData, []);
-  //     setTeamsData(updatedTeams);
-  //   }
-  // }, [simulationData]);
+  // Re-enable the useEffect that recalculates bid points
+  const isInitialLoad = useRef(true);
+  
+  useEffect(() => {
+    if (teamsData.length > 0 && originalTeamsData.length > 0) {
+      if (isInitialLoad.current) {
+        // Initial load - just set the teams without recalculating
+        isInitialLoad.current = false;
+      } else {
+        // Simulation data changed - recalculate bid points
+        const updatedTeams = calculateBidPoints(teamsData, []);
+        setTeamsData(updatedTeams);
+      }
+    }
+  }, [simulationData, originalTeamsData]);
 
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
   const sortedTeams = [...teamsData].sort((a, b) => b.bidPoints - a.bidPoints);
@@ -693,32 +759,58 @@ const Index = () => {
   };
 
   const handleCompetitionClick = (competitionData: any) => {
-    console.log('handleCompetitionClick received:', competitionData, 'type:', typeof competitionData);
+    console.log('🚀 handleCompetitionClick called with:', competitionData, 'type:', typeof competitionData);
+    console.log('🔍 Current competitions state length:', competitions.length);
+    console.log('🔍 Current teamsData state length:', teamsData.length);
+    
     // Handle different data types - competitions_attending contains IDs
     let competitionId = '';
     if (typeof competitionData === 'string') {
       competitionId = competitionData;
+      console.log('📝 competitionData is string, using as competitionId:', competitionId);
     } else if (competitionData && typeof competitionData === 'object') {
       competitionId = competitionData.id || competitionData;
+      console.log('📦 competitionData is object, extracted competitionId:', competitionId);
     } else if (typeof competitionData === 'number') {
       competitionId = String(competitionData);
+      console.log('🔢 competitionData is number, converted to string:', competitionId);
+    } else {
+      console.error('❌ Unknown competitionData type:', typeof competitionData, competitionData);
+      return;
     }
-    console.log('Processed competitionId:', competitionId);
+    
+    console.log('🔍 Final processed competitionId:', competitionId);
+    console.log('📋 Available competitions:', competitions.map(c => ({ id: c.id, name: c.name, type: typeof c.id })));
+    
     const competition = competitions.find(comp => String(comp.id) === String(competitionId));
     if (competition) {
+      console.log('✅ Found competition:', competition);
+      console.log('🔍 Competition ID type:', typeof competition.id);
+      console.log('🔍 Competition ID value:', competition.id);
+      
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
       console.log('[DEBUG] TeamDetail click - original lineup:', competition.lineup);
       console.log('[DEBUG] TeamDetail click - mapped lineup:', mappedCompetition.lineup);
 
-      setSelectedCompetition(mappedCompetition);
-      setSelectedTeam(null); // Close team detail if open
+      console.log('🎯 Pushing competition to modal stack:', mappedCompetition);
+      pushModal('competition', mappedCompetition);
+      console.log('✅ Competition detail modal should now be open');
     } else {
-      console.log('Competition not found:', competitionId, 'Available competitions:', competitions.map(c => c.id));
+      console.error('❌ Competition not found for ID:', competitionId);
+      console.error('❌ Available competition IDs:', competitions.map(c => c.id));
+      console.error('❌ Available competition names:', competitions.map(c => c.name));
     }
+  };
+
+  const handleTeamClick = (team: Team) => {
+    console.log('🎯 TEAM CLICKED!', { teamId: team.id, teamName: team.name });
+    pushModal('team', team);
+    console.log('✅ Team detail modal should now be open');
   };
 
   const clearSimulation = () => {
     setSimulationData({});
+    setTeamsData(originalTeamsData); // Restore original teams data
   };
 
 
@@ -818,7 +910,7 @@ const Index = () => {
                 {/* 2nd Place */}
                 <div className="flex-1 max-w-[95px]">
                   <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[1])}
+                    onClick={() => pushModal('team', topThreeTeams[1])}
                     className="relative group cursor-pointer"
                   >
                     {/* Enhanced floating effect */}
@@ -855,7 +947,7 @@ const Index = () => {
                 {/* 1st Place - Hero Profile */}
                 <div className="flex-1 max-w-[110px] -mt-8">
                   <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[0])}
+                    onClick={() => pushModal('team', topThreeTeams[0])}
                     className="relative group cursor-pointer"
                   >
                     {/* Epic glowing effect */}
@@ -892,7 +984,7 @@ const Index = () => {
                 {/* 3rd Place */}
                 <div className="flex-1 max-w-[95px]">
                   <div 
-                    onClick={() => setSelectedTeam(topThreeTeams[2])}
+                    onClick={() => pushModal('team', topThreeTeams[2])}
                     className="relative group cursor-pointer"
                   >
                     {/* Enhanced floating effect */}
@@ -938,7 +1030,7 @@ const Index = () => {
                 return (
                   <div 
                     key={team.id}
-                    onClick={() => setSelectedTeam(team)}
+                    onClick={() => pushModal('team', team)}
                     className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/70 hover:border-slate-600/50 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     {/* Subtle glow effect */}
@@ -1002,7 +1094,7 @@ const Index = () => {
                 return (
                   <div 
                     key={team.id}
-                    onClick={() => setSelectedTeam(team)}
+                    onClick={() => pushModal('team', team)}
                     className="group relative bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/40 hover:border-slate-600/30 hover:scale-[1.01] active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-4">
@@ -1050,6 +1142,7 @@ const Index = () => {
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
               teams={teamsData}
+              onTeamClick={handleTeamClick}
             />
           </div>
         </TabsContent>
@@ -1075,10 +1168,10 @@ const Index = () => {
                 </div>
 
                 <div className="grid gap-3">
-                  {teamsData.map((team, index) => (
+                  {[...teamsData].sort((a, b) => a.name.localeCompare(b.name)).map((team, index) => (
                 <div 
                   key={team.id}
-                  onClick={() => setSelectedTeam(team)}
+                  onClick={() => pushModal('team', team)}
                   className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
                 >
                   {/* Rank Badge */}
@@ -1122,16 +1215,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="mt-8">
-              <div className="bg-gradient-to-r from-slate-800/70 via-slate-800/60 to-slate-800/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-4 shadow-lg">
-                <h3 className="text-lg font-bold text-white mb-2">Emerging Programs</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">
-                  These teams are building their competitive programs and working towards 
-                  earning their first bid points. Every team starts somewhere, and these 
-                  programs represent the future growth of collegiate Raas.
-                </p>
-              </div>
-            </div>
+            
               </>
             )}
           </div>
@@ -1172,26 +1256,55 @@ const Index = () => {
         </div>
       </Tabs>
 
-      {/* Team Detail Modal */}
-      {selectedTeam && (
-        <TeamDetail 
-          team={selectedTeam} 
-          onClose={() => setSelectedTeam(null)}
-          onCompetitionClick={handleCompetitionClick}
-          competitions={competitions}
-        />
-      )}
+      {/* Modal Stack Rendering */}
+      {modalStack.map((modal, index) => {
+        const isTopModal = index === modalStack.length - 1;
+        
+        if (modal.type === 'competition') {
+          return (
+            <CompetitionDetail 
+              key={modal.id}
+              competition={modal.data} 
+              onClose={() => {
+                popModal();
+                console.log('📱 Competition modal closed, remaining modals:', modalStack.length - 1);
+              }}
+              onSimulationSet={handleSimulationSet}
+              simulationData={simulationData}
+              teams={teamsData}
+              onTeamClick={handleTeamClick}
+              zIndex={modal.zIndex}
+            />
+          );
+        }
+        
+        if (modal.type === 'team') {
+          return (
+            <TeamDetail 
+              key={modal.id}
+              team={modal.data} 
+              onClose={() => {
+                popModal();
+                console.log('📱 Team modal closed, remaining modals:', modalStack.length - 1);
+              }}
+              onCompetitionClick={handleCompetitionClick}
+              competitions={competitions}
+              zIndex={modal.zIndex}
+            />
+          );
+        }
+        
+        return null;
+      })}
 
-      {/* Competition Detail Modal */}
-      {selectedCompetition && (
-        <CompetitionDetail 
-          competition={selectedCompetition} 
-          onClose={() => setSelectedCompetition(null)}
-          onSimulationSet={handleSimulationSet}
-          simulationData={simulationData}
-          teams={teamsData} // <-- pass teamsData for name resolution
-        />
-      )}
+      {/* Debug: Log modal stack state */}
+      {modalStack.length > 0 && (() => {
+        console.log('📱 Modal stack state:', {
+          depth: modalStack.length,
+          modals: modalStack.map(m => ({ type: m.type, zIndex: m.zIndex }))
+        });
+        return null;
+      })()}
     </div>
   );
 };

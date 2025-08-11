@@ -11,6 +11,7 @@ export interface CompetitionsTabProps {
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
   simulationData?: SimulationData;
   teams: any[];
+  onTeamClick?: (team: any) => void;
 }
 
 /*
@@ -103,7 +104,7 @@ const competitions: Competition[] = [
 */
 
 interface SimulationDropdownProps {
-  teams: string[];
+  teams: Array<{ id: string; name: string }>;
   selectedTeam: string;
   onSelect: (team: string) => void;
   placeholder: string;
@@ -153,7 +154,11 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
         </div>
         <span className="text-white font-semibold flex-1 truncate text-sm">
-          {selectedTeam || placeholder}
+          {(() => {
+            const team = teams.find(t => t.id === selectedTeam);
+            if (!team) return placeholder;
+            return team.name;
+          })()}
         </span>
         <ChevronDown className={`h-4 w-4 text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -162,14 +167,14 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
         <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
           {teams.map((team) => (
             <button
-              key={team}
+              key={team.id}
               onClick={() => {
-                onSelect(team);
+                onSelect(team.id);
                 setIsOpen(false);
               }}
               className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
             >
-              {team}
+              {team.name}
             </button>
           ))}
         </div>
@@ -178,7 +183,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
   );
 }
 
-export function CompetitionsTab({ onSimulationSet, simulationData, teams }: CompetitionsTabProps) {
+export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeamClick }: CompetitionsTabProps) {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
@@ -256,16 +261,20 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
   const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
     if (!simulatingCompetition) return [];
     
-    switch (position) {
-      case 'first':
-        return simulatingCompetition.lineup;
-      case 'second':
-        return simulatingCompetition.lineup.filter(team => team !== predictions.first);
-      case 'third':
-        return simulatingCompetition.lineup.filter(team => team !== predictions.first && team !== predictions.second);
-      default:
-        return simulatingCompetition.lineup;
-    }
+    // Ensure lineup has the expected structure
+    const availableTeams = simulatingCompetition.lineup
+      .filter(team => {
+        // Skip teams that are already selected in previous positions
+        if (position === 'second' && String(team.id) === predictions.first) return false;
+        if (position === 'third' && (String(team.id) === predictions.first || String(team.id) === predictions.second)) return false;
+        return true;
+      })
+      .map(team => ({
+        id: String(team.id),
+        name: team.name
+      }));
+    
+    return availableTeams;
   };
 
   useEffect(() => {
@@ -432,6 +441,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams }: Comp
           onSimulationSet={onSimulationSet}
           simulationData={simulationData}
           teams={teams}
+          onTeamClick={onTeamClick}
         />
         </>
       )}

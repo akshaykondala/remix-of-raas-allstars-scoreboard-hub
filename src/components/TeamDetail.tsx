@@ -8,17 +8,33 @@ interface TeamDetailProps {
   onClose: () => void;
   onCompetitionClick?: (competitionData: any) => void;
   competitions?: Competition[];
+  zIndex?: number;
 }
 
-export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [] }: TeamDetailProps) => {
+export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [], zIndex = 70 }: TeamDetailProps) => {
   const [isExiting, setIsExiting] = useState(false);
+  
+  // Debug: Log the props
+  console.log('🔍 TeamDetail rendered with props:', { 
+    teamName: team.name, 
+    teamId: team.id,
+    competitionsLength: competitions.length, 
+    onCompetitionClickExists: !!onCompetitionClick,
+    competitionsSample: competitions.slice(0, 2).map(c => ({ id: c.id, name: c.name }))
+  });
+  
+  // Debug: Log the team's competition results
+  console.log('🏆 Team competitionResults:', team.competitionResults);
+  console.log('🏆 Team competitionResults length:', team.competitionResults?.length);
+  console.log('🏆 Team competitionResults type:', typeof team.competitionResults);
+  console.log('🏆 Team competitions_attending:', team.competitions_attending);
 
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(onClose, 200); // Match the animation duration
   };
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div className="fixed inset-0 flex" style={{ zIndex }}>
       <div className={`bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 shadow-2xl w-full max-h-full overflow-hidden ${isExiting ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
         <div className="max-h-[95vh] overflow-y-auto scrollbar-hide">
         {/* Modern Header with Hero Profile */}
@@ -49,12 +65,12 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
             {/* Team Name & Info */}
             <div>
               <h1 className="text-2xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-2">{team.name}</h1>
-              <p className="text-slate-300 text-lg font-medium mb-2">{team.university}</p>
+              <p className="text-white text-lg font-medium mb-2">{team.university}</p>
               
               {/* Modern Info Badges */}
               <div className="flex flex-wrap justify-center gap-2 mb-3">
                 {team.city && (
-                  <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm border border-white/20">
+                  <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm border border-white/20 text-white">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>{team.city}</span>
                   </div>
@@ -123,7 +139,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                       {team.contactInfo.captains.length > 1 ? 'Team Captains' : 'Team Captain'}
                     </div>
                     <div className="space-y-1">
-                      {team.contactInfo.captains.map((captain, index) => (
+                      {[...team.contactInfo.captains].sort((a, b) => a.localeCompare(b)).map((captain, index) => (
                         <div key={index} className="text-white font-semibold text-sm">{captain}</div>
                       ))}
                     </div>
@@ -190,81 +206,115 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
               Season Journey
             </h3>
             <div className="space-y-4">
-              {team.competitionResults.map((result, index) => {
-                const isFirst = result.placement?.includes('1st');
-                const isSecond = result.placement?.includes('2nd');
-                const isThird = result.placement?.includes('3rd');
-                const earnedPoints = result.bidPointsEarned > 0;
-                
-                return (
-                  <div 
-                    key={index}
-                    onClick={() => {
-                      console.log('Clicking competition:', result.competitionId, 'type:', typeof result.competitionId);
-                      onCompetitionClick && onCompetitionClick(result.competitionId);
-                    }}
-                    className={`relative bg-gradient-to-r ${
-                      earnedPoints 
-                        ? 'from-green-500/10 to-emerald-500/5 border-green-400/30' 
-                        : 'from-slate-800/60 to-slate-700/40 border-slate-600/40'
-                    } border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-transform duration-200`}
-                  >
-                    {/* Timeline connector */}
-                    {index < team.competitionResults!.length - 1 && (
-                      <div className="absolute left-6 top-full w-0.5 h-4 bg-slate-600"></div>
-                    )}
-                    
-                    <div className="flex items-start gap-4">
-                      {/* Competition number & status */}
-                      <div className="flex flex-col items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                          earnedPoints 
-                            ? 'bg-green-500/20 text-green-400 border border-green-400/40' 
-                            : 'bg-slate-600/30 text-slate-400 border border-slate-500/40'
-                        }`}>
-                          {index + 1}
-                        </div>
-                      </div>
+              {team.competitionResults && team.competitionResults.length > 0 ? (
+                team.competitionResults.map((result, index) => {
+                  console.log(`🏆 Competition result ${index}:`, {
+                    competitionId: result.competitionId,
+                    competitionName: result.competitionName,
+                    placement: result.placement,
+                    bidPointsEarned: result.bidPointsEarned,
+                    type: typeof result.competitionId,
+                    fullResult: result
+                  });
+                  
+                  const isFirst = result.placement?.includes('1st');
+                  const isSecond = result.placement?.includes('2nd');
+                  const isThird = result.placement?.includes('3rd');
+                  const earnedPoints = result.bidPointsEarned > 0;
+                  
+                  return (
+                    <div 
+                      key={index}
+                      onClick={() => {
+                        console.log('🎯 COMPETITION CLICKED!');
+                        console.log('📊 Clicking competition:', result.competitionId, 'type:', typeof result.competitionId);
+                        console.log('🔧 onCompetitionClick function exists:', !!onCompetitionClick);
+                        console.log('📋 Full result object:', result);
+                        console.log('🏆 Team competitions array length:', competitions.length);
+                        console.log('🏆 First few competitions:', competitions.slice(0, 3));
+                        
+                        if (onCompetitionClick) {
+                          console.log('✅ Calling onCompetitionClick with:', result.competitionId);
+                          try {
+                            onCompetitionClick(result.competitionId);
+                            console.log('✅ onCompetitionClick called successfully');
+                          } catch (error) {
+                            console.error('❌ Error calling onCompetitionClick:', error);
+                          }
+                        } else {
+                          console.error('❌ onCompetitionClick is not defined');
+                        }
+                      }}
+                      className={`relative bg-gradient-to-r ${
+                        earnedPoints 
+                          ? 'from-green-500/10 to-emerald-500/5 border-green-400/30' 
+                          : 'from-slate-800/60 to-slate-700/40 border-slate-600/40'
+                      } border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-transform duration-200`}
+                    >
+                      {/* Timeline connector */}
+                      {index < team.competitionResults!.length - 1 && (
+                        <div className="absolute left-6 top-full w-0.5 h-4 bg-slate-600"></div>
+                      )}
                       
-                      {/* Competition details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <h4 className="text-white font-semibold text-sm mb-1 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
-                            {result.date && (
-                              <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                            )}
-                          </div>
-                          
-                          {/* Placement badge */}
-                          <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            isFirst ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/40' :
-                            isSecond ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
-                            isThird ? 'bg-orange-500/20 text-orange-400 border border-orange-400/40' :
-                            'bg-slate-600/20 text-slate-400 border border-slate-500/40'
+                      <div className="flex items-start gap-4">
+                        {/* Competition number & status */}
+                        <div className="flex flex-col items-center">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            earnedPoints 
+                              ? 'bg-green-500/20 text-green-400 border border-green-400/40' 
+                              : 'bg-slate-600/30 text-slate-400 border border-slate-500/40'
                           }`}>
-                            {result.placement || 'N/A'}
+                            {index + 1}
                           </div>
                         </div>
                         
-                        {/* Points breakdown */}
-                        <div className="flex items-center gap-4 text-xs">
-                          <div className="flex items-center gap-1">
-                            <span className="text-slate-400">Points Earned:</span>
-                            <span className={`font-bold ${earnedPoints ? 'text-green-400' : 'text-slate-500'}`}>
-                              +{result.bidPointsEarned}
-                            </span>
+                        {/* Competition details */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h4 className="text-white font-semibold text-sm mb-1 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
+                              {result.date && (
+                                <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                              )}
+                            </div>
+                            
+                            {/* Placement badge */}
+                            <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              isFirst ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/40' :
+                              isSecond ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
+                              isThird ? 'bg-orange-500/20 text-orange-400 border border-orange-400/40' :
+                              'bg-slate-600/20 text-slate-400 border border-slate-500/40'
+                            }`}>
+                              {result.placement || 'N/A'}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <span className="text-slate-400">Season Total:</span>
-                            <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
+                          
+                          {/* Points breakdown */}
+                          <div className="flex items-center gap-4 text-xs">
+                            <div className="flex items-center gap-1">
+                              <span className="text-slate-400">Points Earned:</span>
+                              <span className={`font-bold ${earnedPoints ? 'text-green-400' : 'text-slate-500'}`}>
+                                +{result.bidPointsEarned}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-slate-400">Season Total:</span>
+                              <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-slate-400">
+                  <p>No competition results available</p>
+                  <p className="text-sm mt-2">Debug info:</p>
+                  <p className="text-xs">competitionResults: {JSON.stringify(team.competitionResults)}</p>
+                  <p className="text-xs">competitions_attending: {JSON.stringify(team.competitions_attending)}</p>
+                </div>
+              )}
             </div>
           </div>
         )}
