@@ -30,7 +30,10 @@ const fallbackTeams: Team[] = [
       'Multiple-time Raas All Stars qualifier',
       'Known for innovative choreography and strong storytelling'
     ],
-    achievements: ['Raas All Stars 2023 - 2nd Place', 'Raas All Stars 2022 - 4th Place'],
+    achievements: [
+      { name: 'Raas All Stars 2023 - 2nd Place', link: 'https://www.youtube.com/watch?v=example1' },
+      { name: 'Raas All Stars 2022 - 4th Place', link: 'https://www.youtube.com/watch?v=example2' }
+    ],
     founded: 2005,
     genderComposition: 'Co-ed',
     logo: '/src/logos/texas-raas.jpg',
@@ -98,7 +101,10 @@ const fallbackTeams: Team[] = [
       'Consistently ranked in top 10 nationally',
       'Known for clean formations and synchronized movements'
     ],
-    achievements: ['Raas All Stars 2023 - 6th Place', 'Raas All Stars 2021 - 3rd Place'],
+    achievements: [
+      { name: 'Raas All Stars 2023 - 6th Place', link: 'https://www.youtube.com/watch?v=example3' },
+      { name: 'Raas All Stars 2021 - 3rd Place', link: 'https://www.youtube.com/watch?v=example4' }
+    ],
     founded: 2003,
     genderComposition: 'All Girls',
     logo: '/src/logos/cmu-raasta.jpg',
@@ -142,7 +148,10 @@ const fallbackTeams: Team[] = [
       'Known for high-energy performances and crowd engagement',
       'Consistent top performer in regional competitions'
     ],
-    achievements: ['Raas All Stars 2023 - 8th Place', 'Raas Chaos 2024 - 3rd Place'],
+    achievements: [
+      { name: 'Raas All Stars 2023 - 8th Place', link: 'https://www.youtube.com/watch?v=example5' },
+      { name: 'Raas Chaos 2024 - 3rd Place', link: 'https://www.youtube.com/watch?v=example6' }
+    ],
     founded: 2008,
     genderComposition: 'Co-ed',
     logo: '/src/logos/uf-gatoraas.jpeg',
@@ -193,7 +202,10 @@ const fallbackTeams: Team[] = [
       'Known for innovative choreography and modern interpretations',
       'Strong presence in California competitions'
     ],
-    achievements: ['Bollywood Berkeley 2024 - 1st Place', 'Spring Nationals 2023 - 5th Place'],
+    achievements: [
+      { name: 'Bollywood Berkeley 2024 - 1st Place', link: 'https://www.youtube.com/watch?v=example7' },
+      { name: 'Spring Nationals 2023 - 5th Place', link: 'https://www.youtube.com/watch?v=example8' }
+    ],
     founded: 2010,
     genderComposition: 'All Boys',
     logo: '',
@@ -236,7 +248,10 @@ const fallbackTeams: Team[] = [
       'Known for synchronized formations and technical precision',
       'Consistent performer in regional competitions'
     ],
-    achievements: ['Midwest Magic 2024 - 1st Place', 'Raas All Stars 2022 - 7th Place'],
+    achievements: [
+      { name: 'Midwest Magic 2024 - 1st Place', link: 'https://www.youtube.com/watch?v=example9' },
+      { name: 'Raas All Stars 2022 - 7th Place', link: 'https://www.youtube.com/watch?v=example10' }
+    ],
     founded: 2007,
     genderComposition: 'Co-ed',
     logo: '',
@@ -287,7 +302,10 @@ const fallbackTeams: Team[] = [
       'Known for creative storytelling and emotional performances',
       'Strong presence in East Coast competitions'
     ],
-    achievements: ['East Coast Showdown 2024 - 2nd Place', 'Raas All Stars 2021 - 9th Place'],
+    achievements: [
+      { name: 'East Coast Showdown 2024 - 2nd Place', link: 'https://www.youtube.com/watch?v=example11' },
+      { name: 'Raas All Stars 2021 - 9th Place', link: 'https://www.youtube.com/watch?v=example12' }
+    ],
     founded: 2006,
     genderComposition: 'Open',
     logo: '',
@@ -322,7 +340,10 @@ const fallbackTeams: Team[] = [
       'Known for technical excellence and innovative choreography',
       'Rising star in the collegiate Raas circuit'
     ],
-    achievements: ['Raas Chaos 2024 - 5th Place', 'Spring Nationals 2023 - 8th Place'],
+    achievements: [
+      { name: 'Raas Chaos 2024 - 5th Place', link: 'https://www.youtube.com/watch?v=example13' },
+      { name: 'Spring Nationals 2023 - 8th Place', link: 'https://www.youtube.com/watch?v=example14' }
+    ],
     founded: 2012,
     genderComposition: 'Co-ed',
     logo: '',
@@ -357,7 +378,10 @@ const fallbackTeams: Team[] = [
       'Known for sophisticated choreography and storytelling',
       'Consistent performer in regional competitions'
     ],
-    achievements: ['East Coast Showdown 2024 - 3rd Place', 'Raas All Stars 2022 - 10th Place'],
+    achievements: [
+      { name: 'East Coast Showdown 2024 - 3rd Place', link: 'https://www.youtube.com/watch?v=example15' },
+      { name: 'Raas All Stars 2022 - 10th Place', link: 'https://www.youtube.com/watch?v=example16' }
+    ],
     founded: 2009,
     genderComposition: 'All Girls',
     logo: '',
@@ -400,7 +424,10 @@ const fallbackTeams: Team[] = [
       'Known for energetic performances and crowd engagement',
       'Emerging talent in the collegiate Raas circuit'
     ],
-    achievements: ['Midwest Magic 2024 - 3rd Place', 'Spring Nationals 2023 - 9th Place'],
+    achievements: [
+      { name: 'Midwest Magic 2024 - 3rd Place', link: 'https://www.youtube.com/watch?v=example17' },
+      { name: 'Spring Nationals 2023 - 9th Place', link: 'https://www.youtube.com/watch?v=example18' }
+    ],
     founded: 2015,
     genderComposition: 'Co-ed',
     logo: '',
@@ -847,13 +874,28 @@ const Index = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
 
         <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
-          {/* Stationary Logo */}
-          <div className="flex justify-center pt-6 pb-8">
-            <img 
-              src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
-              alt="Raas All Stars Logo" 
-              className="h-12 w-auto"
-            />
+          {/* Header with Centered Logo and Discord Button */}
+          <div className="relative pt-6 pb-8">
+            {/* Centered Logo */}
+            <div className="flex justify-center">
+              <img 
+                src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
+                alt="Raas All Stars Logo" 
+                className="h-12 w-auto"
+              />
+            </div>
+            
+            {/* Discord Button - Positioned absolutely in top right */}
+            <a
+              href="https://discord.gg/your-discord-invite"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute top-6 right-4 text-white hover:text-slate-300 transition-colors duration-200 p-2"
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+            </a>
           </div>
           {loading ? (
             <div className="text-center py-8">

@@ -64,7 +64,7 @@ To enhance the app functionality, consider adding these optional fields:
 11. **achievements** (JSON)
     - Type: JSON
     - Required: No
-    - Example: ["Raas All Stars 2023 - 2nd Place"]
+    - Example: [{"name": "Raas All Stars 2023 - 2nd Place", "link": "https://www.youtube.com/watch?v=example"}]
 
 12. **founded** (String)
     - Type: String
@@ -104,8 +104,8 @@ If you add the recommended fields, your data could look like:
     "Known for innovative choreography and strong storytelling"
   ],
   "achievements": [
-    "Raas All Stars 2023 - 2nd Place",
-    "Raas All Stars 2022 - 4th Place"
+    {"name": "Raas All Stars 2023 - 2nd Place", "link": "https://www.youtube.com/watch?v=example1"},
+    {"name": "Raas All Stars 2022 - 4th Place", "link": "https://www.youtube.com/watch?v=example2"}
   ],
   "founded": "2005"
 }
@@ -140,7 +140,8 @@ The app will automatically fetch teams from your Directus `teams` collection usi
 | `qualified` | `qualified` | boolean | Auto-calculated (bidPoints >= 5) |
 | `locked` | `locked` | boolean | Default: false (can be added to DB) |
 | `history` | `history` | string[] | Default: [] (can be added to DB) |
-| `achievements` | `achievements` | string[] | Default: [] (can be added to DB) |
+| `achievements` | `achievements` | object[] | Default: [] (can be added to DB) |
+| | | | Each achievement object has: `name` (string) and `link` (string, YouTube URL) |
 | `founded` | `founded` | string | Default: "" (can be added to DB) |
 
 ## Testing

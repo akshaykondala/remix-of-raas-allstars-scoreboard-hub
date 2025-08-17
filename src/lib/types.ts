@@ -11,7 +11,10 @@ export interface Team {
   instagramlink?: string;
   competitions_attending?: string[];
   history: string[];
-  achievements: string[];
+  achievements: Array<{
+    name: string;
+    link: string;
+  }>;
   founded: number;
   genderComposition: 'All Girls' | 'All Boys' | 'Co-ed' | 'Open';
   contactInfo?: {
