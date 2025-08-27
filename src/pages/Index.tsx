@@ -1205,59 +1205,86 @@ const Index = () => {
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
                   <p className="text-slate-400 text-sm">
-                    A display of every team in the circuit
+                    Complete listing of teams in the circuit
                   </p>
                 </div>
 
-                <div className="grid gap-3">
+                <div className="space-y-3">
                   {[...teamsData].sort((a, b) => a.name.localeCompare(b.name)).map((team, index) => (
-                <div 
-                  key={team.id}
-                  onClick={() => pushModal('team', team)}
-                  className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
-                >
-                  {/* Rank Badge */}
-                  <div className="absolute top-3 left-3 bg-slate-400/20 text-slate-400 px-2 py-1 rounded text-xs font-bold">
-                    {index + 1}
-                  </div>
-
-                  {/* Team Color Strip */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${team.color}`}></div>
-
-                  <div className="ml-3 sm:ml-4">
-                    {/* Team Info */}
-                    <div className="flex items-start justify-between mb-3 mt-6">
-                      <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">{team.name}</h3>
-                        <p className="text-slate-400 text-sm">{team.university}</p>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 sm:space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Target className="h-4 w-4 text-blue-400" />
-                          <span className="text-white font-semibold">{team.bidPoints}</span>
-                          <span className="text-slate-400 text-sm hidden sm:inline">bid points</span>
-                          <span className="text-slate-400 text-sm sm:hidden">pts</span>
+                    <div 
+                      key={team.id}
+                      onClick={() => pushModal('team', team)}
+                      className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-600/40 hover:scale-[1.01] active:scale-[0.99]"
+                    >
+                      <div className="flex items-center gap-4">
+                        {/* Alphabetical Position */}
+                        <div className="w-10 h-10 bg-slate-600/30 border border-slate-500/30 rounded-xl flex items-center justify-center">
+                          <span className="text-slate-400 font-bold text-sm">{index + 1}</span>
                         </div>
                         
-                        <div className="flex items-center space-x-2">
-                          <Users className="h-4 w-4 text-slate-500" />
-                          <span className="text-slate-400 text-sm">Team</span>
+                        {/* Team Logo */}
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/40 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                          {team.logo ? (
+                            <img src={team.logo} alt={team.name} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-300" />
+                          ) : (
+                            <Trophy className="h-6 w-6 text-slate-400" />
+                          )}
+                        </div>
+                        
+                        {/* Team Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-white font-semibold text-base truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
+                          <div className="flex items-center gap-2 text-slate-400 text-sm">
+                            <span className="truncate">{team.university}</span>
+                            <span className="text-slate-500">•</span>
+                            <span className="text-slate-400">{team.city}</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="px-2 py-0.5 bg-slate-600/30 text-slate-300 text-xs rounded-full">
+                              {team.genderComposition || 'Co-ed'}
+                            </span>
+                            <span className="text-slate-500 text-xs">Est. {team.founded || 'N/A'}</span>
+                          </div>
+                        </div>
+                        
+                        {/* Bid Points Display */}
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+                          <div className="relative bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm px-4 py-2 rounded-2xl border border-blue-400/20 group-hover:border-blue-300/40 transition-all duration-300">
+                            <div className="flex flex-col items-center">
+                              <div className="text-blue-300 font-black text-lg leading-none group-hover:text-blue-200 transition-colors duration-300">{team.bidPoints}</div>
+                              <div className="text-blue-400/70 font-medium text-[10px] uppercase tracking-widest">points</div>
+                            </div>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Competition Results Preview */}
+                      {team.competitionResults && team.competitionResults.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-slate-700/30">
+                          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                            <span className="text-slate-400 text-xs font-medium whitespace-nowrap">Recent:</span>
+                            {team.competitionResults.slice(-3).map((result, resultIndex) => (
+                              <div key={resultIndex} className="flex items-center gap-1 bg-slate-700/30 px-2 py-1 rounded-lg whitespace-nowrap">
+                                <span className="text-slate-300 text-xs font-medium">{result.competitionName}</span>
+                                <span className="text-slate-500">-</span>
+                                <span className={`text-xs font-bold ${
+                                  result.placement === '1st' ? 'text-yellow-400' :
+                                  result.placement === '2nd' ? 'text-slate-300' :
+                                  result.placement === '3rd' ? 'text-orange-400' :
+                                  'text-slate-400'
+                                }`}>
+                                  {result.placement}
+                                </span>
+                                <span className="text-blue-400 text-xs">({result.cumulativeBidPoints}pts)</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Hover Effect */}
-                  <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            
               </>
             )}
           </div>
