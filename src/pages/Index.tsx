@@ -1228,43 +1228,40 @@ const Index = () => {
                         
                         {/* Team Info & Competition Data */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-white font-semibold text-base truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
-                              <p className="text-slate-400 text-sm truncate">{team.university}</p>
-                            </div>
-                            
-                            {/* Total Bid Points */}
-                            <div className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-lg text-sm font-bold ml-2 flex-shrink-0">
-                              {team.bidPoints}pts
-                            </div>
+                          {/* Team Header */}
+                          <div className="mb-3">
+                            <h3 className="text-white font-semibold text-lg truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
+                            <p className="text-slate-400 text-sm truncate">{team.university}</p>
                           </div>
 
-                          {/* Recent Competitions Timeline */}
+                          {/* Recent Competitions */}
                           {team.competitionResults && team.competitionResults.length > 0 ? (
                             <div className="space-y-2">
-                              <div className="text-slate-400 text-xs font-medium">Recent Competitions:</div>
-                              <div className="flex flex-wrap gap-2">
-                                {team.competitionResults.slice(-4).map((result, resultIndex) => {
+                              <div className="flex flex-wrap gap-1.5">
+                                {team.competitionResults.slice(-5).map((result, resultIndex) => {
                                   const placement = result.placement;
-                                  const isTopThree = ['1st', '2nd', '3rd'].includes(placement);
                                   
                                   return (
                                     <div 
                                       key={resultIndex} 
-                                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs ${
+                                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium ${
                                         placement === '1st' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30' :
                                         placement === '2nd' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/30' :
                                         placement === '3rd' ? 'bg-orange-500/20 text-orange-300 border border-orange-400/30' :
                                         'bg-slate-600/20 text-slate-400 border border-slate-500/30'
                                       }`}
                                     >
-                                      {/* Competition Name (shortened) */}
-                                      <span className="font-medium truncate max-w-20 sm:max-w-28">
-                                        {result.competitionName.replace(/\s(20\d{2}|Competition|Comp|Championship)$/i, '').substring(0, 12)}
+                                      {/* Competition Name (abbreviated) */}
+                                      <span className="truncate max-w-16 sm:max-w-24">
+                                        {result.competitionName
+                                          .replace(/\s(20\d{2}|Competition|Comp|Championship)$/i, '')
+                                          .split(' ')
+                                          .map(word => word.charAt(0))
+                                          .join('')
+                                          .substring(0, 3) || result.competitionName.substring(0, 3)}
                                       </span>
                                       
-                                      {/* Placement Badge */}
+                                      {/* Placement */}
                                       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                         placement === '1st' ? 'bg-yellow-500 text-yellow-900' :
                                         placement === '2nd' ? 'bg-slate-400 text-slate-900' :
@@ -1273,44 +1270,44 @@ const Index = () => {
                                       }`}>
                                         {placement === '1st' ? '1' : placement === '2nd' ? '2' : placement === '3rd' ? '3' : placement.replace(/\D/g, '') || '?'}
                                       </div>
-                                      
-                                      {/* Points Earned */}
-                                      {result.bidPointsEarned > 0 && (
-                                        <span className="text-blue-300 font-bold">+{result.bidPointsEarned}</span>
-                                      )}
-                                      
-                                      {/* Running Total */}
-                                      <span className="text-slate-300 text-[10px]">({result.cumulativeBidPoints})</span>
                                     </div>
                                   );
                                 })}
                               </div>
                               
-                              {/* Performance Summary */}
-                              <div className="flex items-center gap-3 text-xs">
-                                <span className="text-slate-400">
-                                  {team.competitionResults.length} comp{team.competitionResults.length !== 1 ? 's' : ''}
-                                </span>
-                                <span className="text-slate-500">•</span>
-                                <span className="text-slate-400">
-                                  {team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length} podium{team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length !== 1 ? 's' : ''}
-                                </span>
+                              {/* Quick Stats */}
+                              <div className="flex items-center gap-3 text-xs pt-1">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                                  <span className="text-slate-400">{team.competitionResults.length} competitions</span>
+                                </div>
+                                
+                                {team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length > 0 && (
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                    <span className="text-slate-300">{team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length} podium finishes</span>
+                                  </div>
+                                )}
+                                
                                 {team.qualified && (
-                                  <>
-                                    <span className="text-slate-500">•</span>
-                                    <span className="text-green-400 font-medium">Qualified</span>
-                                  </>
+                                  <div className="flex items-center gap-1">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    <span className="text-green-400 font-medium">RAS Qualified</span>
+                                  </div>
                                 )}
                               </div>
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              <div className="text-slate-500 text-xs">No competition data available</div>
-                              <div className="flex items-center gap-2 text-xs">
+                              <div className="text-slate-500 text-sm">No recent competition data</div>
+                              <div className="flex items-center gap-3 text-xs">
                                 <span className="px-2 py-1 bg-slate-600/30 text-slate-300 rounded-full">
                                   {team.genderComposition || 'Co-ed'}
                                 </span>
-                                <span className="text-slate-500">Est. {team.founded || 'N/A'}</span>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-400">Est. {team.founded || 'N/A'}</span>
+                                <span className="text-slate-400">•</span>
+                                <span className="text-slate-400">{team.city}</span>
                               </div>
                             </div>
                           )}
