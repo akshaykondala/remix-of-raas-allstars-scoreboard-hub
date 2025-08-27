@@ -4,7 +4,7 @@ import { CompetitionCard } from './CompetitionCard';
 import { CompetitionDetail } from './CompetitionDetail';
 import { ChevronDown } from 'lucide-react';
 import { fetchFromDirectus } from '../lib/api';
-import { Competition, SimulationData } from '../lib/types';
+import { Competition, SimulationData, Team } from '../lib/types';
 import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 
 export interface CompetitionsTabProps {
@@ -14,19 +14,35 @@ export interface CompetitionsTabProps {
   onTeamClick?: (team: any) => void;
 }
 
-/*
-const competitions: Competition[] = [
+// Fallback competition data for visualization
+const fallbackCompetitions: Competition[] = [
   {
     id: '1',
     name: 'Raas Chaos',
     city: 'Atlanta, GA',
     date: '2024-01-15',
     logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
-    lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish'],
-
-    judges: ['Rajesh Patel', 'Priya Sharma', 'Arjun Kumar'],
+    lineup: [
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '3' } as Team, name: 'UF Gatoraas' },
+      { id: { id: '4' } as Team, name: 'UCLA Nashaa' },
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' },
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '7' } as Team, name: 'Georgia Tech Raas' },
+      { id: { id: '8' } as Team, name: 'Penn Aatish' }
+    ],
+    firstplace: '1',
+    secondplace: '2', 
+    thirdplace: '3',
+    bid_status: true,
+    judges: [
+      { name: 'Rajesh Patel', category: 'Technique' },
+      { name: 'Priya Sharma', category: 'Storytelling' },
+      { name: 'Arjun Kumar', category: 'Overall Performance' }
+    ],
     media: {
-      photos: ['photo-1488590528505-98d2b5aba04b', 'photo-1518770660439-4636190af475'],
+      photos: [],
       videos: []
     }
   },
@@ -36,11 +52,27 @@ const competitions: Competition[] = [
     city: 'Berkeley, CA',
     date: '2024-02-03',
     logo: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=400&fit=crop&crop=center',
-    lineup: ['UCLA Nashaa', 'USC Zeher', 'Texas Raas', 'Michigan Maize Mirchi', 'CMU Raasta', 'NYU Bhangra', 'Penn Aatish', 'UIUC Roshni'],
-
-    judges: ['Neha Gupta', 'Vikram Singh', 'Anjali Mehta'],
+    lineup: [
+      { id: { id: '4' } as Team, name: 'UCLA Nashaa' },
+      { id: { id: '9' } as Team, name: 'USC Zeher' },
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '8' } as Team, name: 'Penn Aatish' },
+      { id: { id: '10' } as Team, name: 'UIUC Roshni' }
+    ],
+    firstplace: '4',
+    secondplace: '1',
+    thirdplace: '2',
+    bid_status: true,
+    judges: [
+      { name: 'Neha Gupta', category: 'Technique' },
+      { name: 'Vikram Singh', category: 'Expression' },
+      { name: 'Anjali Mehta', category: 'Choreography' }
+    ],
     media: {
-      photos: ['photo-1486312338219-ce68d2c6f44d', 'photo-1581091226825-a6a2a5aee158'],
+      photos: [],
       videos: []
     }
   },
@@ -50,11 +82,27 @@ const competitions: Competition[] = [
     city: 'New York, NY',
     date: '2024-02-17',
     logo: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=400&fit=crop&crop=center',
-    lineup: ['NYU Bhangra', 'Penn Aatish', 'Rutgers Raas', 'CMU Raasta', 'Case Western Raas', 'Texas Raas', 'UF Gatoraas', 'Michigan Maize Mirchi'],
-
-    judges: ['Rahul Khanna', 'Kavya Reddy', 'Deepak Joshi'],
+    lineup: [
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '8' } as Team, name: 'Penn Aatish' },
+      { id: { id: '11' } as Team, name: 'Rutgers Raas' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '12' } as Team, name: 'Case Western Raas' },
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '3' } as Team, name: 'UF Gatoraas' },
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' }
+    ],
+    firstplace: '6',
+    secondplace: '8',
+    thirdplace: '2',
+    bid_status: true,
+    judges: [
+      { name: 'Rahul Khanna', category: 'Technique' },
+      { name: 'Kavya Reddy', category: 'Innovation' },
+      { name: 'Deepak Joshi', category: 'Stage Presence' }
+    ],
     media: {
-      photos: ['photo-1518770660439-4636190af475', 'photo-1461749280684-dccba630e2f6'],
+      photos: [],
       videos: []
     }
   },
@@ -64,11 +112,27 @@ const competitions: Competition[] = [
     city: 'Chicago, IL',
     date: '2024-03-02',
     logo: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop&crop=center',
-    lineup: ['Michigan Maize Mirchi', 'UIUC Roshni', 'Case Western Raas', 'Texas Raas', 'CMU Raasta', 'NYU Bhangra', 'UF Gatoraas', 'UCLA Nashaa'],
-
-    judges: ['Sanjay Patel', 'Meera Nair', 'Karan Thakur'],
+    lineup: [
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' },
+      { id: { id: '10' } as Team, name: 'UIUC Roshni' },
+      { id: { id: '12' } as Team, name: 'Case Western Raas' },
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '3' } as Team, name: 'UF Gatoraas' },
+      { id: { id: '4' } as Team, name: 'UCLA Nashaa' }
+    ],
+    firstplace: '5',
+    secondplace: '1',
+    thirdplace: '10',
+    bid_status: true,
+    judges: [
+      { name: 'Sanjay Patel', category: 'Musicality' },
+      { name: 'Meera Nair', category: 'Technique' },
+      { name: 'Karan Thakur', category: 'Overall' }
+    ],
     media: {
-      photos: ['photo-1486312338219-ce68d2c6f44d', 'photo-1488590528505-98d2b5aba04b'],
+      photos: [],
       videos: []
     }
   },
@@ -78,9 +142,18 @@ const competitions: Competition[] = [
     city: 'Austin, TX',
     date: '2025-03-15',
     logo: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center',
-    lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish'],
-
-    judges: ['TBD'],
+    lineup: [
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '3' } as Team, name: 'UF Gatoraas' },
+      { id: { id: '4' } as Team, name: 'UCLA Nashaa' },
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' },
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '7' } as Team, name: 'Georgia Tech Raas' },
+      { id: { id: '8' } as Team, name: 'Penn Aatish' }
+    ],
+    bid_status: true,
+    judges: [{ name: 'TBD', category: 'All Categories' }],
     media: {
       photos: [],
       videos: []
@@ -92,16 +165,25 @@ const competitions: Competition[] = [
     city: 'Los Angeles, CA',
     date: '2025-04-15',
     logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
-    lineup: ['Texas Raas', 'CMU Raasta', 'UF Gatoraas', 'UCLA Nashaa', 'Michigan Maize Mirchi', 'NYU Bhangra', 'Georgia Tech Raas', 'Penn Aatish', 'UIUC Roshni'],
-
-    judges: ['TBD'],
+    lineup: [
+      { id: { id: '1' } as Team, name: 'Texas Raas' },
+      { id: { id: '2' } as Team, name: 'CMU Raasta' },
+      { id: { id: '3' } as Team, name: 'UF Gatoraas' },
+      { id: { id: '4' } as Team, name: 'UCLA Nashaa' },
+      { id: { id: '5' } as Team, name: 'Michigan Maize Mirchi' },
+      { id: { id: '6' } as Team, name: 'NYU Bhangra' },
+      { id: { id: '7' } as Team, name: 'Georgia Tech Raas' },
+      { id: { id: '8' } as Team, name: 'Penn Aatish' },
+      { id: { id: '10' } as Team, name: 'UIUC Roshni' }
+    ],
+    bid_status: true,
+    judges: [{ name: 'TBD', category: 'All Categories' }],
     media: {
       photos: [],
       videos: []
     }
   }
 ];
-*/
 
 interface SimulationDropdownProps {
   teams: Array<{ id: string; name: string }>;
@@ -198,10 +280,18 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
   useEffect(() => {
     const fetchCompetitions = async () => {
       const data = await fetchFromDirectus('competitions');
-      // If your logo is a file object, use .id to build the URL
+      
+      // If no data from API, use fallback competition data
+      if (!data || data.length === 0) {
+        console.warn('No competition data from API, using fallback data');
+        setCompetitions(fallbackCompetitions);
+        setLoading(false);
+        return;
+      }
+
       const API_URL = import.meta.env.VITE_DIRECTUS_URL;
   
-      const mapped = (data || []).map(item => {
+      const mapped = data.map(item => {
         const mappedComp = mapCompetitionTeamsFull(item, teams);
         console.log('[DEBUG] Raw item.lineup:', item.lineup);
         console.log('[DEBUG] Mapped lineup:', mappedComp.lineup);
@@ -214,7 +304,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
     };
   
     fetchCompetitions();
-  }, []);
+  }, [teams]);
 
   const currentDate = new Date();
   const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
