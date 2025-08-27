@@ -1226,7 +1226,7 @@ const Index = () => {
                           )}
                         </div>
                         
-                        {/* Team Info & Competition Data */}
+                        {/* Team Info & Competition Logos */}
                         <div className="flex-1 min-w-0">
                           {/* Team Header */}
                           <div className="mb-3">
@@ -1234,72 +1234,55 @@ const Index = () => {
                             <p className="text-slate-400 text-sm truncate">{team.university}</p>
                           </div>
 
-                          {/* Recent Competitions */}
+                          {/* Competition Logos */}
                           {team.competitionResults && team.competitionResults.length > 0 ? (
-                            <div className="space-y-2">
-                              <div className="flex flex-wrap gap-1.5">
-                                {team.competitionResults.slice(-5).map((result, resultIndex) => {
-                                  const placement = result.placement;
-                                  
-                                  return (
-                                    <div 
-                                      key={resultIndex} 
-                                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium ${
-                                        placement === '1st' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30' :
-                                        placement === '2nd' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/30' :
-                                        placement === '3rd' ? 'bg-orange-500/20 text-orange-300 border border-orange-400/30' :
-                                        'bg-slate-600/20 text-slate-400 border border-slate-500/30'
-                                      }`}
-                                    >
-                                      {/* Competition Name (abbreviated) */}
-                                      <span className="truncate max-w-16 sm:max-w-24">
-                                        {result.competitionName
-                                          .replace(/\s(20\d{2}|Competition|Comp|Championship)$/i, '')
-                                          .split(' ')
-                                          .map(word => word.charAt(0))
-                                          .join('')
-                                          .substring(0, 3) || result.competitionName.substring(0, 3)}
-                                      </span>
-                                      
-                                      {/* Placement */}
-                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                                        placement === '1st' ? 'bg-yellow-500 text-yellow-900' :
-                                        placement === '2nd' ? 'bg-slate-400 text-slate-900' :
-                                        placement === '3rd' ? 'bg-orange-500 text-orange-900' :
-                                        'bg-slate-500 text-slate-100'
-                                      }`}>
-                                        {placement === '1st' ? '1' : placement === '2nd' ? '2' : placement === '3rd' ? '3' : placement.replace(/\D/g, '') || '?'}
+                            <div className="flex flex-wrap gap-2">
+                              {team.competitionResults.slice(-6).map((result, resultIndex) => {
+                                // Find the competition from fallback data to get logo
+                                const competitionLogos = {
+                                  'Raas Chaos': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
+                                  'Bollywood Berkeley': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=400&fit=crop&crop=center',
+                                  'East Coast Showdown': 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=400&fit=crop&crop=center',
+                                  'Midwest Magic': 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=400&fit=crop&crop=center',
+                                  'Spring Nationals': 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=400&fit=crop&crop=center',
+                                  'Raas All Stars': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center'
+                                };
+
+                                const logoUrl = competitionLogos[result.competitionName] || null;
+                                
+                                return (
+                                  <div 
+                                    key={resultIndex} 
+                                    className="w-8 h-8 rounded-full overflow-hidden bg-slate-600/30 border border-slate-500/30 flex items-center justify-center group-hover:scale-105 transition-transform duration-200"
+                                    title={result.competitionName}
+                                  >
+                                    {logoUrl ? (
+                                      <img 
+                                        src={logoUrl} 
+                                        alt={result.competitionName} 
+                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-200" 
+                                      />
+                                    ) : (
+                                      <div className="w-6 h-6 bg-slate-500/50 rounded-full flex items-center justify-center">
+                                        <span className="text-slate-300 text-[10px] font-bold">
+                                          {result.competitionName.split(' ').map(word => word[0]).join('').substring(0, 2)}
+                                        </span>
                                       </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                               
-                              {/* Quick Stats */}
-                              <div className="flex items-center gap-3 text-xs pt-1">
-                                <div className="flex items-center gap-1">
-                                  <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                                  <span className="text-slate-400">{team.competitionResults.length} competitions</span>
+                              {/* Show overflow indicator if more than 6 competitions */}
+                              {team.competitionResults.length > 6 && (
+                                <div className="w-8 h-8 rounded-full bg-slate-600/20 border border-slate-500/30 flex items-center justify-center">
+                                  <span className="text-slate-400 text-xs font-bold">+{team.competitionResults.length - 6}</span>
                                 </div>
-                                
-                                {team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length > 0 && (
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                                    <span className="text-slate-300">{team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length} podium finishes</span>
-                                  </div>
-                                )}
-                                
-                                {team.qualified && (
-                                  <div className="flex items-center gap-1">
-                                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                                    <span className="text-green-400 font-medium">RAS Qualified</span>
-                                  </div>
-                                )}
-                              </div>
+                              )}
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              <div className="text-slate-500 text-sm">No recent competition data</div>
+                              <div className="text-slate-500 text-sm">No competitions attended</div>
                               <div className="flex items-center gap-3 text-xs">
                                 <span className="px-2 py-1 bg-slate-600/30 text-slate-300 rounded-full">
                                   {team.genderComposition || 'Co-ed'}
