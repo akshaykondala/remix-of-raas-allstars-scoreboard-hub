@@ -182,6 +182,54 @@ const fallbackCompetitions: Competition[] = [
       photos: [],
       videos: []
     }
+  },
+  {
+    id: '7',
+    name: 'Regional Showcase',
+    city: 'Phoenix, AZ',
+    date: '2024-11-20',
+    logo: '',
+    lineup: [
+      { id: { id: '13' } as Team, name: 'ASU Moksha' },
+      { id: { id: '14' } as Team, name: 'Arizona Raas' },
+      { id: { id: '15' } as Team, name: 'UNLV Saptak' },
+      { id: { id: '16' } as Team, name: 'Colorado Raas' }
+    ],
+    firstplace: '13',
+    secondplace: '14',
+    thirdplace: '15',
+    bid_status: false,
+    judges: [
+      { name: 'Maya Singh', category: 'Technique' },
+      { name: 'Raj Mehta', category: 'Expression' }
+    ],
+    media: {
+      photos: [],
+      videos: []
+    }
+  },
+  {
+    id: '8',
+    name: 'Winter Workshop Comp',
+    city: 'Seattle, WA',
+    date: '2024-12-15',
+    logo: '',
+    lineup: [
+      { id: { id: '17' } as Team, name: 'UW Jhankar' },
+      { id: { id: '18' } as Team, name: 'Seattle Raas' },
+      { id: { id: '19' } as Team, name: 'Portland Raas' },
+      { id: { id: '20' } as Team, name: 'WSU Taal' },
+      { id: { id: '21' } as Team, name: 'Oregon State Raas' }
+    ],
+    bid_status: false,
+    judges: [
+      { name: 'Arun Patel', category: 'Creativity' },
+      { name: 'Lila Sharma', category: 'Synchronization' }
+    ],
+    media: {
+      photos: [],
+      videos: []
+    }
   }
 ];
 
