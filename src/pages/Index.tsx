@@ -1210,18 +1210,13 @@ const Index = () => {
                 </div>
 
                 <div className="space-y-3">
-                  {[...teamsData].sort((a, b) => a.name.localeCompare(b.name)).map((team, index) => (
+                  {[...teamsData].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
                     <div 
                       key={team.id}
                       onClick={() => pushModal('team', team)}
                       className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-600/40 hover:scale-[1.01] active:scale-[0.99]"
                     >
-                      <div className="flex items-center gap-4">
-                        {/* Alphabetical Position */}
-                        <div className="w-10 h-10 bg-slate-600/30 border border-slate-500/30 rounded-xl flex items-center justify-center">
-                          <span className="text-slate-400 font-bold text-sm">{index + 1}</span>
-                        </div>
-                        
+                      <div className="flex items-start gap-4">
                         {/* Team Logo */}
                         <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/40 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                           {team.logo ? (
@@ -1231,57 +1226,96 @@ const Index = () => {
                           )}
                         </div>
                         
-                        {/* Team Info */}
+                        {/* Team Info & Competition Data */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-white font-semibold text-base truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
-                          <div className="flex items-center gap-2 text-slate-400 text-sm">
-                            <span className="truncate">{team.university}</span>
-                            <span className="text-slate-500">•</span>
-                            <span className="text-slate-400">{team.city}</span>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-0.5 bg-slate-600/30 text-slate-300 text-xs rounded-full">
-                              {team.genderComposition || 'Co-ed'}
-                            </span>
-                            <span className="text-slate-500 text-xs">Est. {team.founded || 'N/A'}</span>
-                          </div>
-                        </div>
-                        
-                        {/* Bid Points Display */}
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-                          <div className="relative bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm px-4 py-2 rounded-2xl border border-blue-400/20 group-hover:border-blue-300/40 transition-all duration-300">
-                            <div className="flex flex-col items-center">
-                              <div className="text-blue-300 font-black text-lg leading-none group-hover:text-blue-200 transition-colors duration-300">{team.bidPoints}</div>
-                              <div className="text-blue-400/70 font-medium text-[10px] uppercase tracking-widest">points</div>
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-white font-semibold text-base truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
+                              <p className="text-slate-400 text-sm truncate">{team.university}</p>
+                            </div>
+                            
+                            {/* Total Bid Points */}
+                            <div className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-lg text-sm font-bold ml-2 flex-shrink-0">
+                              {team.bidPoints}pts
                             </div>
                           </div>
+
+                          {/* Recent Competitions Timeline */}
+                          {team.competitionResults && team.competitionResults.length > 0 ? (
+                            <div className="space-y-2">
+                              <div className="text-slate-400 text-xs font-medium">Recent Competitions:</div>
+                              <div className="flex flex-wrap gap-2">
+                                {team.competitionResults.slice(-4).map((result, resultIndex) => {
+                                  const placement = result.placement;
+                                  const isTopThree = ['1st', '2nd', '3rd'].includes(placement);
+                                  
+                                  return (
+                                    <div 
+                                      key={resultIndex} 
+                                      className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs ${
+                                        placement === '1st' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30' :
+                                        placement === '2nd' ? 'bg-slate-400/20 text-slate-300 border border-slate-400/30' :
+                                        placement === '3rd' ? 'bg-orange-500/20 text-orange-300 border border-orange-400/30' :
+                                        'bg-slate-600/20 text-slate-400 border border-slate-500/30'
+                                      }`}
+                                    >
+                                      {/* Competition Name (shortened) */}
+                                      <span className="font-medium truncate max-w-20 sm:max-w-28">
+                                        {result.competitionName.replace(/\s(20\d{2}|Competition|Comp|Championship)$/i, '').substring(0, 12)}
+                                      </span>
+                                      
+                                      {/* Placement Badge */}
+                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                        placement === '1st' ? 'bg-yellow-500 text-yellow-900' :
+                                        placement === '2nd' ? 'bg-slate-400 text-slate-900' :
+                                        placement === '3rd' ? 'bg-orange-500 text-orange-900' :
+                                        'bg-slate-500 text-slate-100'
+                                      }`}>
+                                        {placement === '1st' ? '1' : placement === '2nd' ? '2' : placement === '3rd' ? '3' : placement.replace(/\D/g, '') || '?'}
+                                      </div>
+                                      
+                                      {/* Points Earned */}
+                                      {result.bidPointsEarned > 0 && (
+                                        <span className="text-blue-300 font-bold">+{result.bidPointsEarned}</span>
+                                      )}
+                                      
+                                      {/* Running Total */}
+                                      <span className="text-slate-300 text-[10px]">({result.cumulativeBidPoints})</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              
+                              {/* Performance Summary */}
+                              <div className="flex items-center gap-3 text-xs">
+                                <span className="text-slate-400">
+                                  {team.competitionResults.length} comp{team.competitionResults.length !== 1 ? 's' : ''}
+                                </span>
+                                <span className="text-slate-500">•</span>
+                                <span className="text-slate-400">
+                                  {team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length} podium{team.competitionResults.filter(r => ['1st', '2nd', '3rd'].includes(r.placement)).length !== 1 ? 's' : ''}
+                                </span>
+                                {team.qualified && (
+                                  <>
+                                    <span className="text-slate-500">•</span>
+                                    <span className="text-green-400 font-medium">Qualified</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-slate-500 text-xs">No competition data available</div>
+                              <div className="flex items-center gap-2 text-xs">
+                                <span className="px-2 py-1 bg-slate-600/30 text-slate-300 rounded-full">
+                                  {team.genderComposition || 'Co-ed'}
+                                </span>
+                                <span className="text-slate-500">Est. {team.founded || 'N/A'}</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      {/* Competition Results Preview */}
-                      {team.competitionResults && team.competitionResults.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-slate-700/30">
-                          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                            <span className="text-slate-400 text-xs font-medium whitespace-nowrap">Recent:</span>
-                            {team.competitionResults.slice(-3).map((result, resultIndex) => (
-                              <div key={resultIndex} className="flex items-center gap-1 bg-slate-700/30 px-2 py-1 rounded-lg whitespace-nowrap">
-                                <span className="text-slate-300 text-xs font-medium">{result.competitionName}</span>
-                                <span className="text-slate-500">-</span>
-                                <span className={`text-xs font-bold ${
-                                  result.placement === '1st' ? 'text-yellow-400' :
-                                  result.placement === '2nd' ? 'text-slate-300' :
-                                  result.placement === '3rd' ? 'text-orange-400' :
-                                  'text-slate-400'
-                                }`}>
-                                  {result.placement}
-                                </span>
-                                <span className="text-blue-400 text-xs">({result.cumulativeBidPoints}pts)</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
