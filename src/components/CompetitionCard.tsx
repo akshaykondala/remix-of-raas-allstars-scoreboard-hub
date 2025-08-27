@@ -81,7 +81,6 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
                 <CircleDot className="h-3 w-3" />
               )}
               <span className="hidden sm:inline">{competition.bid_status ? 'Bid' : 'Non-Bid'}</span>
-              <span className="sm:hidden">{competition.bid_status ? 'B' : 'N'}</span>
             </div>
           </div>
         </div>
