@@ -1253,27 +1253,14 @@ const Index = () => {
                                 return (
                                   <div 
                                     key={resultIndex} 
-                                    onClick={(e) => {
-                                      e.stopPropagation(); // Prevent team modal from opening
-                                      
-                                      // Find competition by name or ID
-                                      const competition = competitions.find(comp => 
-                                        comp.name === result.competitionName || 
-                                        comp.id === result.competitionId
-                                      );
-                                      
-                                      if (competition) {
-                                        pushModal('competition', competition);
-                                      }
-                                    }}
-                                    className="w-8 h-8 rounded-full overflow-hidden bg-slate-600/30 border border-slate-500/30 flex items-center justify-center hover:scale-110 hover:border-blue-400/50 transition-all duration-200 cursor-pointer"
-                                    title={`${result.competitionName} - Click to view details`}
+                                    className="w-8 h-8 rounded-full overflow-hidden bg-slate-600/30 border border-slate-500/30 flex items-center justify-center group-hover:scale-105 transition-transform duration-200"
+                                    title={result.competitionName}
                                   >
                                     {logoUrl ? (
                                       <img 
                                         src={logoUrl} 
                                         alt={result.competitionName} 
-                                        className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-200" 
+                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-200" 
                                       />
                                     ) : (
                                       <div className="w-6 h-6 bg-slate-500/50 rounded-full flex items-center justify-center">
