@@ -960,7 +960,7 @@ const Index = () => {
                     
                     <div className="relative bg-gradient-to-br from-slate-600/70 to-slate-800/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/20 group-hover:border-slate-400/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                       
-                      {/* Featured Profile Picture */}
+                      {/* Featured Profile Picture with competition count */}
                       <div className="relative -mt-6 mb-2">
                         <div className="absolute inset-0 bg-gradient-to-br from-slate-400/50 to-slate-600/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
                         <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-slate-300 to-slate-500 flex items-center justify-center border-2 border-slate-400/50 group-hover:border-slate-300/70 transition-all duration-500">
@@ -970,6 +970,12 @@ const Index = () => {
                             <Trophy className="h-8 w-8 text-slate-200" />
                           )}
                         </div>
+                        {/* Competition count badge */}
+                        {topThreeTeams[1]?.competitionResults && topThreeTeams[1].competitionResults.length > 0 && (
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-slate-500 to-slate-600 border-2 border-slate-800 rounded-full flex items-center justify-center">
+                            <span className="text-slate-300 text-xs font-bold">{topThreeTeams[1].competitionResults.length}</span>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="text-center">
@@ -997,7 +1003,7 @@ const Index = () => {
                     
                     <div className="relative bg-gradient-to-br from-yellow-400/85 to-orange-500/95 backdrop-blur-md rounded-3xl p-5 h-40 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/40 group-hover:border-yellow-200/60 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-3">
                       
-                      {/* Hero Profile Picture */}
+                      {/* Hero Profile Picture with competition count */}
                       <div className="relative -mt-8 mb-3">
                         <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/60 to-orange-400/60 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500"></div>
                         <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-yellow-200 to-yellow-400 flex items-center justify-center border-3 border-yellow-300/60 group-hover:border-yellow-200/80 transition-all duration-500">
@@ -1007,6 +1013,12 @@ const Index = () => {
                             <Trophy className="h-10 w-10 text-yellow-700" />
                           )}
                         </div>
+                        {/* Competition count badge */}
+                        {topThreeTeams[0]?.competitionResults && topThreeTeams[0].competitionResults.length > 0 && (
+                          <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-gradient-to-br from-yellow-400 to-orange-500 border-2 border-yellow-200 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-yellow-900 text-sm font-bold">{topThreeTeams[0].competitionResults.length}</span>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="text-center">
@@ -1034,7 +1046,7 @@ const Index = () => {
                     
                     <div className="relative bg-gradient-to-br from-orange-500/70 to-red-600/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/20 group-hover:border-orange-300/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                       
-                      {/* Featured Profile Picture */}
+                      {/* Featured Profile Picture with competition count */}
                       <div className="relative -mt-6 mb-2">
                         <div className="absolute inset-0 bg-gradient-to-br from-orange-400/50 to-red-500/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
                         <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center border-2 border-orange-400/50 group-hover:border-orange-300/70 transition-all duration-500">
@@ -1044,6 +1056,12 @@ const Index = () => {
                             <Trophy className="h-8 w-8 text-orange-800" />
                           )}
                         </div>
+                        {/* Competition count badge */}
+                        {topThreeTeams[2]?.competitionResults && topThreeTeams[2].competitionResults.length > 0 && (
+                          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-br from-orange-400 to-red-500 border-2 border-orange-200 rounded-full flex items-center justify-center">
+                            <span className="text-orange-900 text-xs font-bold">{topThreeTeams[2].competitionResults.length}</span>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="text-center">
@@ -1079,7 +1097,7 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/5 to-blue-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     
                     <div className="relative flex items-center gap-4">
-                      {/* Team Logo with glow */}
+                      {/* Team Logo with competition count indicator */}
                       <div className="relative">
                         <div className="absolute inset-0 bg-white/10 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
                         <div className="relative w-12 h-12 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
@@ -1089,6 +1107,12 @@ const Index = () => {
                             <Trophy className="h-6 w-6 text-slate-400" />
                           )}
                         </div>
+                        {/* Competition count badge */}
+                        {team.competitionResults && team.competitionResults.length > 0 && (
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-slate-600 to-slate-700 border-2 border-slate-800 rounded-full flex items-center justify-center">
+                            <span className="text-slate-300 text-[10px] font-bold">{team.competitionResults.length}</span>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Team Info */}
@@ -1145,12 +1169,18 @@ const Index = () => {
                         <span className="text-slate-500 font-bold text-sm">{rank}</span>
                       </div>
                       
-                      {/* Team Logo */}
-                      <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                      {/* Team Logo with competition count indicator */}
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/30 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300 relative">
                         {team.logo ? (
                           <img src={team.logo} alt={team.name} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                         ) : (
                           <Trophy className="h-6 w-6 text-slate-500" />
+                        )}
+                        {/* Competition count badge */}
+                        {team.competitionResults && team.competitionResults.length > 0 && (
+                          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-to-br from-slate-500 to-slate-600 border-2 border-slate-800 rounded-full flex items-center justify-center">
+                            <span className="text-slate-300 text-[10px] font-bold">{team.competitionResults.length}</span>
+                          </div>
                         )}
                       </div>
                       
