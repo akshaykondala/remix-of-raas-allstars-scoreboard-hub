@@ -20,73 +20,65 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
   return (
     <div
       onClick={onClick}
-      className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600 w-full max-w-sm"
+      className="relative overflow-hidden rounded-lg p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600 w-full max-w-sm"
     >
-      {/* Left accent strip to mirror TeamCard */}
+      {/* Left accent strip */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
 
-      {/* Top-right competition logo */}
-      {competition.logo && (
-        <div className="absolute top-3 right-3 w-8 h-8 rounded-full overflow-hidden border-2 border-slate-600">
-          <img
-            src={competition.logo}
-            alt={`${competition.name} logo`}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      <div className="ml-3 sm:ml-4">
-        {/* Name */}
-        <div className="flex items-start justify-between mb-3 mt-6">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold text-white mb-1 truncate">
-              {competition.name}
-            </h3>
-            <div className="flex items-center gap-2 text-slate-400 text-sm flex-wrap">
-              <span className="flex items-center gap-1 min-w-0">
-                <MapPin className="h-4 w-4" />
-                <span className="truncate">{competition.city}</span>
-              </span>
-              <span className="text-slate-500">•</span>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>{formatDate(competition.date)}</span>
-              </span>
-            </div>
+      {/* Centered competition logo - main focal point */}
+      <div className="flex flex-col items-center text-center">
+        {competition.logo && (
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-slate-600 mb-4 shadow-lg">
+            <img
+              src={competition.logo}
+              alt={`${competition.name} logo`}
+              className="w-full h-full object-cover"
+            />
           </div>
+        )}
+
+        {/* Competition name - less prominent */}
+        <h3 className="text-base sm:text-lg font-medium text-slate-300 mb-2 px-2">
+          {competition.name}
+        </h3>
+
+        {/* Location and date - subdued */}
+        <div className="flex items-center gap-2 text-slate-500 text-xs mb-3 flex-wrap justify-center">
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            <span>{competition.city}</span>
+          </span>
+          <span className="text-slate-600">•</span>
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            <span>{formatDate(competition.date)}</span>
+          </span>
         </div>
 
-        {/* Stats row to mirror TeamCard's points area */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-blue-400" />
-              <span className="text-white font-semibold">
-                {Array.isArray(competition.lineup) ? competition.lineup.length : 0}
-              </span>
-              <span className="text-slate-400 text-sm hidden sm:inline">teams</span>
-              <span className="text-slate-400 text-sm sm:hidden">teams</span>
-            </div>
-            
-            {/* Bid Status Badge */}
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-              competition.bid_status 
-                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-400/30' 
-                : 'bg-slate-500/20 text-slate-400 border border-slate-500/30'
-            }`}>
-              {competition.bid_status ? (
-                <Star className="h-3 w-3 fill-current" />
-              ) : (
-                <CircleDot className="h-3 w-3" />
-              )}
-              <span className="hidden sm:inline">{competition.bid_status ? 'Bid' : 'Non-Bid'}</span>
-            </div>
+        {/* Stats - minimal */}
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-400">
+            <Users className="h-3.5 w-3.5" />
+            <span>{Array.isArray(competition.lineup) ? competition.lineup.length : 0}</span>
+          </div>
+          
+          {/* Bid Status Badge - smaller */}
+          <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${
+            competition.bid_status 
+              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/30' 
+              : 'bg-slate-500/20 text-slate-500 border border-slate-500/30'
+          }`}>
+            {competition.bid_status ? (
+              <Star className="h-3 w-3 fill-current" />
+            ) : (
+              <CircleDot className="h-3 w-3" />
+            )}
+            <span>{competition.bid_status ? 'Bid' : 'Non-Bid'}</span>
           </div>
         </div>
       </div>
 
-      {/* Hover overlay to match TeamCard */}
+      {/* Hover overlay */}
       <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
     </div>
   );
