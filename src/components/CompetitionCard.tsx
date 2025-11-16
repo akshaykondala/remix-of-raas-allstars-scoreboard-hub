@@ -20,11 +20,8 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
   return (
     <div
       onClick={onClick}
-      className="relative overflow-hidden rounded-2xl p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600 w-full max-w-sm"
+      className="relative overflow-hidden rounded-2xl p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] touch-manipulation bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 w-full max-w-sm shadow-md hover:shadow-blue-500/10"
     >
-      {/* Left accent strip */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
-
       {/* Centered competition logo - main focal point */}
       <div className="flex flex-col items-center text-center">
         {competition.logo && (

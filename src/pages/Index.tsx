@@ -476,6 +476,7 @@ const Index = () => {
   const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams); // Start with fallback data
   const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]); // Store original data
   const [loading, setLoading] = useState(false); // Don't show loading initially
+  const [teamSearchQuery, setTeamSearchQuery] = useState('');
 
   // Modal stack utility functions
   const pushModal = (type: 'team' | 'competition', data: any) => {
@@ -1202,37 +1203,44 @@ const Index = () => {
               </div>
             ) : (
               <>
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold text-white mb-2">All Teams</h2>
-                  <p className="text-slate-400 text-sm">
-                    Complete listing of teams in the circuit
-                  </p>
+                <div className="mb-6 flex items-center justify-between gap-4">
+                  <h2 className="text-xl font-bold text-white">All Teams</h2>
+                  <input
+                    type="text"
+                    placeholder="Search teams..."
+                    value={teamSearchQuery}
+                    onChange={(e) => setTeamSearchQuery(e.target.value)}
+                    className="px-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  />
                 </div>
 
                 <div className="space-y-3">
-                  {[...teamsData].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
+                  {[...teamsData]
+                    .filter(team => 
+                      team.name.toLowerCase().includes(teamSearchQuery.toLowerCase()) ||
+                      team.university.toLowerCase().includes(teamSearchQuery.toLowerCase())
+                    )
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((team) => (
                     <div 
                       key={team.id}
                       onClick={() => pushModal('team', team)}
                       className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-600/40 hover:scale-[1.01] active:scale-[0.99]"
                     >
-                      <div className="flex items-start gap-4">
+                      <div className="flex flex-col items-center justify-center text-center gap-3">
                         {/* Team Logo */}
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-700/40 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                        <div className="w-14 h-14 rounded-full overflow-hidden bg-slate-700/40 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                           {team.logo ? (
                             <img src={team.logo} alt={team.name} className="w-full h-full object-cover group-hover:opacity-90 transition-opacity duration-300" />
                           ) : (
-                            <Trophy className="h-6 w-6 text-slate-400" />
+                            <Trophy className="h-7 w-7 text-slate-400" />
                           )}
                         </div>
                         
-                        {/* Team Info & Competition Logos */}
-                        <div className="flex-1 min-w-0">
-                          {/* Team Header */}
-                          <div className="mb-3">
-                            <h3 className="text-white font-semibold text-lg truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
-                            <p className="text-slate-400 text-sm truncate">{team.university}</p>
-                          </div>
+                        {/* Team Info */}
+                        <div className="flex-1 min-w-0 w-full">
+                          <h3 className="text-white font-semibold text-lg truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
+                          <p className="text-slate-400 text-sm truncate">{team.university}</p>
                         </div>
                       </div>
                     </div>
