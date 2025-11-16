@@ -20,7 +20,7 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
   return (
     <div
       onClick={onClick}
-      className="relative overflow-hidden rounded-lg p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600 w-full max-w-sm"
+      className="relative overflow-hidden rounded-2xl p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600 w-full max-w-sm"
     >
       {/* Left accent strip */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>
