@@ -1,7 +1,11 @@
 
-import { useState } from 'react';
-import { Trophy, Target, TrendingUp, Users, Zap, MapPin, Instagram } from 'lucide-react';
-import { FantasyTeam } from '../lib/types';
+import { useState, useEffect } from 'react';
+import { Trophy, Target, TrendingUp, Users, Zap } from 'lucide-react';
+import { FantasyTeam, Competition } from '../lib/types';
+import { FantasyPredictions } from './FantasyPredictions';
+import { Button } from './ui/button';
+import { fetchFromDirectus } from '../lib/api';
+import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 
 const fantasyTeams: FantasyTeam[] = [
   {
@@ -56,6 +60,27 @@ const fantasyTeams: FantasyTeam[] = [
 
 export function FantasyTab() {
   const [selectedTeam, setSelectedTeam] = useState<FantasyTeam | null>(null);
+  const [showPredictions, setShowPredictions] = useState(false);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+
+  // Fetch competitions and teams data
+  useEffect(() => {
+    const loadData = async () => {
+      const [compsData, teamsData] = await Promise.all([
+        fetchFromDirectus('competitions'),
+        fetchFromDirectus('teams')
+      ]);
+      
+      if (compsData && teamsData) {
+        const mappedComps = mapCompetitionTeamsFull(compsData, teamsData);
+        setCompetitions(mappedComps);
+        setTeams(teamsData);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const sortedTeams = fantasyTeams.sort((a, b) => b.points - a.points);
   const topThreeTeams = sortedTeams.slice(0, 3);
@@ -65,6 +90,13 @@ export function FantasyTab() {
     <div className="px-4 py-6">
       <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-white mb-2">Fantasy League</h2>
+        <Button 
+          onClick={() => setShowPredictions(true)}
+          className="mt-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+        >
+          <Target className="h-4 w-4 mr-2" />
+          Make Predictions
+        </Button>
       </div>
 
       {/* Top 3 Fantasy Teams - Flowing Podium Design */}
@@ -273,6 +305,14 @@ export function FantasyTab() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Fantasy Predictions Modal */}
+      {showPredictions && (
+        <FantasyPredictions 
+          competitions={competitions}
+          onClose={() => setShowPredictions(false)}
+        />
       )}
     </div>
   );
