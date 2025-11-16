@@ -65,9 +65,6 @@ export function FantasyTab() {
     <div className="px-4 py-6">
       <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-white mb-2">Fantasy League</h2>
-        <p className="text-slate-400 text-sm">
-          Build your dream team and compete with friends
-        </p>
       </div>
 
       {/* Top 3 Fantasy Teams - Flowing Podium Design */}
