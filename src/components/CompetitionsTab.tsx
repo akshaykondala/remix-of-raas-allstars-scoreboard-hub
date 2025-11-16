@@ -425,9 +425,6 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
     <div className="py-4 w-full overflow-hidden">
       <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-white mb-2">Season Competitions</h2>
-        <p className="text-slate-400 text-sm">
-          Track competitions throughout the 2024-25 season
-        </p>
       </div>
 
       {loading && (
