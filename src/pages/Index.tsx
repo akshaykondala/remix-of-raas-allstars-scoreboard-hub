@@ -763,8 +763,117 @@ const Index = () => {
     }
   }, [simulationData, originalTeamsData]);
 
+  // Official Tiebreaker function for teams with equal bid points
+  // Rules as specified for determining top nine qualifying teams
+  const tiebreakerSort = (a: Team, b: Team): number => {
+    // Primary sort: Bid points (descending)
+    if (b.bidPoints !== a.bidPoints) {
+      return b.bidPoints - a.bidPoints;
+    }
+
+    // TIEBREAKER 1: Ratio of number of placings to number of attended Bid Competitions
+    // A "placing" means 1st, 2nd, or 3rd place finish
+    const aCompetitionResults = a.competitionResults || [];
+    const bCompetitionResults = b.competitionResults || [];
+    
+    // Count number of bid competitions attended (using competitionResults as proxy)
+    // If competitions_attending exists and has more entries, use that for total count
+    const aBidCompetitionsCount = Math.max(
+      aCompetitionResults.length,
+      (a.competitions_attending || []).length
+    );
+    const bBidCompetitionsCount = Math.max(
+      bCompetitionResults.length,
+      (b.competitions_attending || []).length
+    );
+    
+    // Count placings (1st, 2nd, or 3rd)
+    const aPlacingsCount = aCompetitionResults.filter(
+      result => result.placement === '1st' || result.placement === '2nd' || result.placement === '3rd'
+    ).length;
+    const bPlacingsCount = bCompetitionResults.filter(
+      result => result.placement === '1st' || result.placement === '2nd' || result.placement === '3rd'
+    ).length;
+    
+    // Calculate ratio (placings / bid competitions)
+    const aPlacingRatio = aBidCompetitionsCount > 0 ? aPlacingsCount / aBidCompetitionsCount : 0;
+    const bPlacingRatio = bBidCompetitionsCount > 0 ? bPlacingsCount / bBidCompetitionsCount : 0;
+    
+    if (Math.abs(bPlacingRatio - aPlacingRatio) > 0.0001) { // Avoid floating point precision issues
+      return bPlacingRatio - aPlacingRatio; // Higher ratio is better
+    }
+
+    // TIEBREAKER 2: Number of first places
+    const aFirstPlaces = aCompetitionResults.filter(
+      result => result.placement === '1st'
+    ).length;
+    const bFirstPlaces = bCompetitionResults.filter(
+      result => result.placement === '1st'
+    ).length;
+    if (bFirstPlaces !== aFirstPlaces) {
+      return bFirstPlaces - aFirstPlaces;
+    }
+
+    // TIEBREAKER 3: Number of second places
+    const aSecondPlaces = aCompetitionResults.filter(
+      result => result.placement === '2nd'
+    ).length;
+    const bSecondPlaces = bCompetitionResults.filter(
+      result => result.placement === '2nd'
+    ).length;
+    if (bSecondPlaces !== aSecondPlaces) {
+      return bSecondPlaces - aSecondPlaces;
+    }
+
+    // TIEBREAKER 4: Number of third places
+    const aThirdPlaces = aCompetitionResults.filter(
+      result => result.placement === '3rd'
+    ).length;
+    const bThirdPlaces = bCompetitionResults.filter(
+      result => result.placement === '3rd'
+    ).length;
+    if (bThirdPlaces !== aThirdPlaces) {
+      return bThirdPlaces - aThirdPlaces;
+    }
+
+    // TIEBREAKER 5: Average of standardized scores across all attended Bid Competitions and the respective judges
+    // NOTE: Standardized scores refer to normalized, scaled scores prior to bonus point determination
+    // TODO: Add standardizedScores field to competitionResults when available in data structure
+    // For now, if this data doesn't exist, we'll skip to next tiebreaker
+    // This would be calculated as: average of (standardizedScore) across all competitionResults
+    // const aAvgStandardizedScore = calculateAverageStandardizedScore(aCompetitionResults);
+    // const bAvgStandardizedScore = calculateAverageStandardizedScore(bCompetitionResults);
+    // if (aAvgStandardizedScore !== null && bAvgStandardizedScore !== null && 
+    //     Math.abs(bAvgStandardizedScore - aAvgStandardizedScore) > 0.0001) {
+    //   return bAvgStandardizedScore - aAvgStandardizedScore;
+    // }
+
+    // TIEBREAKER 6: Average of first place bonus points across all attended Bid Competitions and the respective judges
+    // TODO: Add firstPlaceBonusPoints field to competitionResults when available in data structure
+    // For now, if this data doesn't exist, we'll skip to next tiebreaker
+    // const aAvgFirstPlaceBonus = calculateAverageFirstPlaceBonus(aCompetitionResults);
+    // const bAvgFirstPlaceBonus = calculateAverageFirstPlaceBonus(bCompetitionResults);
+    // if (aAvgFirstPlaceBonus !== null && bAvgFirstPlaceBonus !== null && 
+    //     Math.abs(bAvgFirstPlaceBonus - aAvgFirstPlaceBonus) > 0.0001) {
+    //   return bAvgFirstPlaceBonus - aAvgFirstPlaceBonus;
+    // }
+
+    // TIEBREAKER 7: Average of second place bonus points across all attended Bid Competitions and the respective judges
+    // TODO: Add secondPlaceBonusPoints field to competitionResults when available in data structure
+    // For now, if this data doesn't exist, we'll skip to next tiebreaker
+    // const aAvgSecondPlaceBonus = calculateAverageSecondPlaceBonus(aCompetitionResults);
+    // const bAvgSecondPlaceBonus = calculateAverageSecondPlaceBonus(bCompetitionResults);
+    // if (aAvgSecondPlaceBonus !== null && bAvgSecondPlaceBonus !== null && 
+    //     Math.abs(bAvgSecondPlaceBonus - aAvgSecondPlaceBonus) > 0.0001) {
+    //   return bAvgSecondPlaceBonus - aAvgSecondPlaceBonus;
+    // }
+
+    // Final tiebreaker: Alphabetical by name (for deterministic ordering when all else is equal)
+    return a.name.localeCompare(b.name);
+  };
+
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = [...teamsData].sort((a, b) => b.bidPoints - a.bidPoints);
+  const sortedTeams = [...teamsData].sort(tiebreakerSort);
   const topThreeTeams = sortedTeams.slice(0, 3);
   const topNineTeams = sortedTeams.slice(0, 9);
   const qualifiedOtherTeams = sortedTeams.slice(3, 9);

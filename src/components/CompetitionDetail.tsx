@@ -107,7 +107,7 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
 
   // Settable current date for testing; switch to `new Date()` for production
   // TODO: when we are ready to go live, switch to `new Date()`
-  const CURRENT_DATE = new Date(2025, 1, 24); // February is month 1 (0-indexed)
+  const CURRENT_DATE = new Date(); // February is month 1 (0-indexed)
 
   const formatDate = (dateString: string) => {
     // Parse as local date to avoid timezone shift

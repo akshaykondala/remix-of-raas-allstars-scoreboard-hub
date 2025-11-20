@@ -499,7 +499,14 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
           <div className="mb-8 w-full">
             <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
             <div className="space-y-3 w-full flex flex-col items-start">
-              {pastCompetitions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((competition) => {
+              {pastCompetitions.sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                if (dateA !== dateB) {
+                  return dateA - dateB; // Chronological (earliest first)
+                }
+                return a.name.localeCompare(b.name); // Alphabetical when dates are equal
+              }).map((competition) => {
                 const [year, month, day] = competition.date.split('-');
                 const displayDate = `${month}/${day}/${year}`;
                 return (
@@ -537,7 +544,14 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
               Click "Simulate" to predict results for future competitions
             </p>
             <div className="space-y-3 w-full flex flex-col items-start">
-              {futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map((competition) => {
+              {futureCompetitions.sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                if (dateA !== dateB) {
+                  return dateA - dateB; // Chronological (earliest first)
+                }
+                return a.name.localeCompare(b.name); // Alphabetical when dates are equal
+              }).map((competition) => {
                 const [year, month, day] = competition.date.split('-');
                 const displayDate = `${month}/${day}/${year}`;
                 return (
