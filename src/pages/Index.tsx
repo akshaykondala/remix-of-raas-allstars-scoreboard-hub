@@ -1299,10 +1299,6 @@ const Index = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="fantasy" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
-          <FantasyTab />
-        </TabsContent>
-
         <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
           <div className="px-4 py-6">
             {loading ? (
@@ -1362,7 +1358,7 @@ const Index = () => {
 
         {/* Mobile Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50 flex-shrink-0">
-          <TabsList className="grid grid-cols-4 bg-transparent border-none rounded-none w-full h-16 p-0">
+          <TabsList className="grid grid-cols-3 bg-transparent border-none rounded-none w-full h-16 p-0">
             <TabsTrigger 
               value="standings" 
               className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
@@ -1376,13 +1372,6 @@ const Index = () => {
             >
               <Calendar className="h-4 w-4" />
               Comps
-            </TabsTrigger>
-            <TabsTrigger 
-              value="fantasy" 
-              className="text-slate-400 data-[state=active]:bg-blue-600/20 data-[state=active]:text-blue-400 rounded-none text-xs flex-col gap-1 h-full border-none min-h-[44px]"
-            >
-              <Zap className="h-4 w-4" />
-              Fantasy
             </TabsTrigger>
             <TabsTrigger 
               value="teams" 
