@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from 'react';
-import { CompetitionCard } from './CompetitionCard';
 import { CompetitionDetail } from './CompetitionDetail';
+import { CompetitionTimeline } from './CompetitionTimeline';
 import { ChevronDown } from 'lucide-react';
 import { fetchFromDirectus } from '../lib/api';
 import { Competition, SimulationData, Team } from '../lib/types';
@@ -493,91 +492,51 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
       )}
 
       {!loading && (
-        <div className="flex flex-col items-start w-full px-4">
+        <div className="flex flex-col items-center w-full">
           {/* Past Competitions */}
           {pastCompetitions.length > 0 && (
-          <div className="mb-8 w-full">
-            <h3 className="text-lg font-bold text-white mb-3">Past Competitions</h3>
-            <div className="space-y-3 w-full flex flex-col items-start">
-              {pastCompetitions.sort((a, b) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
-                if (dateA !== dateB) {
-                  return dateA - dateB; // Chronological (earliest first)
-                }
-                return a.name.localeCompare(b.name); // Alphabetical when dates are equal
-              }).map((competition) => {
-                const [year, month, day] = competition.date.split('-');
-                const displayDate = `${month}/${day}/${year}`;
-                return (
-                  <CompetitionCard
-                    key={competition.id}
-                    competition={{ ...competition, date: displayDate }}
-                    onClick={() => {
-                      const { media, ...rest } = competition;
-                      console.log('[DEBUG] Competition clicked:', { ...rest, media: { photos: [], videos: [] } });
-                      setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
-                    }}
-                  />
-                );
-              })}
+            <div className="mb-8 w-full">
+              <h3 className="text-lg font-bold text-white mb-4 text-center">Past Competitions</h3>
+              <CompetitionTimeline
+                competitions={pastCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+                onCompetitionClick={(competition) => {
+                  const { media, ...rest } = competition;
+                  setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                }}
+                isPast={true}
+              />
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Divider Line */}
-        {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-          <div className="my-8 w-full max-w-lg">
-            <div className="border-t-2 border-dashed border-blue-500/70 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
-                UPCOMING COMPETITIONS
+          {/* Divider Line */}
+          {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
+            <div className="my-8 w-full max-w-lg px-4">
+              <div className="border-t-2 border-dashed border-blue-500/70 relative">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
+                  UPCOMING COMPETITIONS
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Future Competitions */}
-        {futureCompetitions.length > 0 && (
-          <div className="w-full">
-            <h3 className="text-lg font-bold text-white mb-2">Upcoming Competitions</h3>
-            <p className="text-slate-400 text-sm mb-4">
-              Click "Simulate" to predict results for future competitions
-            </p>
-            <div className="space-y-3 w-full flex flex-col items-start">
-              {futureCompetitions.sort((a, b) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
-                if (dateA !== dateB) {
-                  return dateA - dateB; // Chronological (earliest first)
-                }
-                return a.name.localeCompare(b.name); // Alphabetical when dates are equal
-              }).map((competition) => {
-                const [year, month, day] = competition.date.split('-');
-                const displayDate = `${month}/${day}/${year}`;
-                return (
-                  <div key={competition.id} className="relative w-full max-w-sm">
-                    <CompetitionCard
-                      competition={{ ...competition, date: displayDate }}
-                      onClick={() => {
-                        const { media, ...rest } = competition;
-                        setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
-                      }}
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSimulationStart(competition);
-                      }}
-                      className="absolute top-3 right-6 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs transition-colors font-semibold z-10"
-                    >
-                      Simulate
-                    </button>
-                  </div>
-                );
-              })}
+          {/* Future Competitions */}
+          {futureCompetitions.length > 0 && (
+            <div className="w-full">
+              <h3 className="text-lg font-bold text-white mb-2 text-center">Upcoming Competitions</h3>
+              <p className="text-slate-400 text-sm mb-4 text-center">
+                Click "Simulate" to predict results
+              </p>
+              <CompetitionTimeline
+                competitions={futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
+                onCompetitionClick={(competition) => {
+                  const { media, ...rest } = competition;
+                  setSelectedCompetition({ ...rest, media: { photos: [], videos: [] } });
+                }}
+                onSimulationStart={handleSimulationStart}
+                isPast={false}
+              />
             </div>
-          </div>
-        )}
+          )}
         </div>
       )}
 
