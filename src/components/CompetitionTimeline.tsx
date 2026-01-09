@@ -101,37 +101,43 @@ export function CompetitionTimeline({
           
         </div>}
 
-      {/* Calendar strip */}
-      <div className="relative overflow-hidden">
-        {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
-        
-        <div className="flex transition-transform duration-300 ease-out py-5" style={{
-        transform: `translateX(calc(50% - ${activeWeekIndex * 72 + 36}px))`
-      }}>
-          {weekendGroups.map((group, index) => {
+      {/* Calendar strip - clean minimal design */}
+      <div className="flex items-center justify-center gap-6 py-4">
+        {weekendGroups.map((group, index) => {
           const isActive = index === activeWeekIndex;
           const distance = Math.abs(index - activeWeekIndex);
-          return <button key={`${group.day}-${group.month}-${group.year}`} onClick={e => {
-            e.stopPropagation();
-            setActiveWeekIndex(index);
-          }} className="flex-shrink-0 w-[72px] flex flex-col items-center transition-all duration-300" style={{
-            opacity: isActive ? 1 : Math.max(0.4, 1 - distance * 0.2),
-            transform: `scale(${isActive ? 1.1 : Math.max(0.85, 1 - distance * 0.05)})`
-          }}>
-                <span className={`text-[11px] uppercase tracking-wide font-medium mb-1 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {group.monthShort}
-                </span>
-                <span className={`text-3xl font-semibold tracking-tight transition-colors ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  {group.day}
-                </span>
-                {group.competitions.length > 1 && <div className="mt-2 flex gap-1">
-                    {group.competitions.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${isActive ? 'bg-primary' : 'bg-muted-foreground/40'}`} />)}
-                  </div>}
-              </button>;
+          
+          // Only show nearby dates for cleaner look
+          if (distance > 2) return null;
+          
+          return (
+            <button
+              key={`${group.day}-${group.month}-${group.year}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveWeekIndex(index);
+              }}
+              className="flex flex-col items-center transition-all duration-300 focus:outline-none"
+              style={{
+                opacity: isActive ? 1 : 0.4 - distance * 0.1,
+              }}
+            >
+              <span className={`text-xs uppercase tracking-widest font-medium mb-1 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                {group.monthShort}
+              </span>
+              <span className={`text-2xl font-bold transition-all ${isActive ? 'text-foreground scale-110' : 'text-muted-foreground'}`}>
+                {group.day}
+              </span>
+              {isActive && group.competitions.length > 1 && (
+                <div className="mt-1.5 flex gap-1">
+                  {group.competitions.map((_, i) => (
+                    <div key={i} className="w-1 h-1 rounded-full bg-primary" />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
         })}
-        </div>
       </div>
 
       {/* Competition cards */}
