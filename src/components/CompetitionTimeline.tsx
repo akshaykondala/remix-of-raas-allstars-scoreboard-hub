@@ -117,24 +117,24 @@ export function CompetitionTimeline({
   };
 
   return (
-    <div className={`w-full ${isPast ? 'opacity-40' : ''}`}>
-      {/* Calendar strip with improved styling */}
-      <div 
-        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-      >
+    <div 
+      className={`w-full ${isPast ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing select-none`}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Calendar strip */}
+      <div className="relative overflow-hidden">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
         
         <div 
-          className="flex transition-transform duration-300 ease-out py-6"
-          style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 80 + 40}px))` }}
+          className="flex transition-transform duration-300 ease-out py-4"
+          style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 72 + 36}px))` }}
         >
           {weekendGroups.map((group, index) => {
             const isActive = index === activeWeekIndex;
@@ -143,40 +143,38 @@ export function CompetitionTimeline({
             return (
               <button
                 key={`${group.day}-${group.month}-${group.year}`}
-                onClick={() => setActiveWeekIndex(index)}
-                className={`flex-shrink-0 w-20 flex flex-col items-center transition-all duration-300 relative`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveWeekIndex(index);
+                }}
+                className="flex-shrink-0 w-[72px] flex flex-col items-center transition-all duration-300"
                 style={{
-                  opacity: isActive ? 1 : Math.max(0.3, 1 - distance * 0.25),
-                  transform: `scale(${isActive ? 1 : Math.max(0.8, 1 - distance * 0.08)})`
+                  opacity: isActive ? 1 : Math.max(0.35, 1 - distance * 0.22),
+                  transform: `scale(${isActive ? 1 : Math.max(0.85, 1 - distance * 0.06)})`
                 }}
               >
-                {/* Active indicator glow */}
-                {isActive && (
-                  <div className="absolute inset-0 -inset-y-2 rounded-2xl bg-primary/10 -z-10" />
-                )}
-                
-                <span className={`text-[10px] uppercase tracking-widest mb-1 transition-colors ${
+                <span className={`text-[10px] uppercase tracking-widest mb-0.5 transition-colors ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   {group.monthShort}
                 </span>
-                <span className={`text-3xl font-light tracking-tight transition-colors ${
+                <span className={`text-2xl font-light tracking-tight transition-colors ${
                   isActive ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {group.day}
                 </span>
-                <span className={`text-[9px] uppercase tracking-wider mt-0.5 transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted-foreground/60'
+                <span className={`text-[9px] uppercase tracking-wider transition-colors ${
+                  isActive ? 'text-primary/80' : 'text-muted-foreground/50'
                 }`}>
                   {getDayOfWeek(group.date)}
                 </span>
                 {group.competitions.length > 1 && (
-                  <div className="mt-1.5 flex gap-1">
+                  <div className="mt-1 flex gap-0.5">
                     {group.competitions.map((_, i) => (
                       <div 
                         key={i} 
                         className={`w-1 h-1 rounded-full transition-colors ${
-                          isActive ? 'bg-primary' : 'bg-muted-foreground/40'
+                          isActive ? 'bg-primary' : 'bg-muted-foreground/30'
                         }`} 
                       />
                     ))}
@@ -188,23 +186,13 @@ export function CompetitionTimeline({
         </div>
       </div>
 
-      {/* Timeline rail */}
-      <div className="relative flex items-center justify-center mb-6">
-        <div className="w-24 h-px bg-border" />
-        <div className="w-2 h-2 rounded-full bg-primary mx-2" />
-        <div className="w-24 h-px bg-border" />
+      {/* Minimal divider */}
+      <div className="flex items-center justify-center py-3">
+        <div className="w-8 h-px bg-primary/40" />
       </div>
 
       {/* Competition cards */}
-      <div 
-        className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className="overflow-hidden">
         <div 
           className="flex transition-transform duration-300 ease-out"
           style={{ transform: `translateX(-${activeWeekIndex * 100}%)` }}
@@ -251,8 +239,14 @@ interface TimelineCompetitionCardProps {
 function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPast }: TimelineCompetitionCardProps) {
   return (
     <div
-      onClick={onClick}
-      className={`relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-4 cursor-pointer hover:border-primary/40 hover:bg-card transition-all duration-200 ${isPast ? 'opacity-60' : ''}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`relative rounded-xl p-4 cursor-pointer transition-all duration-200 
+        bg-secondary/40 border border-border/30 
+        hover:bg-secondary/60 hover:border-primary/30
+        ${isPast ? 'opacity-60' : ''}`}
     >
       {/* Simulate button */}
       {onSimulationStart && (
@@ -261,7 +255,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             e.stopPropagation();
             onSimulationStart();
           }}
-          className="absolute top-3 right-3 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs transition-colors font-medium z-10"
+          className="absolute top-3 right-3 bg-primary hover:bg-primary/80 text-primary-foreground px-3 py-1 rounded-md text-xs transition-colors font-medium z-10"
         >
           Simulate
         </button>
@@ -270,7 +264,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
       <div className="flex flex-col items-center text-center">
         {/* Competition logo */}
         {competition.logo ? (
-          <div className="w-14 h-14 rounded-full overflow-hidden border border-border/50 mb-3 bg-background/50">
+          <div className="w-12 h-12 rounded-full overflow-hidden mb-3 bg-background/30 ring-1 ring-border/30">
             <img
               src={competition.logo}
               alt={`${competition.name} logo`}
@@ -278,8 +272,8 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             />
           </div>
         ) : (
-          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mb-3 border border-primary/30">
-            <span className="text-lg font-medium text-primary">{competition.name.charAt(0)}</span>
+          <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mb-3 ring-1 ring-primary/20">
+            <span className="text-base font-medium text-primary">{competition.name.charAt(0)}</span>
           </div>
         )}
 
@@ -295,7 +289,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1 text-muted-foreground">
             <Users className="h-3 w-3" />
             <span>{Array.isArray(competition.lineup) ? competition.lineup.length : 0}</span>
