@@ -495,8 +495,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
         <div className="flex flex-col items-center w-full">
           {/* Past Competitions */}
           {pastCompetitions.length > 0 && (
-            <div className="mb-8 w-full">
-              <h3 className="text-lg font-bold text-white mb-4 text-center">Past Competitions</h3>
+            <div className="mb-6 w-full">
               <CompetitionTimeline
                 competitions={pastCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
                 onCompetitionClick={(competition) => {
@@ -508,24 +507,14 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
             </div>
           )}
 
-          {/* Divider Line */}
+          {/* Simple divider */}
           {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-            <div className="my-8 w-full max-w-lg px-4">
-              <div className="border-t-2 border-dashed border-blue-500/70 relative">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-600 to-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-lg whitespace-nowrap">
-                  UPCOMING COMPETITIONS
-                </div>
-              </div>
-            </div>
+            <div className="w-16 h-px bg-slate-600 my-4" />
           )}
 
           {/* Future Competitions */}
           {futureCompetitions.length > 0 && (
             <div className="w-full">
-              <h3 className="text-lg font-bold text-white mb-2 text-center">Upcoming Competitions</h3>
-              <p className="text-slate-400 text-sm mb-4 text-center">
-                Click "Simulate" to predict results
-              </p>
               <CompetitionTimeline
                 competitions={futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
                 onCompetitionClick={(competition) => {
