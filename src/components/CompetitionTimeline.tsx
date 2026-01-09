@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { MapPin, Users, Star, CircleDot } from 'lucide-react';
 import { Competition } from '@/lib/types';
 
@@ -11,7 +11,10 @@ interface CompetitionTimelineProps {
 
 interface WeekendGroup {
   date: Date;
-  displayDate: string;
+  day: number;
+  month: string;
+  monthShort: string;
+  year: number;
   competitions: Competition[];
 }
 
@@ -22,11 +25,14 @@ export function CompetitionTimeline({
   isPast = false 
 }: CompetitionTimelineProps) {
   const [activeWeekIndex, setActiveWeekIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const mouseStartX = useRef(0);
+  const isDragging = useRef(false);
 
-  // Group competitions by weekend (same date)
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   const groupByWeekend = (comps: Competition[]): WeekendGroup[] => {
     const groups: { [key: string]: Competition[] } = {};
     
@@ -41,11 +47,12 @@ export function CompetitionTimeline({
     return Object.entries(groups)
       .map(([dateKey, comps]) => {
         const date = new Date(dateKey);
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
         return {
           date,
-          displayDate: `${monthNames[date.getMonth()]} ${date.getDate()}`,
+          day: date.getDate(),
+          month: monthNames[date.getMonth()],
+          monthShort: monthShortNames[date.getMonth()],
+          year: date.getFullYear(),
           competitions: comps
         };
       })
@@ -75,10 +82,6 @@ export function CompetitionTimeline({
     }
   };
 
-  // Mouse drag support
-  const mouseStartX = useRef(0);
-  const isDragging = useRef(false);
-
   const handleMouseDown = (e: React.MouseEvent) => {
     mouseStartX.current = e.clientX;
     isDragging.current = true;
@@ -106,33 +109,78 @@ export function CompetitionTimeline({
 
   if (weekendGroups.length === 0) return null;
 
+  const activeGroup = weekendGroups[activeWeekIndex];
+
   return (
-    <div className={`w-full ${isPast ? 'opacity-60' : ''}`}>
-      {/* Timeline dots */}
-      <div className="flex justify-center items-center gap-2 mb-4">
-        {weekendGroups.map((group, index) => (
-          <button
-            key={group.displayDate}
-            onClick={() => setActiveWeekIndex(index)}
-            className="flex flex-col items-center gap-1 group"
-          >
-            <div className={`transition-all duration-300 ${
-              index === activeWeekIndex 
-                ? 'w-3 h-3 bg-blue-500 rounded-full ring-2 ring-blue-500/30' 
-                : 'w-2 h-2 bg-slate-600 rounded-full hover:bg-slate-500'
-            }`} />
-            <span className={`text-[10px] transition-opacity ${
-              index === activeWeekIndex ? 'text-slate-300 opacity-100' : 'text-slate-500 opacity-0 group-hover:opacity-100'
-            }`}>
-              {group.displayDate}
-            </span>
-          </button>
-        ))}
+    <div className={`w-full ${isPast ? 'opacity-50' : ''}`}>
+      {/* Calendar strip - shows dates you can swipe through */}
+      <div 
+        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none mb-4"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div 
+          className="flex transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 80 + 40}px))` }}
+        >
+          {weekendGroups.map((group, index) => {
+            const isActive = index === activeWeekIndex;
+            const distance = Math.abs(index - activeWeekIndex);
+            
+            return (
+              <button
+                key={`${group.day}-${group.month}`}
+                onClick={() => setActiveWeekIndex(index)}
+                className={`flex-shrink-0 w-20 flex flex-col items-center py-3 transition-all duration-300 ${
+                  isActive ? '' : 'opacity-40'
+                }`}
+                style={{
+                  transform: `scale(${isActive ? 1 : Math.max(0.7, 1 - distance * 0.15)})`
+                }}
+              >
+                <span className={`text-[10px] uppercase tracking-wider mb-1 ${
+                  isActive ? 'text-blue-400' : 'text-slate-500'
+                }`}>
+                  {group.monthShort}
+                </span>
+                <span className={`text-2xl font-bold transition-colors ${
+                  isActive ? 'text-white' : 'text-slate-600'
+                }`}>
+                  {group.day}
+                </span>
+                {group.competitions.length > 1 && (
+                  <div className={`mt-1 flex gap-0.5`}>
+                    {group.competitions.map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-blue-400' : 'bg-slate-600'}`} 
+                      />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        
+        {/* Fade edges to hint at more content */}
+        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none" />
       </div>
 
-      {/* Swipeable content */}
+      {/* Active date header */}
+      <div className="text-center mb-4 px-4">
+        <span className="text-slate-400 text-sm">
+          {activeGroup?.month} {activeGroup?.day}, {activeGroup?.year}
+        </span>
+      </div>
+
+      {/* Competition cards */}
       <div 
-        ref={containerRef}
         className="overflow-hidden cursor-grab active:cursor-grabbing select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -147,22 +195,9 @@ export function CompetitionTimeline({
         >
           {weekendGroups.map((group) => (
             <div 
-              key={group.displayDate}
+              key={`cards-${group.day}-${group.month}`}
               className="w-full flex-shrink-0 px-4"
             >
-              {/* Date header */}
-              <div className="text-center mb-4">
-                <span className="text-white font-semibold">
-                  {group.displayDate}, {group.date.getFullYear()}
-                </span>
-                {group.competitions.length > 1 && (
-                  <span className="text-slate-400 text-sm ml-2">
-                    · {group.competitions.length} comps
-                  </span>
-                )}
-              </div>
-
-              {/* Competition cards */}
               <div className={`flex gap-3 ${
                 group.competitions.length > 1 
                   ? 'overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide' 
