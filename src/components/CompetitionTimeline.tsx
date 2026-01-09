@@ -112,10 +112,10 @@ export function CompetitionTimeline({
   const activeGroup = weekendGroups[activeWeekIndex];
 
   return (
-    <div className={`w-full ${isPast ? 'opacity-50' : ''}`}>
-      {/* Calendar strip - shows dates you can swipe through */}
+    <div className={`w-full ${isPast ? 'opacity-40' : ''}`}>
+      {/* Minimal calendar strip */}
       <div 
-        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none mb-4"
+        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -124,8 +124,8 @@ export function CompetitionTimeline({
         onMouseLeave={handleMouseLeave}
       >
         <div 
-          className="flex transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 80 + 40}px))` }}
+          className="flex transition-transform duration-300 ease-out py-6"
+          style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 72 + 36}px))` }}
         >
           {weekendGroups.map((group, index) => {
             const isActive = index === activeWeekIndex;
@@ -135,29 +135,30 @@ export function CompetitionTimeline({
               <button
                 key={`${group.day}-${group.month}`}
                 onClick={() => setActiveWeekIndex(index)}
-                className={`flex-shrink-0 w-20 flex flex-col items-center py-3 transition-all duration-300 ${
-                  isActive ? '' : 'opacity-40'
-                }`}
+                className={`flex-shrink-0 w-[72px] flex flex-col items-center transition-all duration-300`}
                 style={{
-                  transform: `scale(${isActive ? 1 : Math.max(0.7, 1 - distance * 0.15)})`
+                  opacity: isActive ? 1 : Math.max(0.25, 1 - distance * 0.25),
+                  transform: `scale(${isActive ? 1 : Math.max(0.75, 1 - distance * 0.1)})`
                 }}
               >
-                <span className={`text-[10px] uppercase tracking-wider mb-1 ${
-                  isActive ? 'text-blue-400' : 'text-slate-500'
+                <span className={`text-[10px] uppercase tracking-widest transition-colors ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   {group.monthShort}
                 </span>
-                <span className={`text-2xl font-bold transition-colors ${
-                  isActive ? 'text-white' : 'text-slate-600'
+                <span className={`text-3xl font-light tracking-tight transition-colors ${
+                  isActive ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {group.day}
                 </span>
                 {group.competitions.length > 1 && (
-                  <div className={`mt-1 flex gap-0.5`}>
+                  <div className="mt-1.5 flex gap-1">
                     {group.competitions.map((_, i) => (
                       <div 
                         key={i} 
-                        className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-blue-400' : 'bg-slate-600'}`} 
+                        className={`w-1 h-1 rounded-full transition-colors ${
+                          isActive ? 'bg-primary' : 'bg-muted-foreground/50'
+                        }`} 
                       />
                     ))}
                   </div>
@@ -166,18 +167,10 @@ export function CompetitionTimeline({
             );
           })}
         </div>
-        
-        {/* Fade edges to hint at more content */}
-        <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-slate-950 to-transparent pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-slate-950 to-transparent pointer-events-none" />
       </div>
 
-      {/* Active date header */}
-      <div className="text-center mb-4 px-4">
-        <span className="text-slate-400 text-sm">
-          {activeGroup?.month} {activeGroup?.day}, {activeGroup?.year}
-        </span>
-      </div>
+      {/* Thin separator line */}
+      <div className="w-16 h-px bg-border mx-auto mb-6" />
 
       {/* Competition cards */}
       <div 
@@ -236,7 +229,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
   return (
     <div
       onClick={onClick}
-      className={`relative bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 rounded-2xl p-4 cursor-pointer hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] ${isPast ? 'grayscale-[30%]' : ''}`}
+      className={`relative bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary/30 transition-all duration-200 ${isPast ? 'opacity-60' : ''}`}
     >
       {/* Simulate button */}
       {onSimulationStart && (
@@ -245,7 +238,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             e.stopPropagation();
             onSimulationStart();
           }}
-          className="absolute top-3 right-3 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-xs transition-colors font-semibold z-10"
+          className="absolute top-3 right-3 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1 rounded-md text-xs transition-colors font-medium z-10"
         >
           Simulate
         </button>
@@ -254,7 +247,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
       <div className="flex flex-col items-center text-center">
         {/* Competition logo */}
         {competition.logo ? (
-          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-slate-600 mb-3 shadow-lg">
+          <div className="w-14 h-14 rounded-full overflow-hidden border border-border mb-3">
             <img
               src={competition.logo}
               alt={`${competition.name} logo`}
@@ -262,41 +255,35 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             />
           </div>
         ) : (
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-3 shadow-lg">
-            <span className="text-xl font-bold text-white">{competition.name.charAt(0)}</span>
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+            <span className="text-lg font-medium text-primary">{competition.name.charAt(0)}</span>
           </div>
         )}
 
         {/* Competition name */}
-        <h3 className="text-sm font-semibold text-white mb-1 line-clamp-2">
+        <h3 className="text-sm font-medium text-foreground mb-1 line-clamp-2">
           {competition.name}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-1 text-slate-400 text-xs mb-2">
+        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-2">
           <MapPin className="h-3 w-3" />
           <span>{competition.city}</span>
         </div>
 
         {/* Stats row */}
         <div className="flex items-center gap-2 text-xs">
-          <div className="flex items-center gap-1 text-slate-400">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Users className="h-3 w-3" />
             <span>{Array.isArray(competition.lineup) ? competition.lineup.length : 0}</span>
           </div>
           
-          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] ${
-            competition.bid_status 
-              ? 'bg-yellow-500/20 text-yellow-400' 
-              : 'bg-slate-500/20 text-slate-500'
-          }`}>
-            {competition.bid_status ? (
+          {competition.bid_status && (
+            <div className="flex items-center gap-1 text-amber-500 text-[10px]">
               <Star className="h-2.5 w-2.5 fill-current" />
-            ) : (
-              <CircleDot className="h-2.5 w-2.5" />
-            )}
-            <span>{competition.bid_status ? 'Bid' : 'Non-Bid'}</span>
-          </div>
+              <span>Bid</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
