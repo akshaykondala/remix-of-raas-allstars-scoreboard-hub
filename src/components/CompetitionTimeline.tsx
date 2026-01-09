@@ -168,53 +168,81 @@ function TimelineCompetitionCard({
   onSimulationStart,
   isPast
 }: TimelineCompetitionCardProps) {
-  return <div onClick={e => {
-    e.stopPropagation();
-    onClick();
-  }} className={`relative rounded-2xl p-5 cursor-pointer transition-all duration-200 
-        bg-gradient-to-br from-card to-card/80
-        border border-primary/20 
-        hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
-        ${isPast ? 'opacity-70 grayscale-[30%]' : ''}`}>
+  return (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`
+        relative overflow-hidden rounded-3xl p-6 cursor-pointer
+        transition-all duration-300 ease-out
+        bg-gradient-to-b from-white/10 to-white/[0.02]
+        backdrop-blur-sm
+        border border-white/10
+        hover:border-white/20 hover:from-white/15 hover:to-white/[0.05]
+        hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20
+        ${isPast ? 'opacity-60' : ''}
+      `}
+    >
+      {/* Subtle glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+      
       {/* Simulate button */}
-      {onSimulationStart && <button onClick={e => {
-      e.stopPropagation();
-      onSimulationStart();
-    }} className="absolute top-4 right-4 bg-primary hover:bg-primary/80 text-primary-foreground px-4 py-1.5 rounded-full text-xs transition-all font-semibold z-10 shadow-md shadow-primary/20">
+      {onSimulationStart && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onSimulationStart();
+          }}
+          className="absolute top-4 right-4 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 hover:scale-105 shadow-lg shadow-primary/30"
+        >
           Simulate
-        </button>}
+        </button>
+      )}
 
-      <div className="flex flex-col items-center text-center">
+      <div className="relative flex flex-col items-center text-center">
         {/* Competition logo */}
-        {competition.logo ? <div className="w-16 h-16 rounded-full overflow-hidden mb-4 ring-2 ring-primary/30 shadow-lg">
-            <img src={competition.logo} alt={`${competition.name} logo`} className="w-full h-full object-cover" />
-          </div> : <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-4 ring-2 ring-primary/30 shadow-lg">
-            <span className="text-xl font-bold text-primary">{competition.name.charAt(0)}</span>
-          </div>}
+        {competition.logo ? (
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mb-5 ring-2 ring-white/20 shadow-xl">
+            <img
+              src={competition.logo}
+              alt={`${competition.name} logo`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-5 ring-2 ring-white/20 shadow-xl">
+            <span className="text-2xl font-bold text-white">{competition.name.charAt(0)}</span>
+          </div>
+        )}
 
         {/* Competition name */}
-        <h3 className="text-base font-semibold text-foreground mb-2 line-clamp-2">
+        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">
           {competition.name}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-1.5 text-primary/80 text-sm mb-3">
-          <MapPin className="h-3.5 w-3.5" />
-          <span>{competition.city}</span>
+        <div className="flex items-center gap-2 text-white/70 text-sm mb-4">
+          <MapPin className="h-4 w-4" />
+          <span className="font-medium">{competition.city}</span>
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+        <div className="flex items-center gap-5 text-sm">
+          <div className="flex items-center gap-2 text-white/60">
             <Users className="h-4 w-4" />
-            <span className="font-medium">{Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams</span>
+            <span className="font-semibold">{Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams</span>
           </div>
           
-          {competition.bid_status && <div className="flex items-center gap-1 text-amber-400 text-xs font-semibold">
-              <Star className="h-3.5 w-3.5 fill-current" />
-              <span>Bid Comp</span>
-            </div>}
+          {competition.bid_status && (
+            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold uppercase tracking-wide">
+              <Star className="h-4 w-4 fill-current" />
+              <span>Bid</span>
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }
