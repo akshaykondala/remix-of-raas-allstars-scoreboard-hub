@@ -267,7 +267,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
 
   if (!teams.length) {
     return (
-      <div className="text-center text-slate-400 py-8">
+      <div className="text-center text-muted-foreground py-8">
         No teams available
       </div>
     );
@@ -282,18 +282,18 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
         <div className={`w-6 h-6 ${getNumberColor()} rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
           {position === 'first' ? '1' : position === 'second' ? '2' : '3'}
         </div>
-        <span className="text-white font-semibold flex-1 truncate text-sm">
+        <span className="text-foreground font-semibold flex-1 truncate text-sm">
           {(() => {
             const team = teams.find(t => t.id === selectedTeam);
             if (!team) return placeholder;
             return team.name;
           })()}
         </span>
-        <ChevronDown className={`h-4 w-4 text-white transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-foreground transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
           {teams.map((team) => (
             <button
               key={team.id}
@@ -301,7 +301,7 @@ function SimulationDropdown({ teams, selectedTeam, onSelect, placeholder, positi
                 onSelect(team.id);
                 setIsOpen(false);
               }}
-              className="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors text-sm truncate"
+              className="w-full text-left px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors text-sm truncate"
             >
               {team.name}
             </button>
@@ -423,23 +423,23 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
   return (
     <div className="py-4 w-full overflow-hidden">
       <div className="mb-6 text-center px-4">
-        <h2 className="text-xl font-bold text-white mb-2">Season Competitions</h2>
+        <h2 className="text-xl font-bold text-foreground mb-2">Season Competitions</h2>
       </div>
 
       {loading && (
         <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          <p className="text-slate-400 mt-2">Loading competitions...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground mt-2">Loading competitions...</p>
         </div>
       )}
 
       {/* Simulation Modal */}
       {simulatingCompetition && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
-              <p className="text-slate-400 text-sm mb-6 text-center">Predict the top 3 teams for this competition</p>
+              <h3 className="text-xl font-bold text-foreground mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
+              <p className="text-muted-foreground text-sm mb-6 text-center">Predict the top 3 teams for this competition</p>
               
               <div className="space-y-4 mb-6">
                 <SimulationDropdown
@@ -468,7 +468,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
               <div className="flex gap-3">
                 <button
                   onClick={handleCancelSimulation}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-4 rounded-lg transition-colors min-h-[48px]"
+                  className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-4 rounded-lg transition-colors min-h-[48px]"
                 >
                   Cancel
                 </button>
@@ -479,8 +479,8 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
                     showSuccessMessage 
                       ? 'bg-green-600 text-white' 
                       : canSaveSimulation 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground cursor-not-allowed'
                   }`}
                 >
                   {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
@@ -509,7 +509,7 @@ export function CompetitionsTab({ onSimulationSet, simulationData, teams, onTeam
 
           {/* Simple divider */}
           {pastCompetitions.length > 0 && futureCompetitions.length > 0 && (
-            <div className="w-16 h-px bg-slate-600 my-4" />
+            <div className="w-16 h-px bg-border my-4" />
           )}
 
           {/* Future Competitions */}

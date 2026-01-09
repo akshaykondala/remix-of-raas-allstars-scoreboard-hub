@@ -163,13 +163,8 @@ export function CompetitionTimeline({
                 }`}>
                   {group.day}
                 </span>
-                <span className={`text-[9px] uppercase tracking-wider transition-colors ${
-                  isActive ? 'text-primary/80' : 'text-muted-foreground/50'
-                }`}>
-                  {getDayOfWeek(group.date)}
-                </span>
                 {group.competitions.length > 1 && (
-                  <div className="mt-1 flex gap-0.5">
+                  <div className="mt-1.5 flex gap-0.5">
                     {group.competitions.map((_, i) => (
                       <div 
                         key={i} 
