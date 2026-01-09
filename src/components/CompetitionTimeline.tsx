@@ -174,20 +174,19 @@ function TimelineCompetitionCard({
         e.stopPropagation();
         onClick();
       }}
-      className={`
-        relative overflow-hidden rounded-3xl p-6 cursor-pointer
-        transition-all duration-300 ease-out
-        bg-gradient-to-b from-white/10 to-white/[0.02]
-        backdrop-blur-sm
-        border border-white/10
-        hover:border-white/20 hover:from-white/15 hover:to-white/[0.05]
-        hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20
-        ${isPast ? 'opacity-60' : ''}
-      `}
+      className={
+        `relative overflow-hidden rounded-3xl p-6 cursor-pointer animate-enter
+         transition-all duration-300 ease-out
+         bg-gradient-to-br from-card/95 to-card/55
+         border border-border/70
+         shadow-lg hover:shadow-2xl hover:shadow-primary/20
+         hover:border-primary/30 hover:-translate-y-0.5`
+      }
     >
-      {/* Subtle glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-      
+      {/* Accent + glow (token-based) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute -bottom-20 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+
       {/* Simulate button */}
       {onSimulationStart && (
         <button
@@ -204,39 +203,44 @@ function TimelineCompetitionCard({
       <div className="relative flex flex-col items-center text-center">
         {/* Competition logo */}
         {competition.logo ? (
-          <div className="w-20 h-20 rounded-2xl overflow-hidden mb-5 ring-2 ring-white/20 shadow-xl">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden mb-5 ring-2 ring-primary/25 shadow-xl">
             <img
               src={competition.logo}
               alt={`${competition.name} logo`}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
         ) : (
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-5 ring-2 ring-white/20 shadow-xl">
-            <span className="text-2xl font-bold text-white">{competition.name.charAt(0)}</span>
+          <div className="w-20 h-20 rounded-2xl bg-primary/15 flex items-center justify-center mb-5 ring-2 ring-primary/25 shadow-xl">
+            <span className="text-2xl font-bold text-foreground">
+              {competition.name.charAt(0)}
+            </span>
           </div>
         )}
 
         {/* Competition name */}
-        <h3 className="text-lg font-bold text-white mb-2 line-clamp-2 leading-tight">
+        <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 leading-tight">
           {competition.name}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-2 text-white/70 text-sm mb-4">
+        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
           <MapPin className="h-4 w-4" />
           <span className="font-medium">{competition.city}</span>
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-5 text-sm">
-          <div className="flex items-center gap-2 text-white/60">
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Users className="h-4 w-4" />
-            <span className="font-semibold">{Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams</span>
+            <span className="font-semibold">
+              {Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams
+            </span>
           </div>
-          
+
           {competition.bid_status && (
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 text-primary border border-primary/25 text-xs font-bold uppercase tracking-wide">
               <Star className="h-4 w-4 fill-current" />
               <span>Bid</span>
             </div>
