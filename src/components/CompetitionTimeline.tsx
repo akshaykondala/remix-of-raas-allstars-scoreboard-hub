@@ -118,7 +118,7 @@ export function CompetitionTimeline({
 
   return (
     <div 
-      className={`w-full ${isPast ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing select-none`}
+      className="w-full cursor-grab active:cursor-grabbing select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -126,14 +126,21 @@ export function CompetitionTimeline({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Past label if applicable */}
+      {isPast && (
+        <div className="text-center mb-2">
+          <span className="text-xs uppercase tracking-widest text-muted-foreground/70">Past Events</span>
+        </div>
+      )}
+
       {/* Calendar strip */}
       <div className="relative overflow-hidden">
         {/* Fade edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
         
         <div 
-          className="flex transition-transform duration-300 ease-out py-4"
+          className="flex transition-transform duration-300 ease-out py-5"
           style={{ transform: `translateX(calc(50% - ${activeWeekIndex * 72 + 36}px))` }}
         >
           {weekendGroups.map((group, index) => {
@@ -149,27 +156,27 @@ export function CompetitionTimeline({
                 }}
                 className="flex-shrink-0 w-[72px] flex flex-col items-center transition-all duration-300"
                 style={{
-                  opacity: isActive ? 1 : Math.max(0.35, 1 - distance * 0.22),
-                  transform: `scale(${isActive ? 1 : Math.max(0.85, 1 - distance * 0.06)})`
+                  opacity: isActive ? 1 : Math.max(0.4, 1 - distance * 0.2),
+                  transform: `scale(${isActive ? 1.1 : Math.max(0.85, 1 - distance * 0.05)})`
                 }}
               >
-                <span className={`text-[10px] uppercase tracking-widest mb-0.5 transition-colors ${
+                <span className={`text-[11px] uppercase tracking-wide font-medium mb-1 transition-colors ${
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 }`}>
                   {group.monthShort}
                 </span>
-                <span className={`text-2xl font-light tracking-tight transition-colors ${
+                <span className={`text-3xl font-semibold tracking-tight transition-colors ${
                   isActive ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {group.day}
                 </span>
                 {group.competitions.length > 1 && (
-                  <div className="mt-1.5 flex gap-0.5">
+                  <div className="mt-2 flex gap-1">
                     {group.competitions.map((_, i) => (
                       <div 
                         key={i} 
-                        className={`w-1 h-1 rounded-full transition-colors ${
-                          isActive ? 'bg-primary' : 'bg-muted-foreground/30'
+                        className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                          isActive ? 'bg-primary' : 'bg-muted-foreground/40'
                         }`} 
                       />
                     ))}
@@ -181,13 +188,8 @@ export function CompetitionTimeline({
         </div>
       </div>
 
-      {/* Minimal divider */}
-      <div className="flex items-center justify-center py-3">
-        <div className="w-8 h-px bg-primary/40" />
-      </div>
-
       {/* Competition cards */}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden mt-4">
         <div 
           className="flex transition-transform duration-300 ease-out"
           style={{ transform: `translateX(-${activeWeekIndex * 100}%)` }}
@@ -197,7 +199,7 @@ export function CompetitionTimeline({
               key={`cards-${group.day}-${group.month}`}
               className="w-full flex-shrink-0 px-4"
             >
-              <div className={`flex gap-3 ${
+              <div className={`flex gap-4 ${
                 group.competitions.length > 1 
                   ? 'overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-hide' 
                   : 'justify-center'
@@ -205,7 +207,7 @@ export function CompetitionTimeline({
                 {group.competitions.map((competition) => (
                   <div 
                     key={competition.id}
-                    className={`flex-shrink-0 snap-center ${group.competitions.length > 1 ? 'w-64' : 'w-72'}`}
+                    className={`flex-shrink-0 snap-center ${group.competitions.length > 1 ? 'w-72' : 'w-80'}`}
                   >
                     <TimelineCompetitionCard
                       competition={competition}
@@ -238,10 +240,11 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
         e.stopPropagation();
         onClick();
       }}
-      className={`relative rounded-xl p-4 cursor-pointer transition-all duration-200 
-        bg-secondary/40 border border-border/30 
-        hover:bg-secondary/60 hover:border-primary/30
-        ${isPast ? 'opacity-60' : ''}`}
+      className={`relative rounded-2xl p-5 cursor-pointer transition-all duration-200 
+        bg-gradient-to-br from-card to-card/80
+        border border-primary/20 
+        hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10
+        ${isPast ? 'opacity-70 grayscale-[30%]' : ''}`}
     >
       {/* Simulate button */}
       {onSimulationStart && (
@@ -250,7 +253,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             e.stopPropagation();
             onSimulationStart();
           }}
-          className="absolute top-3 right-3 bg-primary hover:bg-primary/80 text-primary-foreground px-3 py-1 rounded-md text-xs transition-colors font-medium z-10"
+          className="absolute top-4 right-4 bg-primary hover:bg-primary/80 text-primary-foreground px-4 py-1.5 rounded-full text-xs transition-all font-semibold z-10 shadow-md shadow-primary/20"
         >
           Simulate
         </button>
@@ -259,7 +262,7 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
       <div className="flex flex-col items-center text-center">
         {/* Competition logo */}
         {competition.logo ? (
-          <div className="w-12 h-12 rounded-full overflow-hidden mb-3 bg-background/30 ring-1 ring-border/30">
+          <div className="w-16 h-16 rounded-full overflow-hidden mb-4 ring-2 ring-primary/30 shadow-lg">
             <img
               src={competition.logo}
               alt={`${competition.name} logo`}
@@ -267,33 +270,33 @@ function TimelineCompetitionCard({ competition, onClick, onSimulationStart, isPa
             />
           </div>
         ) : (
-          <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mb-3 ring-1 ring-primary/20">
-            <span className="text-base font-medium text-primary">{competition.name.charAt(0)}</span>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mb-4 ring-2 ring-primary/30 shadow-lg">
+            <span className="text-xl font-bold text-primary">{competition.name.charAt(0)}</span>
           </div>
         )}
 
         {/* Competition name */}
-        <h3 className="text-sm font-medium text-foreground mb-1 line-clamp-2">
+        <h3 className="text-base font-semibold text-foreground mb-2 line-clamp-2">
           {competition.name}
         </h3>
 
         {/* Location */}
-        <div className="flex items-center gap-1 text-muted-foreground text-xs mb-2">
-          <MapPin className="h-3 w-3" />
+        <div className="flex items-center gap-1.5 text-primary/80 text-sm mb-3">
+          <MapPin className="h-3.5 w-3.5" />
           <span>{competition.city}</span>
         </div>
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <Users className="h-3 w-3" />
-            <span>{Array.isArray(competition.lineup) ? competition.lineup.length : 0}</span>
+        <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span className="font-medium">{Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams</span>
           </div>
           
           {competition.bid_status && (
-            <div className="flex items-center gap-1 text-amber-400 text-[10px]">
-              <Star className="h-2.5 w-2.5 fill-current" />
-              <span>Bid</span>
+            <div className="flex items-center gap-1 text-amber-400 text-xs font-semibold">
+              <Star className="h-3.5 w-3.5 fill-current" />
+              <span>Bid Comp</span>
             </div>
           )}
         </div>
