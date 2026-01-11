@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
-import { MapPin, Users, Star, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+
 import { Competition } from '@/lib/types';
 
 interface CompetitionTimelineProps {
@@ -241,7 +242,6 @@ export function CompetitionTimeline({
                     <TimelineCompetitionCard 
                       competition={competition} 
                       onClick={() => onCompetitionClick(competition)} 
-                      onSimulationStart={!isPast && onSimulationStart ? () => onSimulationStart(competition) : undefined} 
                       isPast={isPast} 
                     />
                   </div>
@@ -258,18 +258,14 @@ export function CompetitionTimeline({
 interface TimelineCompetitionCardProps {
   competition: Competition;
   onClick: () => void;
-  onSimulationStart?: () => void;
   isPast?: boolean;
 }
 
 function TimelineCompetitionCard({
   competition,
   onClick,
-  onSimulationStart,
   isPast
 }: TimelineCompetitionCardProps) {
-  const teamCount = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
-  
   return (
     <div
       onClick={(e) => {
@@ -277,120 +273,56 @@ function TimelineCompetitionCard({
         onClick();
       }}
       className={`
-        relative overflow-hidden cursor-pointer
-        transition-all duration-500 ease-out group
-        hover:-translate-y-2 hover:scale-[1.02]
-        ${isPast ? 'opacity-60' : ''}
+        relative overflow-hidden cursor-pointer rounded-2xl p-4
+        bg-card/60 backdrop-blur-sm border border-border/50
+        transition-all duration-300 ease-out group
+        hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10
+        active:scale-[0.98]
+        ${isPast ? 'opacity-50' : ''}
       `}
     >
-      {/* Outer glow on hover */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 via-accent/50 to-primary/50 rounded-3xl opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
-      
-      {/* Main card */}
-      <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-card via-card to-card/80 border border-white/10 group-hover:border-primary/30 transition-all duration-500">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
-        {/* Top accent bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary opacity-60 group-hover:opacity-100 transition-opacity" />
-        
-        {/* Decorative circles */}
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors duration-500" />
-        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-accent/10 rounded-full blur-2xl group-hover:bg-accent/20 transition-colors duration-500" />
+      {/* Subtle gradient accent */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
 
-        {/* Content */}
-        <div className="relative p-5">
-          {/* Header Row */}
-          <div className="flex items-start gap-4 mb-4">
-            {/* Logo with fun styling */}
-            <div className="relative flex-shrink-0">
-              {/* Logo glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-2xl blur-lg opacity-0 group-hover:opacity-60 transition-opacity duration-500 scale-110" />
-              
-              {competition.logo ? (
-                <div className="relative w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/50 shadow-xl transition-all duration-300 group-hover:shadow-primary/20">
-                  <img
-                    src={competition.logo}
-                    alt={`${competition.name} logo`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center ring-2 ring-white/10 group-hover:ring-primary/50 shadow-xl transition-all duration-300">
-                  <span className="text-2xl font-black text-foreground">
-                    {competition.name.charAt(0)}
-                  </span>
-                </div>
-              )}
-              
-              {/* Bid sparkle indicator */}
-              {competition.bid_status && (
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                  <Star className="w-3 h-3 text-white fill-white" />
-                </div>
-              )}
+      <div className="relative flex items-center gap-4">
+        {/* Logo */}
+        <div className="relative flex-shrink-0">
+          {competition.logo ? (
+            <div className="w-14 h-14 rounded-xl overflow-hidden ring-1 ring-border/50 group-hover:ring-primary/40 transition-all duration-300">
+              <img
+                src={competition.logo}
+                alt={`${competition.name} logo`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
-
-            {/* Title and location */}
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-black text-foreground line-clamp-2 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-primary group-hover:to-accent transition-all duration-300">
-                {competition.name}
-              </h3>
-              <div className="flex items-center gap-1.5 mt-1.5 text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 text-primary/70" />
-                <span className="text-sm font-medium truncate">{competition.city}</span>
-              </div>
+          ) : (
+            <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center ring-1 ring-border/50 group-hover:ring-primary/40 transition-all duration-300">
+              <span className="text-xl font-bold text-muted-foreground">
+                {competition.name.charAt(0)}
+              </span>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Stats Row */}
-          <div className="flex items-center gap-3 mb-4">
-            {/* Team count pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-              <Users className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-bold text-foreground">{teamCount} teams</span>
-            </div>
-            
-            {/* Bid badge */}
-            {competition.bid_status && (
-              <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
-                <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
-                <span className="text-xs font-bold text-yellow-400">BID</span>
-              </div>
-            )}
-          </div>
-
-          {/* Action Row */}
-          <div className="flex items-center gap-3">
-            {/* Simulate button */}
-            {onSimulationStart && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSimulationStart();
-                }}
-                className="relative flex-1 overflow-hidden bg-gradient-to-r from-primary to-accent text-primary-foreground py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  Simulate
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              </button>
-            )}
-            
-            {/* View details button */}
-            <button 
-              className={`${onSimulationStart ? 'w-12' : 'flex-1'} h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center gap-2 group-hover:bg-primary/10 group-hover:border-primary/30 transition-all duration-300`}
-            >
-              {!onSimulationStart && <span className="text-sm font-semibold text-foreground">View Details</span>}
-              <svg className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
+            {competition.name}
+          </h3>
+          <div className="flex items-center gap-1 mt-1 text-muted-foreground text-sm">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{competition.city}</span>
           </div>
         </div>
+
+        {/* Bid badge */}
+        {competition.bid_status && (
+          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
+            <Star className="h-3 w-3 text-primary fill-primary" />
+            <span className="text-xs font-semibold text-primary">Bid</span>
+          </div>
+        )}
       </div>
     </div>
   );
