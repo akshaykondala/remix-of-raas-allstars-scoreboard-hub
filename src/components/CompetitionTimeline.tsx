@@ -101,43 +101,74 @@ export function CompetitionTimeline({
           
         </div>}
 
-      {/* Calendar strip - clean minimal design */}
-      <div className="flex items-center justify-center gap-6 py-4">
-        {weekendGroups.map((group, index) => {
-          const isActive = index === activeWeekIndex;
-          const distance = Math.abs(index - activeWeekIndex);
-          
-          // Only show nearby dates for cleaner look
-          if (distance > 2) return null;
-          
-          return (
-            <button
-              key={`${group.day}-${group.month}-${group.year}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveWeekIndex(index);
-              }}
-              className="flex flex-col items-center transition-all duration-300 focus:outline-none"
-              style={{
-                opacity: isActive ? 1 : 0.4 - distance * 0.1,
-              }}
-            >
-              <span className={`text-xs uppercase tracking-widest font-medium mb-1 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
-                {group.monthShort}
-              </span>
-              <span className={`text-2xl font-bold transition-all ${isActive ? 'text-foreground scale-110' : 'text-muted-foreground'}`}>
-                {group.day}
-              </span>
-              {isActive && group.competitions.length > 1 && (
-                <div className="mt-1.5 flex gap-1">
-                  {group.competitions.map((_, i) => (
-                    <div key={i} className="w-1 h-1 rounded-full bg-primary" />
-                  ))}
+      {/* Calendar timeline with dots and connecting line */}
+      <div className="relative py-6 px-4">
+        {/* Horizontal connecting line */}
+        <div className="absolute top-1/2 left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2" />
+        
+        <div className="relative flex items-center justify-between max-w-md mx-auto">
+          {weekendGroups.map((group, index) => {
+            const isActive = index === activeWeekIndex;
+            const dayOfWeek = getDayOfWeek(group.date);
+            const isWeekend = dayOfWeek === 'Sat' || dayOfWeek === 'Sun';
+            
+            return (
+              <button
+                key={`${group.day}-${group.month}-${group.year}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveWeekIndex(index);
+                }}
+                className="relative flex flex-col items-center transition-all duration-300 focus:outline-none group z-10"
+              >
+                {/* Date label above */}
+                <div className={`mb-3 transition-all duration-300 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+                  <div className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-primary/30">
+                    {group.monthShort} {group.day}
+                  </div>
                 </div>
-              )}
-            </button>
-          );
-        })}
+                
+                {/* Dot on the line */}
+                <div className={`relative transition-all duration-300 ${isActive ? 'scale-125' : 'scale-100 group-hover:scale-110'}`}>
+                  {/* Glow ring for active */}
+                  {isActive && (
+                    <div className="absolute inset-0 w-5 h-5 -m-0.5 rounded-full bg-primary/30 animate-pulse" />
+                  )}
+                  
+                  {/* Main dot */}
+                  <div className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                    isActive 
+                      ? 'bg-primary border-primary shadow-lg shadow-primary/50' 
+                      : isWeekend
+                        ? 'bg-accent/50 border-accent/70 group-hover:bg-accent group-hover:border-accent'
+                        : 'bg-muted border-border group-hover:bg-muted-foreground/30 group-hover:border-muted-foreground/50'
+                  }`} />
+                  
+                  {/* Weekend indicator - small ring */}
+                  {isWeekend && !isActive && (
+                    <div className="absolute -inset-1 rounded-full border border-accent/40" />
+                  )}
+                </div>
+                
+                {/* Day abbreviation below */}
+                <span className={`mt-2 text-xs font-medium transition-colors ${
+                  isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                }`}>
+                  {dayOfWeek}
+                </span>
+                
+                {/* Competition count indicator */}
+                {group.competitions.length > 1 && (
+                  <div className={`mt-1 flex gap-0.5 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
+                    {group.competitions.map((_, i) => (
+                      <div key={i} className="w-1 h-1 rounded-full bg-primary" />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Competition cards */}
@@ -174,77 +205,115 @@ function TimelineCompetitionCard({
         e.stopPropagation();
         onClick();
       }}
-      className={
-        `relative overflow-hidden rounded-3xl p-6 cursor-pointer animate-enter
-         transition-all duration-300 ease-out
-         bg-gradient-to-br from-card/95 to-card/55
-         border border-border/70
-         shadow-lg hover:shadow-2xl hover:shadow-primary/20
-         hover:border-primary/30 hover:-translate-y-0.5`
-      }
+      className={`
+        relative overflow-hidden cursor-pointer animate-enter
+        transition-all duration-500 ease-out group
+        hover:-translate-y-1 hover:scale-[1.02]
+        ${isPast ? 'opacity-70' : ''}
+      `}
     >
-      {/* Accent + glow (token-based) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute -bottom-20 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+      {/* Main card with glassmorphism */}
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-gradient-to-br from-card via-card/90 to-card/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-accent/5" />
+        
+        {/* Animated border glow */}
+        <div className="absolute inset-0 rounded-2xl border border-white/10 group-hover:border-primary/40 transition-colors duration-500" />
+        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 shadow-[inset_0_0_20px_rgba(14,165,233,0.15)]" />
+        
+        {/* Corner accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/20 via-primary/5 to-transparent rounded-bl-full" />
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-accent/15 via-transparent to-transparent rounded-tr-full" />
 
-      {/* Simulate button */}
-      {onSimulationStart && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onSimulationStart();
-          }}
-          className="absolute top-4 right-4 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 hover:scale-105 shadow-lg shadow-primary/30"
-        >
-          Simulate
-        </button>
-      )}
+        {/* Content */}
+        <div className="relative p-5">
+          {/* Header with logo and simulate button */}
+          <div className="flex items-start justify-between mb-4">
+            {/* Logo */}
+            {competition.logo ? (
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/30 blur-xl rounded-xl scale-90 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative w-16 h-16 rounded-xl overflow-hidden ring-1 ring-white/20 shadow-lg group-hover:ring-primary/50 transition-all duration-300">
+                  <img
+                    src={competition.logo}
+                    alt={`${competition.name} logo`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center ring-1 ring-white/20 shadow-lg">
+                <span className="text-xl font-bold text-foreground">
+                  {competition.name.charAt(0)}
+                </span>
+              </div>
+            )}
 
-      <div className="relative flex flex-col items-center text-center">
-        {/* Competition logo */}
-        {competition.logo ? (
-          <div className="w-20 h-20 rounded-2xl overflow-hidden mb-5 ring-2 ring-primary/25 shadow-xl">
-            <img
-              src={competition.logo}
-              alt={`${competition.name} logo`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+            {/* Simulate button */}
+            {onSimulationStart && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSimulationStart();
+                }}
+                className="relative overflow-hidden bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-lg hover:shadow-primary/40 hover:scale-105 active:scale-95"
+              >
+                <span className="relative z-10">Simulate</span>
+                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-12" />
+              </button>
+            )}
+            
+            {/* Bid badge (if no simulate button) */}
+            {!onSimulationStart && competition.bid_status && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
+                <Star className="h-3.5 w-3.5 fill-current" />
+                <span>Bid</span>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="w-20 h-20 rounded-2xl bg-primary/15 flex items-center justify-center mb-5 ring-2 ring-primary/25 shadow-xl">
-            <span className="text-2xl font-bold text-foreground">
-              {competition.name.charAt(0)}
-            </span>
-          </div>
-        )}
 
-        {/* Competition name */}
-        <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-2 leading-tight">
-          {competition.name}
-        </h3>
+          {/* Competition info */}
+          <div className="space-y-3">
+            {/* Name */}
+            <h3 className="text-lg font-bold text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors duration-300">
+              {competition.name}
+            </h3>
 
-        {/* Location */}
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-4">
-          <MapPin className="h-4 w-4" />
-          <span className="font-medium">{competition.city}</span>
-        </div>
-
-        {/* Stats row */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span className="font-semibold">
-              {Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams
-            </span>
-          </div>
-
-          {competition.bid_status && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-primary/15 text-primary border border-primary/25 text-xs font-bold uppercase tracking-wide">
-              <Star className="h-4 w-4 fill-current" />
-              <span>Bid</span>
+            {/* Location with icon */}
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="p-1.5 rounded-lg bg-white/5 border border-white/10">
+                <MapPin className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-sm font-medium">{competition.city}</span>
             </div>
-          )}
+
+            {/* Bottom stats bar */}
+            <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/10">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-semibold">
+                  {Array.isArray(competition.lineup) ? competition.lineup.length : 0} teams
+                </span>
+              </div>
+
+              {/* Bid badge in stats (when simulate button is present) */}
+              {onSimulationStart && competition.bid_status && (
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/15 text-primary text-xs font-bold">
+                  <Star className="h-3 w-3 fill-current" />
+                  <span>Bid</span>
+                </div>
+              )}
+              
+              {/* Arrow indicator */}
+              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-primary/20 group-hover:border-primary/30 transition-all duration-300">
+                <svg className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
