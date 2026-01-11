@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { MapPin, Users, Star, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { Competition } from '@/lib/types';
 
@@ -18,8 +18,6 @@ interface WeekendGroup {
   competitions: Competition[];
 }
 
-const DOT_WIDTH = 80; // Width of each timeline dot item in pixels
-
 export function CompetitionTimeline({
   competitions,
   onCompetitionClick,
@@ -32,19 +30,6 @@ export function CompetitionTimeline({
   const mouseStartX = useRef(0);
   const isDragging = useRef(false);
   const timelineRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  // Measure container width for centering calculation
-  useEffect(() => {
-    const updateWidth = () => {
-      if (timelineRef.current) {
-        setContainerWidth(timelineRef.current.offsetWidth);
-      }
-    };
-    updateWidth();
-    window.addEventListener('resize', updateWidth);
-    return () => window.removeEventListener('resize', updateWidth);
-  }, []);
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -130,13 +115,6 @@ export function CompetitionTimeline({
 
   if (weekendGroups.length === 0) return null;
 
-  // Calculate the transform to center the active dot
-  const calculateTimelineTransform = () => {
-    const centerOffset = containerWidth / 2 - DOT_WIDTH / 2;
-    const translateX = centerOffset - (activeWeekIndex * DOT_WIDTH);
-    return translateX;
-  };
-
   return (
     <div 
       className="w-full select-none" 
@@ -172,24 +150,20 @@ export function CompetitionTimeline({
           <ChevronRight className="w-5 h-5" />
         </button>
 
-        {/* Sliding Timeline Container */}
+        {/* Scrollable Timeline Container */}
         <div 
           ref={timelineRef}
-          className="mx-10 overflow-hidden"
+          className="mx-10 overflow-x-auto scrollbar-hide cursor-grab active:cursor-grabbing"
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
-          {/* Timeline content that slides */}
-          <div 
-            className="relative transition-transform duration-500 ease-out"
-            style={{ transform: `translateX(${calculateTimelineTransform()}px)` }}
-          >
+          <div className="relative min-w-max px-4">
             {/* Main horizontal timeline line */}
-            <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-border/50 via-border to-border/50" style={{ top: '50%', width: `${weekendGroups.length * DOT_WIDTH + 200}px`, marginLeft: '-100px' }} />
-            <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" style={{ top: '50%', width: `${weekendGroups.length * DOT_WIDTH + 200}px`, marginLeft: '-100px' }} />
+            <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-border/50 via-border to-border/50" style={{ top: '50%' }} />
+            <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent blur-sm" style={{ top: '50%' }} />
             
-            <div className="relative flex items-center py-6">
+            <div className="relative flex items-center gap-8 py-6">
               {weekendGroups.map((group, index) => {
                 const isActive = index === activeWeekIndex;
                 const compCount = group.competitions.length;
@@ -202,7 +176,6 @@ export function CompetitionTimeline({
                       setActiveWeekIndex(index);
                     }}
                     className="relative flex flex-col items-center transition-all duration-300 focus:outline-none group"
-                    style={{ width: `${DOT_WIDTH}px` }}
                   >
                     {/* Date label */}
                     <span className={`text-xs font-bold transition-all duration-300 mb-3 whitespace-nowrap ${
