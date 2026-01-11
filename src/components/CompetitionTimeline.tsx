@@ -91,26 +91,22 @@ export function CompetitionTimeline({
   };
   if (weekendGroups.length === 0) return null;
   const activeGroup = weekendGroups[activeWeekIndex];
-  const getDayOfWeek = (date: Date) => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return days[date.getDay()];
-  };
   return <div className="w-full cursor-grab active:cursor-grabbing select-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave}>
       {/* Past label if applicable */}
-      {isPast && <div className="text-center mb-2">
-          
-        </div>}
+      {isPast && <div className="text-center mb-2" />}
 
-      {/* Calendar timeline with dots and connecting line */}
-      <div className="relative py-6 px-4">
-        {/* Horizontal connecting line */}
-        <div className="absolute top-1/2 left-8 right-8 h-0.5 bg-gradient-to-r from-transparent via-border to-transparent -translate-y-1/2" />
+      {/* Competition Weekend Timeline */}
+      <div className="relative py-8 px-6">
+        {/* Main horizontal timeline line */}
+        <div className="absolute left-12 right-12 h-px bg-gradient-to-r from-transparent via-border/80 to-transparent" style={{ top: 'calc(50% + 12px)' }} />
         
-        <div className="relative flex items-center justify-between max-w-md mx-auto">
+        {/* Glow effect on line */}
+        <div className="absolute left-12 right-12 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-sm" style={{ top: 'calc(50% + 12px)' }} />
+        
+        <div className="relative flex items-start justify-between max-w-lg mx-auto">
           {weekendGroups.map((group, index) => {
             const isActive = index === activeWeekIndex;
-            const dayOfWeek = getDayOfWeek(group.date);
-            const isWeekend = dayOfWeek === 'Sat' || dayOfWeek === 'Sun';
+            const compCount = group.competitions.length;
             
             return (
               <button
@@ -119,52 +115,59 @@ export function CompetitionTimeline({
                   e.stopPropagation();
                   setActiveWeekIndex(index);
                 }}
-                className="relative flex flex-col items-center transition-all duration-300 focus:outline-none group z-10"
+                className="relative flex flex-col items-center transition-all duration-300 focus:outline-none group z-10 min-w-[60px]"
               >
-                {/* Date label above */}
-                <div className={`mb-3 transition-all duration-300 ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                  <div className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-primary/30">
-                    {group.monthShort} {group.day}
-                  </div>
-                </div>
-                
-                {/* Dot on the line */}
-                <div className={`relative transition-all duration-300 ${isActive ? 'scale-125' : 'scale-100 group-hover:scale-110'}`}>
-                  {/* Glow ring for active */}
-                  {isActive && (
-                    <div className="absolute inset-0 w-5 h-5 -m-0.5 rounded-full bg-primary/30 animate-pulse" />
-                  )}
-                  
-                  {/* Main dot */}
-                  <div className={`w-4 h-4 rounded-full border-2 transition-all duration-300 ${
-                    isActive 
-                      ? 'bg-primary border-primary shadow-lg shadow-primary/50' 
-                      : isWeekend
-                        ? 'bg-accent/50 border-accent/70 group-hover:bg-accent group-hover:border-accent'
-                        : 'bg-muted border-border group-hover:bg-muted-foreground/30 group-hover:border-muted-foreground/50'
-                  }`} />
-                  
-                  {/* Weekend indicator - small ring */}
-                  {isWeekend && !isActive && (
-                    <div className="absolute -inset-1 rounded-full border border-accent/40" />
-                  )}
-                </div>
-                
-                {/* Day abbreviation below */}
-                <span className={`mt-2 text-xs font-medium transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                {/* Date label */}
+                <span className={`text-xs font-semibold transition-all duration-300 mb-3 ${
+                  isActive 
+                    ? 'text-primary scale-110' 
+                    : 'text-muted-foreground group-hover:text-foreground'
                 }`}>
-                  {dayOfWeek}
+                  {group.monthShort} {group.day}
                 </span>
                 
-                {/* Competition count indicator */}
-                {group.competitions.length > 1 && (
-                  <div className={`mt-1 flex gap-0.5 ${isActive ? 'opacity-100' : 'opacity-50'}`}>
-                    {group.competitions.map((_, i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-primary" />
-                    ))}
+                {/* Weekend dot container */}
+                <div className="relative">
+                  {/* Outer glow for active */}
+                  {isActive && (
+                    <>
+                      <div className="absolute inset-0 w-5 h-5 -m-0.5 rounded-full bg-primary/40 animate-pulse" />
+                      <div className="absolute inset-0 w-7 h-7 -m-1.5 rounded-full bg-primary/20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                    </>
+                  )}
+                  
+                  {/* Main weekend dot */}
+                  <div className={`relative w-4 h-4 rounded-full transition-all duration-300 ${
+                    isActive 
+                      ? 'bg-primary shadow-lg shadow-primary/60 ring-2 ring-primary/30 ring-offset-2 ring-offset-background' 
+                      : 'bg-muted-foreground/40 group-hover:bg-primary/60 group-hover:shadow-md group-hover:shadow-primary/30'
+                  }`}>
+                    {/* Inner shine */}
+                    <div className={`absolute inset-0.5 rounded-full bg-gradient-to-br from-white/30 to-transparent ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} transition-opacity duration-300`} />
                   </div>
-                )}
+                </div>
+                
+                {/* Competition count dots */}
+                <div className={`mt-4 flex gap-1.5 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-70'}`}>
+                  {Array.from({ length: compCount }).map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        isActive 
+                          ? 'bg-primary shadow-sm shadow-primary/50' 
+                          : 'bg-muted-foreground/50 group-hover:bg-primary/50'
+                      }`}
+                      style={{ transitionDelay: `${i * 50}ms` }}
+                    />
+                  ))}
+                </div>
+                
+                {/* Competition count label */}
+                <span className={`mt-1.5 text-[10px] font-medium transition-colors duration-300 ${
+                  isActive ? 'text-primary' : 'text-muted-foreground/60 group-hover:text-muted-foreground'
+                }`}>
+                  {compCount} comp{compCount > 1 ? 's' : ''}
+                </span>
               </button>
             );
           })}
