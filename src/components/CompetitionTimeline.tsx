@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Competition } from '@/lib/types';
@@ -31,6 +31,28 @@ export function CompetitionTimeline({
   const mouseStartX = useRef(0);
   const isDragging = useRef(false);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const dotRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Auto-scroll timeline to keep active dot centered
+  useEffect(() => {
+    const activeDot = dotRefs.current[activeWeekIndex];
+    const container = timelineRef.current;
+    
+    if (activeDot && container) {
+      const containerRect = container.getBoundingClientRect();
+      const dotRect = activeDot.getBoundingClientRect();
+      
+      // Calculate the scroll position to center the dot
+      const dotCenter = dotRect.left + dotRect.width / 2;
+      const containerCenter = containerRect.left + containerRect.width / 2;
+      const scrollOffset = dotCenter - containerCenter;
+      
+      container.scrollBy({
+        left: scrollOffset,
+        behavior: 'smooth'
+      });
+    }
+  }, [activeWeekIndex]);
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -172,6 +194,7 @@ export function CompetitionTimeline({
                 return (
                   <button
                     key={`${group.day}-${group.month}-${group.year}`}
+                    ref={(el) => { dotRefs.current[index] = el; }}
                     onClick={(e) => {
                       e.stopPropagation();
                       setActiveWeekIndex(index);
