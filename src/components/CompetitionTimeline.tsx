@@ -296,57 +296,76 @@ function TimelineCompetitionCard({
         onClick();
       }}
       className={`
-        relative overflow-hidden cursor-pointer rounded-2xl p-4
-        bg-card/60 backdrop-blur-sm border border-border/50
+        relative overflow-hidden cursor-pointer rounded-2xl
+        bg-gradient-to-br from-card to-card/95 
+        border border-primary/30
+        shadow-lg shadow-primary/5
         transition-all duration-300 ease-out group
-        hover:bg-card/80 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10
+        hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/20 hover:border-primary/50
         active:scale-[0.98]
-        ${isPast ? 'opacity-50' : ''}
+        ${isPast ? 'opacity-60' : ''}
       `}
     >
-      {/* Subtle gradient accent */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl" />
+      {/* Top accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/50" />
+      
+      {/* Background glow */}
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/15 rounded-full blur-2xl" />
+      <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
 
-      <div className="relative flex items-center gap-4">
-        {/* Logo */}
-        <div className="relative flex-shrink-0">
-          {competition.logo ? (
-            <div className="w-14 h-14 rounded-xl overflow-hidden ring-1 ring-border/50 group-hover:ring-primary/40 transition-all duration-300">
-              <img
-                src={competition.logo}
-                alt={`${competition.name} logo`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
+      {/* Content */}
+      <div className="relative p-4">
+        <div className="flex items-center gap-3">
+          {/* Logo with ring */}
+          <div className="relative flex-shrink-0">
+            {competition.logo ? (
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 ring-primary/40 shadow-md group-hover:ring-primary/60 transition-all duration-300">
+                <img
+                  src={competition.logo}
+                  alt={`${competition.name} logo`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center ring-2 ring-primary/40 shadow-md">
+                <span className="text-lg sm:text-xl font-bold text-primary">
+                  {competition.name.charAt(0)}
+                </span>
+              </div>
+            )}
+            
+            {/* Bid star on logo */}
+            {competition.bid_status && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+                <Star className="w-2.5 h-2.5 text-white fill-white" />
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-foreground text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors duration-300">
+              {competition.name}
+            </h3>
+            <div className="flex items-center gap-1.5 mt-1">
+              <MapPin className="h-3 w-3 text-primary flex-shrink-0" />
+              <span className="text-xs sm:text-sm text-muted-foreground truncate">{competition.city}</span>
             </div>
-          ) : (
-            <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center ring-1 ring-border/50 group-hover:ring-primary/40 transition-all duration-300">
-              <span className="text-xl font-bold text-muted-foreground">
-                {competition.name.charAt(0)}
-              </span>
+          </div>
+
+          {/* Bid badge - shown separately if no logo badge */}
+          {competition.bid_status && (
+            <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40">
+              <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+              <span className="text-xs font-bold text-amber-400">Bid</span>
             </div>
           )}
         </div>
-
-        {/* Info */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
-            {competition.name}
-          </h3>
-          <div className="flex items-center gap-1 mt-1 text-muted-foreground text-sm">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{competition.city}</span>
-          </div>
-        </div>
-
-        {/* Bid badge */}
-        {competition.bid_status && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 border border-primary/20">
-            <Star className="h-3 w-3 text-primary fill-primary" />
-            <span className="text-xs font-semibold text-primary">Bid</span>
-          </div>
-        )}
       </div>
+
+      {/* Shine effect on hover */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
     </div>
   );
 }
