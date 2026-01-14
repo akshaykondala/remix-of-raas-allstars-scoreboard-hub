@@ -53,6 +53,7 @@ export interface Competition {
   instagramlink?: string;
   showTicketsLink?: string;
   afterpartyTicketsLink?: string;
+  livestreamLink?: string;
   bid_status: boolean;
   media: {
     photos: string[];

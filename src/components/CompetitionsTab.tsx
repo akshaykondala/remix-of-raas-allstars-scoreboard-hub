@@ -25,6 +25,7 @@ const fallbackCompetitions: Competition[] = [{
   time: '6:00 PM',
   timezone: 'EST',
   showTicketsLink: 'https://example.com/tickets',
+  livestreamLink: 'https://youtube.com/live/example',
   logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
   lineup: [{
     id: {
