@@ -213,10 +213,10 @@ export function CompetitionDetail({ competition, onClose, onSimulationSet, simul
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 max-h-[90vh] rounded-t-3xl">
+      <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[95vh] max-h-[95vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
-        <div className="overflow-y-auto max-h-[85vh] scrollbar-hide">
+        <div className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4">
             {/* Close Button */}
