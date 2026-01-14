@@ -251,19 +251,41 @@ export function CompetitionDetail({
           <div className="px-4 pb-4 py-[24px]">
             <div className="flex flex-col gap-2">
               {/* Competition Time */}
-              <div className="flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3">
-                <div className="bg-purple-500/20 rounded-full p-2">
-                  <Clock className="h-4 w-4 text-purple-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-white font-semibold text-sm">
-                    {competition.time || 'TBA'}
+              {competition.livestreamLink ? (
+                <a 
+                  href={competition.livestreamLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-gradient-to-r from-red-500/20 to-red-600/10 border border-red-400/30 rounded-xl px-4 py-3 hover:from-red-500/30 hover:to-red-600/20 transition-all duration-200 cursor-pointer"
+                >
+                  <div className="bg-red-500/20 rounded-full p-2">
+                    <Clock className="h-4 w-4 text-red-400" />
                   </div>
-                  <div className="text-slate-400 text-xs">
-                    {competition.timezone || 'Time zone TBA'}
+                  <div className="flex-1">
+                    <div className="text-red-300 font-semibold text-sm">
+                      {competition.time || 'TBA'}
+                    </div>
+                    <div className="text-red-400/70 text-xs">
+                      {competition.timezone || 'Time zone TBA'} • Watch Live
+                    </div>
+                  </div>
+                  <ExternalLink className="h-3 w-3 text-red-400/70" />
+                </a>
+              ) : (
+                <div className="flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3">
+                  <div className="bg-purple-500/20 rounded-full p-2">
+                    <Clock className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-white font-semibold text-sm">
+                      {competition.time || 'TBA'}
+                    </div>
+                    <div className="text-slate-400 text-xs">
+                      {competition.timezone || 'Time zone TBA'}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Ticket Links Row */}
               <div className="grid grid-cols-2 gap-2">
