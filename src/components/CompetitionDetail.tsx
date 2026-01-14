@@ -200,7 +200,7 @@ export function CompetitionDetail({
         
         <div className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
-          <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4">
+          <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4 py-[20px] px-[22px]">
             {/* Close Button */}
             
             
@@ -248,7 +248,7 @@ export function CompetitionDetail({
           </DrawerHeader>
 
           {/* Quick Info Section */}
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-4 py-[24px]">
             <div className="flex flex-col gap-2">
               {/* Competition Time */}
               <div className="flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3">
@@ -268,17 +268,7 @@ export function CompetitionDetail({
               {/* Ticket Links Row */}
               <div className="grid grid-cols-2 gap-2">
                 {/* Show Tickets */}
-                <a 
-                  href={competition.showTicketsLink || '#'} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  onClick={(e) => !competition.showTicketsLink && e.preventDefault()}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${
-                    competition.showTicketsLink 
-                      ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-400/30 hover:from-blue-500/30 hover:to-blue-600/20 cursor-pointer' 
-                      : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'
-                  }`}
-                >
+                <a href={competition.showTicketsLink || '#'} target="_blank" rel="noopener noreferrer" onClick={e => !competition.showTicketsLink && e.preventDefault()} className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${competition.showTicketsLink ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-400/30 hover:from-blue-500/30 hover:to-blue-600/20 cursor-pointer' : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'}`}>
                   <div className={`rounded-full p-1.5 ${competition.showTicketsLink ? 'bg-blue-500/20' : 'bg-slate-600/20'}`}>
                     <Ticket className={`h-4 w-4 ${competition.showTicketsLink ? 'text-blue-400' : 'text-slate-500'}`} />
                   </div>
@@ -291,17 +281,7 @@ export function CompetitionDetail({
                 </a>
 
                 {/* Afterparty Tickets */}
-                <a 
-                  href={competition.afterpartyTicketsLink || '#'} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  onClick={(e) => !competition.afterpartyTicketsLink && e.preventDefault()}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${
-                    competition.afterpartyTicketsLink 
-                      ? 'bg-gradient-to-r from-pink-500/20 to-pink-600/10 border border-pink-400/30 hover:from-pink-500/30 hover:to-pink-600/20 cursor-pointer' 
-                      : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'
-                  }`}
-                >
+                <a href={competition.afterpartyTicketsLink || '#'} target="_blank" rel="noopener noreferrer" onClick={e => !competition.afterpartyTicketsLink && e.preventDefault()} className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${competition.afterpartyTicketsLink ? 'bg-gradient-to-r from-pink-500/20 to-pink-600/10 border border-pink-400/30 hover:from-pink-500/30 hover:to-pink-600/20 cursor-pointer' : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'}`}>
                   <div className={`rounded-full p-1.5 ${competition.afterpartyTicketsLink ? 'bg-pink-500/20' : 'bg-slate-600/20'}`}>
                     <PartyPopper className={`h-4 w-4 ${competition.afterpartyTicketsLink ? 'text-pink-400' : 'text-slate-500'}`} />
                   </div>
@@ -327,25 +307,19 @@ export function CompetitionDetail({
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
               <div className="grid gap-1.5">
                 {competition.lineup.map((team, index) => {
-                  const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                  const fullTeam = teams.find(t => t.id === teamIdStr);
-                  return (
-                    <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                      {fullTeam?.logo ? (
-                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
+                const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                const fullTeam = teams.find(t => t.id === teamIdStr);
+                return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                      {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
                           <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+                        </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
                           {(team.name || 'T').charAt(0)}
-                        </div>
-                      )}
+                        </div>}
                       <span className="font-medium text-sm truncate">
                         {team.name || `Team ${team.id}`}
                       </span>
-                    </div>
-                  );
-                })}
+                    </div>;
+              })}
               </div>
             </div>
           </div>
@@ -371,15 +345,11 @@ export function CompetitionDetail({
               </div> : <div className="space-y-2">
                 {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
                     <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
-                    {firstPlaceTeam.logo ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
+                    {firstPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
                         <img src={firstPlaceTeam.logo} alt={firstPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
+                      </div> : <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
                         {firstPlaceTeam.name.charAt(0)}
-                      </div>
-                    )}
+                      </div>}
                     <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
                     <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
                       <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
@@ -387,15 +357,11 @@ export function CompetitionDetail({
                   </div>}
                 {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
                     <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
-                    {secondPlaceTeam.logo ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
+                    {secondPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
                         <img src={secondPlaceTeam.logo} alt={secondPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
+                      </div> : <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
                         {secondPlaceTeam.name.charAt(0)}
-                      </div>
-                    )}
+                      </div>}
                     <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
                     <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
                       <span className="text-slate-300 text-xs font-bold">+2 pts</span>
@@ -403,15 +369,11 @@ export function CompetitionDetail({
                   </div>}
                 {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
                     <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
-                    {thirdPlaceTeam.logo ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
+                    {thirdPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
                         <img src={thirdPlaceTeam.logo} alt={thirdPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
+                      </div> : <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
                         {thirdPlaceTeam.name.charAt(0)}
-                      </div>
-                    )}
+                      </div>}
                     <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
                     <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
                       <span className="text-orange-300 text-xs font-bold">+1 pt</span>
