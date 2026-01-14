@@ -38,6 +38,8 @@ export interface Competition {
   name: string;
   city: string;
   date: string;
+  time?: string;
+  timezone?: string;
   logo: string;
   lineup: Array<{
     id: Team;
@@ -49,6 +51,8 @@ export interface Competition {
   thirdplace?: string;
   judges: Array<{ name: string; category: string }>;
   instagramlink?: string;
+  showTicketsLink?: string;
+  afterpartyTicketsLink?: string;
   bid_status: boolean;
   media: {
     photos: string[];

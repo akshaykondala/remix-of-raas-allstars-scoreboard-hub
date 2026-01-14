@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDown } from 'lucide-react';
+import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDown, Ticket, PartyPopper } from 'lucide-react';
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 interface CompetitionDetailProps {
@@ -247,31 +247,71 @@ export function CompetitionDetail({
             </div>
           </DrawerHeader>
 
-          {/* Enhanced Stats Grid */}
+          {/* Quick Info Section */}
           <div className="px-4 pb-4">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 rounded-xl p-3 text-center">
-                <div className="bg-purple-500/20 rounded-full p-2 w-fit mx-auto mb-2">
-                  <Users className="h-4 w-4 text-purple-400" />
+            <div className="flex flex-col gap-2">
+              {/* Competition Time */}
+              <div className="flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3">
+                <div className="bg-purple-500/20 rounded-full p-2">
+                  <Clock className="h-4 w-4 text-purple-400" />
                 </div>
-                <div className="text-xl font-black text-white mb-0.5">{competition.lineup.length}</div>
-                <div className="text-purple-300 text-xs font-medium">Teams</div>
+                <div className="flex-1">
+                  <div className="text-white font-semibold text-sm">
+                    {competition.time || 'TBA'}
+                  </div>
+                  <div className="text-slate-400 text-xs">
+                    {competition.timezone || 'Time zone TBA'}
+                  </div>
+                </div>
               </div>
-              
-              <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/10 border border-blue-400/30 rounded-xl p-3 text-center">
-                <div className="bg-blue-500/20 rounded-full p-2 w-fit mx-auto mb-2">
-                  <Eye className="h-4 w-4 text-blue-400" />
-                </div>
-                <div className="text-xl font-black text-white mb-0.5">{competition.judges?.length || 0}</div>
-                <div className="text-blue-300 text-xs font-medium">Judges</div>
-              </div>
-              
-              <div className={`bg-gradient-to-br ${competition.bid_status ? 'from-green-500/15 to-green-600/10 border-green-400/30' : 'from-slate-500/15 to-slate-600/10 border-slate-400/30'} border rounded-xl p-3 text-center`}>
-                <div className={`${competition.bid_status ? 'bg-green-500/20' : 'bg-slate-500/20'} rounded-full p-2 w-fit mx-auto mb-2`}>
-                  <Trophy className={`h-4 w-4 ${competition.bid_status ? 'text-green-400' : 'text-slate-400'}`} />
-                </div>
-                <div className={`text-xl font-black text-white mb-0.5`}>{competition.bid_status ? 'Yes' : 'No'}</div>
-                <div className={`${competition.bid_status ? 'text-green-300' : 'text-slate-300'} text-xs font-medium`}>Bid Comp</div>
+
+              {/* Ticket Links Row */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* Show Tickets */}
+                <a 
+                  href={competition.showTicketsLink || '#'} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  onClick={(e) => !competition.showTicketsLink && e.preventDefault()}
+                  className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${
+                    competition.showTicketsLink 
+                      ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-400/30 hover:from-blue-500/30 hover:to-blue-600/20 cursor-pointer' 
+                      : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <div className={`rounded-full p-1.5 ${competition.showTicketsLink ? 'bg-blue-500/20' : 'bg-slate-600/20'}`}>
+                    <Ticket className={`h-4 w-4 ${competition.showTicketsLink ? 'text-blue-400' : 'text-slate-500'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-semibold text-xs ${competition.showTicketsLink ? 'text-blue-300' : 'text-slate-500'}`}>
+                      Show Tickets
+                    </div>
+                  </div>
+                  {competition.showTicketsLink && <ExternalLink className="h-3 w-3 text-blue-400/70" />}
+                </a>
+
+                {/* Afterparty Tickets */}
+                <a 
+                  href={competition.afterpartyTicketsLink || '#'} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  onClick={(e) => !competition.afterpartyTicketsLink && e.preventDefault()}
+                  className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${
+                    competition.afterpartyTicketsLink 
+                      ? 'bg-gradient-to-r from-pink-500/20 to-pink-600/10 border border-pink-400/30 hover:from-pink-500/30 hover:to-pink-600/20 cursor-pointer' 
+                      : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <div className={`rounded-full p-1.5 ${competition.afterpartyTicketsLink ? 'bg-pink-500/20' : 'bg-slate-600/20'}`}>
+                    <PartyPopper className={`h-4 w-4 ${competition.afterpartyTicketsLink ? 'text-pink-400' : 'text-slate-500'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-semibold text-xs ${competition.afterpartyTicketsLink ? 'text-pink-300' : 'text-slate-500'}`}>
+                      AP Tickets
+                    </div>
+                  </div>
+                  {competition.afterpartyTicketsLink && <ExternalLink className="h-3 w-3 text-pink-400/70" />}
+                </a>
               </div>
             </div>
           </div>
