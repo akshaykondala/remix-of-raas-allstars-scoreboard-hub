@@ -258,9 +258,21 @@ export function CompetitionDetail({
                 <div className="text-purple-300 text-xs font-medium">Teams</div>
               </div>
               
+              <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/10 border border-blue-400/30 rounded-xl p-3 text-center">
+                <div className="bg-blue-500/20 rounded-full p-2 w-fit mx-auto mb-2">
+                  <Eye className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="text-xl font-black text-white mb-0.5">{competition.judges?.length || 0}</div>
+                <div className="text-blue-300 text-xs font-medium">Judges</div>
+              </div>
               
-              
-              
+              <div className={`bg-gradient-to-br ${competition.bid_status ? 'from-green-500/15 to-green-600/10 border-green-400/30' : 'from-slate-500/15 to-slate-600/10 border-slate-400/30'} border rounded-xl p-3 text-center`}>
+                <div className={`${competition.bid_status ? 'bg-green-500/20' : 'bg-slate-500/20'} rounded-full p-2 w-fit mx-auto mb-2`}>
+                  <Trophy className={`h-4 w-4 ${competition.bid_status ? 'text-green-400' : 'text-slate-400'}`} />
+                </div>
+                <div className={`text-xl font-black text-white mb-0.5`}>{competition.bid_status ? 'Yes' : 'No'}</div>
+                <div className={`${competition.bid_status ? 'text-green-300' : 'text-slate-300'} text-xs font-medium`}>Bid Comp</div>
+              </div>
             </div>
           </div>
 
@@ -274,14 +286,26 @@ export function CompetitionDetail({
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
               <div className="grid gap-1.5">
-                {competition.lineup.map((team, index) => <div key={index} onClick={() => handleTeamClick(typeof team.id === 'string' ? team.id : String(team.id))} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                    <div className="w-5 h-5 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400">
-                      {index + 1}
+                {competition.lineup.map((team, index) => {
+                  const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                  const fullTeam = teams.find(t => t.id === teamIdStr);
+                  return (
+                    <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                      {fullTeam?.logo ? (
+                        <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
+                          <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+                          {(team.name || 'T').charAt(0)}
+                        </div>
+                      )}
+                      <span className="font-medium text-sm truncate">
+                        {team.name || `Team ${team.id}`}
+                      </span>
                     </div>
-                    <span className="font-medium text-sm">
-                      {team.name || `Team ${team.id}`}
-                    </span>
-                  </div>)}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -305,32 +329,50 @@ export function CompetitionDetail({
                     {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                   </button>}
               </div> : <div className="space-y-2">
-                {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-2 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold">1</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm truncate">{firstPlaceTeam.name}</div>
-                      <div className="text-yellow-400 text-xs truncate">{firstPlaceTeam.university}</div>
-                    </div>
+                {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
+                    <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
+                    {firstPlaceTeam.logo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
+                        <img src={firstPlaceTeam.logo} alt={firstPlaceTeam.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
+                        {firstPlaceTeam.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
                     <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
                       <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
                     </div>
                   </div>}
-                {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-2 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">2</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm truncate">{secondPlaceTeam.name}</div>
-                      <div className="text-slate-400 text-xs truncate">{secondPlaceTeam.university}</div>
-                    </div>
+                {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
+                    <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
+                    {secondPlaceTeam.logo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
+                        <img src={secondPlaceTeam.logo} alt={secondPlaceTeam.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
+                        {secondPlaceTeam.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
                     <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
                       <span className="text-slate-300 text-xs font-bold">+2 pts</span>
                     </div>
                   </div>}
-                {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-2 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white font-semibold text-sm truncate">{thirdPlaceTeam.name}</div>
-                      <div className="text-orange-400 text-xs truncate">{thirdPlaceTeam.university}</div>
-                    </div>
+                {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
+                    <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
+                    {thirdPlaceTeam.logo ? (
+                      <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
+                        <img src={thirdPlaceTeam.logo} alt={thirdPlaceTeam.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
+                        {thirdPlaceTeam.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
                     <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
                       <span className="text-orange-300 text-xs font-bold">+1 pt</span>
                     </div>
