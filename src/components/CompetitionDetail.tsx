@@ -195,7 +195,7 @@ export function CompetitionDetail({
   const secondPlaceTeam = getPlacingTeam(competition.secondplace);
   const thirdPlaceTeam = getPlacingTeam(competition.thirdplace);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[95vh] max-h-[95vh] rounded-t-3xl">
+      <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
         <div className="overflow-y-auto flex-1 scrollbar-hide">
