@@ -217,6 +217,17 @@ function TimelineCompetitionCard({
 }: TimelineCompetitionCardProps) {
   const isBid = competition.bid_status;
   
+  // Format date nicely
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+  
   return <div onClick={e => {
     e.stopPropagation();
     onClick();
@@ -243,26 +254,41 @@ function TimelineCompetitionCard({
 
       {/* Content */}
       <div className="relative p-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-4">
           {/* Logo with ring */}
           <div className="relative flex-shrink-0">
-            {competition.logo ? <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' : 'ring-primary/40 group-hover:ring-primary/60'}`}>
+            {competition.logo ? <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' : 'ring-primary/40 group-hover:ring-primary/60'}`}>
                 <img src={competition.logo} alt={`${competition.name} logo`} className="w-full h-full object-cover" loading="lazy" />
-              </div> : <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ring-2 shadow-md ${isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'}`}>
-                <span className={`text-lg sm:text-xl font-bold ${isBid ? 'text-amber-400' : 'text-primary'}`}>
+              </div> : <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center ring-2 shadow-md ${isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'}`}>
+                <span className={`text-xl sm:text-2xl font-bold ${isBid ? 'text-amber-400' : 'text-primary'}`}>
                   {competition.name.charAt(0)}
                 </span>
               </div>}
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-bold text-sm sm:text-base line-clamp-1 transition-colors duration-300 ${isBid ? 'text-foreground group-hover:text-amber-400' : 'text-foreground group-hover:text-primary'}`}>
+          {/* Info - seamless text display */}
+          <div className="flex-1 min-w-0 space-y-1">
+            <h3 className={`font-bold text-base sm:text-lg leading-tight transition-colors duration-300 ${isBid ? 'text-foreground group-hover:text-amber-400' : 'text-foreground group-hover:text-primary'}`}>
               {competition.name}
             </h3>
-            <div className="flex items-center gap-1.5 mt-1">
-              <MapPin className={`h-3 w-3 flex-shrink-0 ${isBid ? 'text-amber-500' : 'text-primary'}`} />
-              <span className="text-xs sm:text-sm text-muted-foreground truncate">{competition.city}</span>
+            
+            {/* Seamless info display */}
+            <div className="space-y-0.5">
+              <p className="text-sm text-muted-foreground/80">
+                {formatDate(competition.date)}
+                {competition.time && <span className="text-muted-foreground/60"> · {competition.time}</span>}
+              </p>
+              
+              <p className="text-sm text-muted-foreground/70 flex items-center gap-1.5">
+                <MapPin className={`h-3 w-3 flex-shrink-0 ${isBid ? 'text-amber-500/70' : 'text-primary/60'}`} />
+                <span>{competition.city}</span>
+              </p>
+              
+              {isBid && (
+                <p className="text-xs font-medium bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                  Bid Competition
+                </p>
+              )}
             </div>
           </div>
         </div>
