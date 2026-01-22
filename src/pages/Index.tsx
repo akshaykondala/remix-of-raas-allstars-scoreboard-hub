@@ -1087,12 +1087,13 @@ const Index = () => {
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-slate-300 font-bold text-xs mb-1">2nd</div>
-                        <div className="text-white font-semibold text-xs leading-tight mb-1">{topThreeTeams[1]?.name}</div>
-                        <div className="relative -mt-1">
-                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-blue-500/30 to-purple-500/30 px-3 py-1 rounded-full border border-blue-400/30">
-                            <span className="text-white font-bold text-xs tracking-wider">{topThreeTeams[1]?.bidPoints}</span>
+                        <div className="text-slate-300 font-bold text-xs mb-0.5">2nd</div>
+                        <div className="text-white font-semibold text-xs leading-tight mb-2">{topThreeTeams[1]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-slate-300/30 to-slate-400/30 rounded-xl blur-md"></div>
+                          <div className="relative bg-gradient-to-br from-slate-200/90 to-slate-300/80 px-3 py-1.5 rounded-xl shadow-lg">
+                            <span className="text-slate-800 font-black text-lg leading-none">{topThreeTeams[1]?.bidPoints}</span>
+                            <span className="text-slate-600 font-semibold text-[8px] uppercase tracking-wider ml-0.5">pts</span>
                           </div>
                         </div>
                       </div>
@@ -1124,12 +1125,13 @@ const Index = () => {
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-yellow-800 font-bold text-sm mb-1">1st</div>
-                        <div className="text-yellow-900 font-bold text-sm leading-tight mb-1">{topThreeTeams[0]?.name}</div>
-                        <div className="relative -mt-1">
-                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-300/40 to-orange-300/40 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-yellow-200/80 to-orange-200/80 px-4 py-1.5 rounded-full border border-yellow-300/60">
-                            <span className="text-yellow-900 font-bold text-sm tracking-wider">{topThreeTeams[0]?.bidPoints}</span>
+                        <div className="text-yellow-800 font-bold text-sm mb-0.5">1st</div>
+                        <div className="text-yellow-900 font-bold text-sm leading-tight mb-2">{topThreeTeams[0]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-amber-300/50 rounded-xl blur-md"></div>
+                          <div className="relative bg-gradient-to-br from-yellow-100 to-amber-200 px-4 py-2 rounded-xl shadow-lg border border-yellow-300/50">
+                            <span className="text-amber-900 font-black text-xl leading-none">{topThreeTeams[0]?.bidPoints}</span>
+                            <span className="text-amber-700 font-bold text-[9px] uppercase tracking-wider ml-1">pts</span>
                           </div>
                         </div>
                       </div>
@@ -1161,12 +1163,13 @@ const Index = () => {
                       </div>
                       
                       <div className="text-center">
-                        <div className="text-orange-200 font-bold text-xs mb-1">3rd</div>
-                        <div className="text-orange-100 font-semibold text-xs leading-tight mb-1">{topThreeTeams[2]?.name}</div>
-                        <div className="relative -mt-1">
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-full blur-sm"></div>
-                          <div className="relative bg-gradient-to-r from-orange-400/30 to-red-400/30 px-3 py-1 rounded-full border border-orange-300/30">
-                            <span className="text-orange-100 font-bold text-xs tracking-wider">{topThreeTeams[2]?.bidPoints}</span>
+                        <div className="text-orange-200 font-bold text-xs mb-0.5">3rd</div>
+                        <div className="text-orange-100 font-semibold text-xs leading-tight mb-2">{topThreeTeams[2]?.name}</div>
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-orange-300/30 to-amber-400/30 rounded-xl blur-md"></div>
+                          <div className="relative bg-gradient-to-br from-orange-200/90 to-amber-300/80 px-3 py-1.5 rounded-xl shadow-lg">
+                            <span className="text-orange-900 font-black text-lg leading-none">{topThreeTeams[2]?.bidPoints}</span>
+                            <span className="text-orange-700 font-semibold text-[8px] uppercase tracking-wider ml-0.5">pts</span>
                           </div>
                         </div>
                       </div>
