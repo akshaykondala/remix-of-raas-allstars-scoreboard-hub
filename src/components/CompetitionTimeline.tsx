@@ -248,10 +248,17 @@ function TimelineCompetitionCard({
                 </span>
               </div>}
             
-            {/* Bid star on logo */}
-            {competition.bid_status && <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
-                <Star className="w-2.5 h-2.5 text-white fill-white" />
-              </div>}
+            {/* Premium Bid indicator */}
+            {competition.bid_status && (
+              <div className="absolute -top-1.5 -right-1.5">
+                <div className="relative w-6 h-6 rounded-full bg-gradient-to-br from-amber-300 via-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/40 ring-2 ring-amber-400/50 ring-offset-1 ring-offset-background">
+                  <Star className="w-3 h-3 text-amber-900 fill-amber-900 drop-shadow-sm" />
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/40 via-transparent to-transparent" />
+                  <div className="absolute inset-0 rounded-full animate-pulse bg-gradient-to-br from-amber-200/30 to-transparent" />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Info */}
@@ -265,11 +272,18 @@ function TimelineCompetitionCard({
             </div>
           </div>
 
-          {/* Bid badge - shown separately if no logo badge */}
-          {competition.bid_status && <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40">
-              <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-              <span className="text-xs font-bold text-amber-400">Bid</span>
-            </div>}
+          {/* Premium Bid badge - desktop only */}
+          {competition.bid_status && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/15 via-amber-400/20 to-orange-500/15 border border-amber-400/40 shadow-inner shadow-amber-500/10">
+              <div className="relative">
+                <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400 drop-shadow-sm" />
+                <div className="absolute inset-0 animate-ping">
+                  <Star className="h-3.5 w-3.5 text-amber-400/30 fill-amber-400/30" />
+                </div>
+              </div>
+              <span className="text-xs font-bold bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent uppercase tracking-wider">Bid</span>
+            </div>
+          )}
         </div>
       </div>
 
