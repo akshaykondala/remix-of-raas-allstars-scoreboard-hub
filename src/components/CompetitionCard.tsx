@@ -37,7 +37,10 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
             {competition.name}
           </h3>
           {competition.bid_status && (
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-400/30">
+              <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+              <span className="text-[10px] font-semibold text-amber-300 uppercase tracking-wide">Bid</span>
+            </div>
           )}
         </div>
         <div className="flex items-center gap-1 text-muted-foreground">
