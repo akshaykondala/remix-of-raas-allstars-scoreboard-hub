@@ -25,6 +25,7 @@ const fallbackTeams: Team[] = [
     city: 'Austin, TX',
     instagramlink: 'https://www.instagram.com/texasraas/',
     competitions_attending: [],
+    theme: 'Echoes of the Ancients',
     history: [
       'Founded in 2005, Texas Raas has been a powerhouse in collegiate Raas',
       'Multiple-time Raas All Stars qualifier',
@@ -96,6 +97,7 @@ const fallbackTeams: Team[] = [
     city: 'Pittsburgh, PA',
     instagramlink: 'https://www.instagram.com/cmuraasta/',
     competitions_attending: [],
+    theme: 'Rise of the Phoenix',
     history: [
       'CMU Raasta brings technical precision to every performance',
       'Consistently ranked in top 10 nationally',
@@ -143,6 +145,7 @@ const fallbackTeams: Team[] = [
     city: 'Gainesville, FL',
     instagramlink: 'https://www.instagram.com/ufgatoraas/',
     competitions_attending: [],
+    theme: 'Monsoon Dreams',
     history: [
       'UF Gatoraas represents the University of Florida with pride',
       'Known for high-energy performances and crowd engagement',
@@ -197,6 +200,7 @@ const fallbackTeams: Team[] = [
     city: 'Los Angeles, CA',
     instagramlink: 'https://www.instagram.com/uclanashaa/',
     competitions_attending: [],
+    theme: 'Shadows & Light',
     history: [
       'UCLA Nashaa brings West Coast energy to the Raas circuit',
       'Known for innovative choreography and modern interpretations',
