@@ -77,23 +77,45 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
             </div>
           </DrawerHeader>
 
-          {/* Enhanced Stats Grid */}
-          <div className="px-4 pb-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/10 border border-blue-400/30 rounded-xl p-3 text-center">
-                <div className="bg-blue-500/20 rounded-full p-2 w-fit mx-auto mb-2">
-                  <Target className="h-4 w-4 text-blue-400" />
+          {/* Enhanced Stats Section */}
+          <div className="px-4 pb-4 pt-2 space-y-3">
+            {/* Prominent Bid Points Display - Only show if team has points */}
+            {team.bidPoints > 0 && (
+              <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-orange-500/20 border border-amber-400/40 rounded-2xl p-4">
+                {/* Decorative glow */}
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-orange-400/15 rounded-full blur-2xl"></div>
+                
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl p-2.5 shadow-lg shadow-amber-500/25">
+                      <Target className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-amber-200/70 text-xs font-medium uppercase tracking-wider">Season Points</div>
+                      <div className="text-white/60 text-xs">Bid Qualification Progress</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-300 bg-clip-text text-transparent">
+                      {team.bidPoints}
+                    </div>
+                    <div className="text-amber-300/60 text-xs font-medium">points</div>
+                  </div>
                 </div>
-                <div className="text-xl font-black text-white mb-0.5">{team.bidPoints}</div>
-                <div className="text-blue-300 text-xs font-medium">Bid Points</div>
               </div>
-              
-              <div className="bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 rounded-xl p-3 text-center">
-                <div className="bg-purple-500/20 rounded-full p-2 w-fit mx-auto mb-2">
-                  <Calendar className="h-4 w-4 text-purple-400" />
+            )}
+
+            {/* Competitions count - Always show */}
+            <div className="bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 rounded-xl p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="bg-purple-500/20 rounded-lg p-2">
+                    <Calendar className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <span className="text-purple-200/80 text-sm font-medium">Competitions This Season</span>
                 </div>
-                <div className="text-xl font-black text-white mb-0.5">{team.competitions_attending?.length || 0}</div>
-                <div className="text-purple-300 text-xs font-medium">Competitions</div>
+                <div className="text-xl font-bold text-white">{team.competitions_attending?.length || 0}</div>
               </div>
             </div>
           </div>
