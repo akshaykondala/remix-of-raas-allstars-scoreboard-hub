@@ -17,6 +17,7 @@ export interface Team {
   }>;
   founded: number;
   genderComposition: 'All Girls' | 'All Boys' | 'Co-ed' | 'Open';
+  theme?: string;
   contactInfo?: {
     email?: string;
     phone?: string;

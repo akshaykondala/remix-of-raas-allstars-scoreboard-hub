@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Star, Award, Mail, Phone, Globe, User, Clock } from 'lucide-react';
+import { Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Star, Award, Mail, Phone, Globe, User, Clock, Sparkles } from 'lucide-react';
 import { Team, Competition } from '@/lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 
@@ -79,6 +79,27 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
 
           {/* Enhanced Stats Section */}
           <div className="px-4 pb-4 pt-2 space-y-3">
+            {/* Theme Reveal Section - Prominent display */}
+            {team.theme && (
+              <div className="relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-fuchsia-500/15 to-pink-500/20 border border-violet-400/40 rounded-2xl p-4">
+                {/* Decorative elements */}
+                <div className="absolute -top-8 -right-8 w-28 h-28 bg-fuchsia-400/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-violet-400/15 rounded-full blur-2xl"></div>
+                
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-gradient-to-br from-violet-400 to-fuchsia-500 rounded-lg p-1.5 shadow-lg shadow-violet-500/25">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-violet-200/70 text-xs font-medium uppercase tracking-wider">Season Theme</span>
+                  </div>
+                  <p className="text-xl font-bold bg-gradient-to-r from-violet-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent">
+                    {team.theme}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Prominent Bid Points Display - Only show if team has points */}
             {team.bidPoints > 0 && (
               <div className="relative overflow-hidden bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-orange-500/20 border border-amber-400/40 rounded-2xl p-4">
@@ -91,16 +112,10 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                     <div className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl p-2.5 shadow-lg shadow-amber-500/25">
                       <Target className="h-5 w-5 text-white" />
                     </div>
-                    <div>
-                      <div className="text-amber-200/70 text-xs font-medium uppercase tracking-wider">Season Points</div>
-                      <div className="text-white/60 text-xs">Bid Qualification Progress</div>
-                    </div>
+                    <span className="text-amber-200/80 text-sm font-medium">Season Points</span>
                   </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-300 bg-clip-text text-transparent">
-                      {team.bidPoints}
-                    </div>
-                    <div className="text-amber-300/60 text-xs font-medium">points</div>
+                  <div className="text-3xl font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-orange-300 bg-clip-text text-transparent">
+                    {team.bidPoints}
                   </div>
                 </div>
               </div>
