@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
-import { X, Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Palette, Star, Award, Mail, Phone, Globe, User, Clock } from 'lucide-react';
+import { Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Star, Award, Mail, Phone, Globe, User, Clock } from 'lucide-react';
 import { Team, Competition } from '@/lib/types';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 
 interface TeamDetailProps {
   team: Team;
@@ -11,212 +11,178 @@ interface TeamDetailProps {
   zIndex?: number;
 }
 
-export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [], zIndex = 70 }: TeamDetailProps) => {
-  const [isExiting, setIsExiting] = useState(false);
-  
-  // Debug: Log the props
-  console.log('🔍 TeamDetail rendered with props:', { 
-    teamName: team.name, 
-    teamId: team.id,
-    competitionsLength: competitions.length, 
-    onCompetitionClickExists: !!onCompetitionClick,
-    competitionsSample: competitions.slice(0, 2).map(c => ({ id: c.id, name: c.name }))
-  });
-  
-  // Debug: Log the team's competition results
-  console.log('🏆 Team competitionResults:', team.competitionResults);
-  console.log('🏆 Team competitionResults length:', team.competitionResults?.length);
-  console.log('🏆 Team competitionResults type:', typeof team.competitionResults);
-  console.log('🏆 Team competitions_attending:', team.competitions_attending);
+export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [] }: TeamDetailProps) => {
+  const [open, setOpen] = useState(true);
 
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(onClose, 200); // Match the animation duration
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setOpen(false);
+      setTimeout(onClose, 300);
+    }
   };
+
+  const handleCompetitionClick = (competitionId: string | number) => {
+    if (onCompetitionClick) {
+      onCompetitionClick(competitionId);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 flex" style={{ zIndex }}>
-      <div className={`bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl border border-slate-600/30 shadow-2xl w-full max-h-full overflow-hidden ${isExiting ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
-        <div className="max-h-[95vh] overflow-y-auto scrollbar-hide">
-        {/* Modern Header with Hero Profile */}
-        <div className="relative bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-slate-800/20 p-6">
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-200 z-10"
-          >
-            <X size={18} />
-          </button>
-          
-          {/* Hero Team Presentation */}
-          <div className="flex flex-col items-center text-center space-y-4">
-            {/* Large Team Logo */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl blur-xl"></div>
-              {team.logo ? (
-                <div className="relative w-24 h-24 rounded-3xl overflow-hidden border-2 border-white/20 shadow-2xl">
-                  <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl border-2 border-white/20">
-                  <span className="text-white font-bold text-2xl">{team.name.split(' ')[0][0]}</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Team Name & Info */}
-            <div>
-              <h1 className="text-2xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent mb-2">{team.name}</h1>
-              <p className="text-white text-lg font-medium mb-2">{team.university}</p>
+    <Drawer open={open} onOpenChange={handleOpenChange}>
+      <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
+        <div className="overflow-y-auto flex-1 scrollbar-hide">
+          {/* Modern Header with Hero Profile */}
+          <DrawerHeader className="relative bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-transparent p-6 pb-4 py-[20px] px-[22px]">
+            {/* Hero Team Presentation */}
+            <div className="flex flex-col items-center text-center space-y-4">
+              {/* Large Team Logo */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-3xl blur-xl"></div>
+                {team.logo ? (
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl">
+                    <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-white/20">
+                    <span className="text-white font-bold text-2xl">{team.name.split(' ')[0][0]}</span>
+                  </div>
+                )}
+              </div>
               
-              {/* Modern Info Badges */}
-              <div className="flex flex-wrap justify-center gap-2 mb-3">
-                {team.city && (
-                  <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm border border-white/20 text-white">
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span>{team.city}</span>
+              {/* Team Name & Info - Seamless text style */}
+              <div className="space-y-1">
+                <DrawerTitle className="text-2xl font-black bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+                  {team.name}
+                </DrawerTitle>
+                
+                {/* Elegant flowing info text */}
+                <p className="text-white/70 text-sm font-medium tracking-wide">
+                  {team.university}
+                  {team.city && <span> · {team.city}</span>}
+                </p>
+                
+                {/* Secondary info line */}
+                <p className="text-white/50 text-xs tracking-wider uppercase">
+                  <span className="text-purple-400/90">{team.genderComposition}</span>
+                  <span className="mx-2 text-white/30">•</span>
+                  <span className="text-blue-400/90">Est. {team.founded}</span>
+                  {team.qualified && (
+                    <>
+                      <span className="mx-2 text-white/30">•</span>
+                      <span className="text-emerald-400/90">Qualified for RAS</span>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+          </DrawerHeader>
+
+          {/* Enhanced Stats Grid */}
+          <div className="px-4 pb-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/10 border border-blue-400/30 rounded-xl p-3 text-center">
+                <div className="bg-blue-500/20 rounded-full p-2 w-fit mx-auto mb-2">
+                  <Target className="h-4 w-4 text-blue-400" />
+                </div>
+                <div className="text-xl font-black text-white mb-0.5">{team.bidPoints}</div>
+                <div className="text-blue-300 text-xs font-medium">Bid Points</div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 rounded-xl p-3 text-center">
+                <div className="bg-purple-500/20 rounded-full p-2 w-fit mx-auto mb-2">
+                  <Calendar className="h-4 w-4 text-purple-400" />
+                </div>
+                <div className="text-xl font-black text-white mb-0.5">{team.competitions_attending?.length || 0}</div>
+                <div className="text-purple-300 text-xs font-medium">Competitions</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contact Information Section */}
+          {team.contactInfo && (
+            <div className="px-4 pb-4">
+              <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                <div className="bg-green-500/20 rounded-full p-1.5 mr-2">
+                  <Mail className="h-3.5 w-3.5 text-green-400" />
+                </div>
+                Contact Information
+              </h3>
+              <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-2.5">
+                {team.contactInfo?.captains && Array.isArray(team.contactInfo.captains) && team.contactInfo.captains.length > 0 && (
+                  <div className="flex items-start gap-2.5">
+                    <div className="bg-blue-500/20 rounded-lg p-1.5 flex-shrink-0">
+                      <User className="h-3.5 w-3.5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-0.5">
+                        {team.contactInfo.captains.length > 1 ? 'Team Captains' : 'Team Captain'}
+                      </div>
+                      <div className="space-y-0.5">
+                        {[...team.contactInfo.captains].sort((a, b) => a.localeCompare(b)).map((captain, index) => (
+                          <div key={index} className="text-white font-semibold text-sm">{captain}</div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
                 
-                <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm border border-purple-400/30">
-                  <Users className="h-3.5 w-3.5 text-purple-300" />
-                  <span className="text-purple-200">{team.genderComposition}</span>
-                </div>
+                {team.contactInfo.email && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-green-500/20 rounded-lg p-1.5">
+                      <Mail className="h-3.5 w-3.5 text-green-400" />
+                    </div>
+                    <div>
+                      <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Email</div>
+                      <a href={`mailto:${team.contactInfo.email}`} className="text-green-400 font-semibold text-sm hover:text-green-300 transition-colors">
+                        {team.contactInfo.email}
+                      </a>
+                    </div>
+                  </div>
+                )}
                 
-                <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm border border-blue-400/30">
-                  <Clock className="h-3.5 w-3.5 text-blue-300" />
-                  <span className="text-blue-200">Est. {team.founded}</span>
-                </div>
-              </div>
-              
-              {/* Status Badge */}
-              {team.qualified && (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/40 text-green-300 text-sm font-bold">
-                  <Star className="h-4 w-4" />
-                  QUALIFIED FOR RAS
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Stats Grid */}
-        <div className="p-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-blue-500/15 to-blue-600/10 border border-blue-400/30 rounded-2xl p-4 text-center">
-              <div className="bg-blue-500/20 rounded-full p-3 w-fit mx-auto mb-3">
-                <Target className="h-5 w-5 text-blue-400" />
-              </div>
-              <div className="text-2xl font-black text-white mb-1">{team.bidPoints}</div>
-              <div className="text-blue-300 text-sm font-medium">Bid Points</div>
-            </div>
-            
-            <div className="bg-gradient-to-br from-purple-500/15 to-purple-600/10 border border-purple-400/30 rounded-2xl p-4 text-center">
-              <div className="bg-purple-500/20 rounded-full p-3 w-fit mx-auto mb-3">
-                <Calendar className="h-5 w-5 text-purple-400" />
-              </div>
-              <div className="text-2xl font-black text-white mb-1">{team.competitions_attending?.length || 0}</div>
-              <div className="text-purple-300 text-sm font-medium">Competitions</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Information Section */}
-        {team.contactInfo && (
-          <div className="px-6 pb-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-              <div className="bg-green-500/20 rounded-full p-2 mr-3">
-                <Mail className="h-4 w-4 text-green-400" />
-              </div>
-              Contact Information
-            </h3>
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-2xl p-4 space-y-3">
-              {team.contactInfo?.captains && Array.isArray(team.contactInfo.captains) && team.contactInfo.captains.length > 0 && (
-                <div className="flex items-start gap-3">
-                  <div className="bg-blue-500/20 rounded-lg p-2 flex-shrink-0">
-                    <User className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
-                      {team.contactInfo.captains.length > 1 ? 'Team Captains' : 'Team Captain'}
+                {team.contactInfo.phone && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-purple-500/20 rounded-lg p-1.5">
+                      <Phone className="h-3.5 w-3.5 text-purple-400" />
                     </div>
-                    <div className="space-y-1">
-                      {[...team.contactInfo.captains].sort((a, b) => a.localeCompare(b)).map((captain, index) => (
-                        <div key={index} className="text-white font-semibold text-sm">{captain}</div>
-                      ))}
+                    <div>
+                      <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Phone</div>
+                      <a href={`tel:${team.contactInfo.phone}`} className="text-purple-400 font-semibold text-sm hover:text-purple-300 transition-colors">
+                        {team.contactInfo.phone}
+                      </a>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              {team.contactInfo.email && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-500/20 rounded-lg p-2">
-                    <Mail className="h-4 w-4 text-green-400" />
+                )}
+                
+                {team.contactInfo.website && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="bg-cyan-500/20 rounded-lg p-1.5">
+                      <Globe className="h-3.5 w-3.5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Website</div>
+                      <a href={team.contactInfo.website} target="_blank" rel="noopener noreferrer" className="text-cyan-400 font-semibold text-sm hover:text-cyan-300 transition-colors flex items-center gap-1">
+                        Visit Website
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Email</div>
-                    <a href={`mailto:${team.contactInfo.email}`} className="text-green-400 font-semibold hover:text-green-300 transition-colors">
-                      {team.contactInfo.email}
-                    </a>
-                  </div>
-                </div>
-              )}
-              
-              {team.contactInfo.phone && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/20 rounded-lg p-2">
-                    <Phone className="h-4 w-4 text-purple-400" />
-                  </div>
-                  <div>
-                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Phone</div>
-                    <a href={`tel:${team.contactInfo.phone}`} className="text-purple-400 font-semibold hover:text-purple-300 transition-colors">
-                      {team.contactInfo.phone}
-                    </a>
-                  </div>
-                </div>
-              )}
-              
-              {team.contactInfo.website && (
-                <div className="flex items-center gap-3">
-                  <div className="bg-cyan-500/20 rounded-lg p-2">
-                    <Globe className="h-4 w-4 text-cyan-400" />
-                  </div>
-                  <div>
-                    <div className="text-slate-400 text-xs font-medium uppercase tracking-wider">Website</div>
-                    <a href={team.contactInfo.website} target="_blank" rel="noopener noreferrer" className="text-cyan-400 font-semibold hover:text-cyan-300 transition-colors flex items-center gap-1">
-                      Visit Website
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Competition Timeline with Results */}
-        {(() => {
-          console.log('TeamDetail - competitionResults for', team.name, ':', team.competitionResults);
-          return team.competitionResults && team.competitionResults.length > 0;
-        })() && (
-          <div className="px-6 pb-6">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-              <div className="bg-blue-500/20 rounded-full p-2 mr-3">
-                <Calendar className="h-4 w-4 text-blue-400" />
+                )}
               </div>
-              Season Journey
-            </h3>
-            <div className="space-y-4">
-              {team.competitionResults && team.competitionResults.length > 0 ? (
-                team.competitionResults.map((result, index) => {
-                  console.log(`🏆 Competition result ${index}:`, {
-                    competitionId: result.competitionId,
-                    competitionName: result.competitionName,
-                    placement: result.placement,
-                    bidPointsEarned: result.bidPointsEarned,
-                    type: typeof result.competitionId,
-                    fullResult: result
-                  });
-                  
+            </div>
+          )}
+
+          {/* Competition Timeline with Results */}
+          {team.competitionResults && team.competitionResults.length > 0 && (
+            <div className="px-4 pb-4">
+              <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                <div className="bg-blue-500/20 rounded-full p-1.5 mr-2">
+                  <Calendar className="h-3.5 w-3.5 text-blue-400" />
+                </div>
+                Season Journey
+              </h3>
+              <div className="space-y-3">
+                {team.competitionResults.map((result, index) => {
                   const isFirst = result.placement?.includes('1st');
                   const isSecond = result.placement?.includes('2nd');
                   const isThird = result.placement?.includes('3rd');
@@ -225,41 +191,22 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                   return (
                     <div 
                       key={index}
-                      onClick={() => {
-                        console.log('🎯 COMPETITION CLICKED!');
-                        console.log('📊 Clicking competition:', result.competitionId, 'type:', typeof result.competitionId);
-                        console.log('🔧 onCompetitionClick function exists:', !!onCompetitionClick);
-                        console.log('📋 Full result object:', result);
-                        console.log('🏆 Team competitions array length:', competitions.length);
-                        console.log('🏆 First few competitions:', competitions.slice(0, 3));
-                        
-                        if (onCompetitionClick) {
-                          console.log('✅ Calling onCompetitionClick with:', result.competitionId);
-                          try {
-                            onCompetitionClick(result.competitionId);
-                            console.log('✅ onCompetitionClick called successfully');
-                          } catch (error) {
-                            console.error('❌ Error calling onCompetitionClick:', error);
-                          }
-                        } else {
-                          console.error('❌ onCompetitionClick is not defined');
-                        }
-                      }}
+                      onClick={() => handleCompetitionClick(result.competitionId)}
                       className={`relative bg-gradient-to-r ${
                         earnedPoints 
                           ? 'from-green-500/10 to-emerald-500/5 border-green-400/30' 
                           : 'from-slate-800/60 to-slate-700/40 border-slate-600/40'
-                      } border rounded-2xl p-4 cursor-pointer hover:scale-[1.02] transition-transform duration-200`}
+                      } border rounded-xl p-3 cursor-pointer hover:scale-[1.02] transition-transform duration-200`}
                     >
                       {/* Timeline connector */}
                       {index < team.competitionResults!.length - 1 && (
-                        <div className="absolute left-6 top-full w-0.5 h-4 bg-slate-600"></div>
+                        <div className="absolute left-5 top-full w-0.5 h-3 bg-slate-600"></div>
                       )}
                       
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-3">
                         {/* Competition number & status */}
                         <div className="flex flex-col items-center">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                             earnedPoints 
                               ? 'bg-green-500/20 text-green-400 border border-green-400/40' 
                               : 'bg-slate-600/30 text-slate-400 border border-slate-500/40'
@@ -270,16 +217,16 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                         
                         {/* Competition details */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-start justify-between mb-1.5">
                             <div>
-                              <h4 className="text-white font-semibold text-sm mb-1 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
+                              <h4 className="text-white font-semibold text-sm mb-0.5 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
                               {result.date && (
                                 <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                               )}
                             </div>
                             
                             {/* Placement badge */}
-                            <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            <div className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                               isFirst ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/40' :
                               isSecond ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
                               isThird ? 'bg-orange-500/20 text-orange-400 border border-orange-400/40' :
@@ -290,15 +237,15 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                           </div>
                           
                           {/* Points breakdown */}
-                          <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-3 text-xs">
                             <div className="flex items-center gap-1">
-                              <span className="text-slate-400">Points Earned:</span>
+                              <span className="text-slate-400">Points:</span>
                               <span className={`font-bold ${earnedPoints ? 'text-green-400' : 'text-slate-500'}`}>
                                 +{result.bidPointsEarned}
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <span className="text-slate-400">Season Total:</span>
+                              <span className="text-slate-400">Total:</span>
                               <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
                             </div>
                           </div>
@@ -306,102 +253,94 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                       </div>
                     </div>
                   );
-                })
-              ) : (
-                <div className="text-center py-8 text-slate-400">
-                  <p>No competition results available</p>
-                  <p className="text-sm mt-2">Debug info:</p>
-                  <p className="text-xs">competitionResults: {JSON.stringify(team.competitionResults)}</p>
-                  <p className="text-xs">competitions_attending: {JSON.stringify(team.competitions_attending)}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Enhanced Achievements */}
-        {team.achievements && team.achievements.length > 0 && (
-        <div className="px-6 pb-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-            <div className="bg-yellow-500/20 rounded-full p-2 mr-3">
-              <Trophy className="h-4 w-4 text-yellow-400" />
-            </div>
-            Recent Achievements
-          </h3>
-          <div className="space-y-3">
-            {team.achievements.slice(0, 3).map((achievement, index) => (
-              <div key={index} className="bg-gradient-to-r from-yellow-500/15 to-orange-500/10 border border-yellow-400/30 rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-yellow-500/20 rounded-lg p-2 flex-shrink-0">
-                    <Award className="h-4 w-4 text-yellow-400" />
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-slate-200 text-sm leading-relaxed font-medium">{achievement.name}</span>
-                    {achievement.link && (
-                      <a 
-                        href={achievement.link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 mt-2 text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
-                        <span className="text-xs">Watch on YouTube</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
+                })}
               </div>
-            ))}
-            {team.achievements.length > 3 && (
-              <div className="text-sm text-slate-400 text-center py-2">+{team.achievements.length - 3} more achievements</div>
-            )}
-          </div>
-        </div>
-        )}
-
-        {/* Team History Section */}
-        {team.history && team.history.length > 0 && (
-        <div className="px-6 pb-6">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center">
-            <div className="bg-blue-500/20 rounded-full p-2 mr-3">
-              <Star className="h-4 w-4 text-blue-400" />
             </div>
-            Team History
-          </h3>
-          <div className="space-y-3">
-            {team.history.map((historyItem, index) => (
-              <div key={index} className="bg-gradient-to-r from-blue-500/15 to-indigo-500/10 border border-blue-400/30 rounded-2xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="bg-blue-500/20 rounded-lg p-2 flex-shrink-0">
-                    <Star className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <span className="text-slate-200 text-sm leading-relaxed font-medium">{historyItem}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
+          )}
 
-        {/* Enhanced Instagram Link */}
-        {team.instagramlink && (
-          <div className="px-6 pb-6">
-            <a 
-              href={team.instagramlink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group flex items-center justify-center gap-3 bg-gradient-to-r from-pink-500/15 to-purple-500/10 border border-pink-400/30 rounded-2xl p-4 hover:from-pink-500/20 hover:to-purple-500/15 transition-all duration-300 hover:scale-[1.02]"
-            >
-              <Instagram className="h-5 w-5 text-pink-400" />
-              <span className="text-pink-400 font-semibold text-base">Follow on Instagram</span>
-              <ExternalLink className="h-4 w-4 text-pink-400/60" />
-            </a>
-          </div>
-        )}
+          {/* Enhanced Achievements */}
+          {team.achievements && team.achievements.length > 0 && (
+            <div className="px-4 pb-4">
+              <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                <div className="bg-yellow-500/20 rounded-full p-1.5 mr-2">
+                  <Trophy className="h-3.5 w-3.5 text-yellow-400" />
+                </div>
+                Recent Achievements
+              </h3>
+              <div className="space-y-2">
+                {team.achievements.slice(0, 3).map((achievement, index) => (
+                  <div key={index} className="bg-gradient-to-r from-yellow-500/15 to-orange-500/10 border border-yellow-400/30 rounded-xl p-3">
+                    <div className="flex items-start gap-2.5">
+                      <div className="bg-yellow-500/20 rounded-lg p-1.5 flex-shrink-0">
+                        <Award className="h-3.5 w-3.5 text-yellow-400" />
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-slate-200 text-sm leading-relaxed font-medium">{achievement.name}</span>
+                        {achievement.link && (
+                          <a 
+                            href={achievement.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 mt-1.5 text-red-400 hover:text-red-300 transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                            <span className="text-xs">Watch on YouTube</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {team.achievements.length > 3 && (
+                  <div className="text-xs text-slate-400 text-center py-1.5">+{team.achievements.length - 3} more achievements</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Team History Section */}
+          {team.history && team.history.length > 0 && (
+            <div className="px-4 pb-4">
+              <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                <div className="bg-blue-500/20 rounded-full p-1.5 mr-2">
+                  <Star className="h-3.5 w-3.5 text-blue-400" />
+                </div>
+                Team History
+              </h3>
+              <div className="space-y-2">
+                {team.history.map((historyItem, index) => (
+                  <div key={index} className="bg-gradient-to-r from-blue-500/15 to-indigo-500/10 border border-blue-400/30 rounded-xl p-3">
+                    <div className="flex items-start gap-2.5">
+                      <div className="bg-blue-500/20 rounded-lg p-1.5 flex-shrink-0">
+                        <Star className="h-3.5 w-3.5 text-blue-400" />
+                      </div>
+                      <span className="text-slate-200 text-sm leading-relaxed font-medium">{historyItem}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Enhanced Instagram Link */}
+          {team.instagramlink && (
+            <div className="px-4 pb-6">
+              <a 
+                href={team.instagramlink} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group flex items-center justify-center gap-2.5 bg-gradient-to-r from-pink-500/15 to-purple-500/10 border border-pink-400/30 rounded-xl p-3 hover:from-pink-500/20 hover:to-purple-500/15 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <Instagram className="h-4 w-4 text-pink-400" />
+                <span className="text-pink-400 font-semibold text-sm">Follow on Instagram</span>
+                <ExternalLink className="h-3.5 w-3.5 text-pink-400/60" />
+              </a>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </DrawerContent>
+    </Drawer>
   );
 };
