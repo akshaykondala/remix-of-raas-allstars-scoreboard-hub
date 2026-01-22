@@ -217,32 +217,28 @@ export function CompetitionDetail({
               </div>
               
               {/* Competition Name & Info */}
-              <div>
-                <DrawerTitle className="text-xl font-black bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent mb-1">
+              <div className="space-y-1">
+                <DrawerTitle className="text-2xl font-black bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
                   {competition.name}
                 </DrawerTitle>
-                {competition.city && <p className="text-white/90 text-base font-medium mb-2">{competition.city}</p>}
                 
-                {/* Modern Info Badges */}
-                <div className="flex flex-wrap justify-center gap-1.5 mb-3">
-                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full text-xs border border-white/20 text-white/90">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(competition.date)}</span>
-                  </div>
-                  
-                  
-                  
-                  <div className={`flex items-center gap-1 backdrop-blur-sm px-2 py-1 rounded-full text-xs border font-medium ${competition.bid_status ? 'bg-green-500/20 border-green-400/30 text-green-300' : 'bg-slate-500/20 border-slate-400/30 text-slate-300'}`}>
-                    <Trophy className="h-3 w-3" />
-                    <span>{competition.bid_status ? 'BID' : 'NON-BID'}</span>
-                  </div>
-                </div>
+                {/* Elegant flowing info text */}
+                <p className="text-white/70 text-sm font-medium tracking-wide">
+                  {competition.city && <span>{competition.city}</span>}
+                  {competition.city && ' · '}
+                  <span>{formatDate(competition.date)}</span>
+                </p>
                 
-                {/* Status Badge */}
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${isFutureCompetition ? 'bg-blue-500/20 border-blue-400/40 text-blue-300' : 'bg-green-500/20 border-green-400/40 text-green-300'} border`}>
-                  <Clock className="h-3.5 w-3.5" />
-                  {isFutureCompetition ? 'UPCOMING' : 'COMPLETED'}
-                </div>
+                {/* Secondary info line */}
+                <p className="text-white/50 text-xs tracking-wider uppercase">
+                  <span className={competition.bid_status ? 'text-amber-400/90' : 'text-slate-400'}>
+                    {competition.bid_status ? 'Bid Competition' : 'Non-Bid'}
+                  </span>
+                  <span className="mx-2 text-white/30">•</span>
+                  <span className={isFutureCompetition ? 'text-blue-400/90' : 'text-emerald-400/90'}>
+                    {isFutureCompetition ? 'Upcoming' : 'Completed'}
+                  </span>
+                </p>
               </div>
             </div>
           </DrawerHeader>
