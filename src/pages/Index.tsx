@@ -475,6 +475,7 @@ const Index = () => {
   }
   
   const [showLoading, setShowLoading] = useState(true);
+  const headerLogoRef = useRef<HTMLImageElement>(null);
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
@@ -982,7 +983,7 @@ const Index = () => {
 
   return (
     <>
-    {showLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
+    {showLoading && <LoadingScreen onComplete={handleLoadingComplete} headerLogoRef={headerLogoRef} />}
     <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -999,9 +1000,11 @@ const Index = () => {
             {/* Centered Logo */}
             <div className="flex justify-center">
               <img 
+                ref={headerLogoRef}
                 src="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" 
                 alt="Raas All Stars Logo" 
                 className="h-12 w-auto"
+                style={{ opacity: showLoading ? 0 : 1, transition: 'opacity 0.3s ease' }}
               />
             </div>
             
