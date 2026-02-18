@@ -58,11 +58,6 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
           />
         ))}
       </div>
-
-      {/* Loading text */}
-      <p className="mt-5 text-[11px] text-muted-foreground tracking-[0.4em] uppercase font-light">
-        Loading
-      </p>
     </div>
   );
 };
