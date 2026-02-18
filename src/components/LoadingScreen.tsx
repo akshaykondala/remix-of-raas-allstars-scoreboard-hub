@@ -41,11 +41,20 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         <div className="absolute -inset-8 bg-primary/15 blur-3xl animate-[breathe_3s_ease-in-out_infinite] rounded-[40%_60%_55%_45%]" />
         <div className="absolute -inset-14 bg-primary/6 blur-[60px] animate-[breathe_4s_ease-in-out_infinite_0.5s] rounded-[55%_45%_50%_50%]" />
 
-        <img
-          src={logo}
-          alt="Logo"
-          className="relative w-28 h-28 object-contain rounded-full animate-[float_3s_ease-in-out_infinite] drop-shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
-        />
+        <div className="relative overflow-hidden rounded-full">
+          <img
+            src={logo}
+            alt="Logo"
+            className="relative w-28 h-28 object-contain rounded-full animate-[float_3s_ease-in-out_infinite] drop-shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
+          />
+          {/* Shine sweep */}
+          <div className="absolute inset-0 rounded-full animate-[shine_3s_ease-in-out_infinite_1s]"
+            style={{
+              background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.25) 55%, transparent 60%)',
+              backgroundSize: '200% 100%',
+            }}
+          />
+        </div>
       </div>
 
       {/* Progress dots */}
