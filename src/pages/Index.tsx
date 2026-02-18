@@ -1,11 +1,12 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
 import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
+import LoadingScreen from '@/components/LoadingScreen';
 import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
@@ -473,14 +474,17 @@ const Index = () => {
     zIndex: number;
   }
   
+  const [showLoading, setShowLoading] = useState(true);
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
-  const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams); // Start with fallback data
-  const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]); // Store original data
-  const [loading, setLoading] = useState(false); // Don't show loading initially
+  const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams);
+  const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(false);
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
+
+  const handleLoadingComplete = useCallback(() => setShowLoading(false), []);
 
   // Modal stack utility functions
   const pushModal = (type: 'team' | 'competition', data: any) => {
@@ -977,6 +981,8 @@ const Index = () => {
   };
 
   return (
+    <>
+    {showLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
     <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -1441,6 +1447,7 @@ const Index = () => {
         return null;
       })()}
     </div>
+    </>
   );
 };
 
