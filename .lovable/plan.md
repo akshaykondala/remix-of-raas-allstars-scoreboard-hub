@@ -1,35 +1,21 @@
 
 
-## Animate Loading Logo into Header Logo
+## Stack Competition Cards Vertically on Mobile
 
-The loading screen logo (centered, 112px) will smoothly fly/shrink into the header logo position (top-center, 48px tall) when loading completes, creating a seamless transition.
+Currently, when a weekend has multiple competitions, the cards are arranged in a horizontal scrollable row with a fixed width of `w-80`. On iPhone screens, this means you can only see one card at a time and must scroll sideways to find others -- easy to miss.
 
-### Approach
+### Change
 
-1. **Track logo position**: Use `useRef` on the header logo to get its final position, and calculate the loading screen logo's starting position (center of screen).
+In `src/components/CompetitionTimeline.tsx` (lines 197-202), update the competition cards layout so that:
 
-2. **Shared animation state**: Instead of a simple fade-out, the loading screen will:
-   - Keep the logo visible while fading out the background blobs and dots
-   - Animate the logo from center-screen (w-28/h-28) to the header position (h-12) using CSS transitions on `top`, `left`, `width`, `height`, and `transform`
-   - Once the logo reaches its destination, complete the transition
+- On mobile (default): cards stack vertically in a column with gaps between them
+- On larger screens (sm/md+): keep the current horizontal scroll behavior
 
-3. **Implementation details**:
-   - **LoadingScreen.tsx**: Add a new "transitioning" phase between loading and complete. When progress hits 100%, the blobs/dots fade out, then the logo animates to target coordinates passed as props (`targetRect`).
-   - **Index.tsx**: Use a `ref` on the header logo image. Pass the header logo's bounding rect to `LoadingScreen` so it knows where to animate to. Hide the header logo until the animation completes.
-   - The logo will use `position: fixed` and transition from `top: 50%, left: 50%, transform: translate(-50%, -50%)` to the exact `top`/`left`/`width`/`height` of the header logo element.
+### What changes
 
-### Technical Steps
+- Replace the horizontal-only layout with a responsive approach:
+  - Default: `flex-col` with full-width cards
+  - `sm:` breakpoint and up: revert to `flex-row` with `overflow-x-auto` and `w-80` fixed-width cards
+- Each card will be `w-full` on mobile instead of `w-80`
 
-1. **Modify `LoadingScreen.tsx`**:
-   - Accept a `targetRef` prop (React ref to the header logo)
-   - Add a `transitioning` state that triggers after progress completes
-   - In transitioning phase: fade out blobs/dots, then animate logo position/size using inline styles with CSS `transition`
-   - Call `onComplete` after the position animation finishes
-
-2. **Modify `Index.tsx`**:
-   - Add a `ref` to the header logo `<img>` element
-   - Pass this ref to `LoadingScreen`
-   - Keep the header logo invisible (`opacity-0`) until loading completes, then fade it in
-
-3. **Modify `src/index.css`**:
-   - Add a `logo-travel` transition utility if needed for the smooth position/size interpolation
+This is a small, targeted CSS change in the competition cards container section of `CompetitionTimeline.tsx`.
