@@ -28,38 +28,39 @@ const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
         fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      {/* Ambient glow */}
+      {/* Flowing ambient blobs */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/5 blur-[120px] animate-pulse" />
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[300px] bg-primary/8 blur-[100px] animate-[drift1_8s_ease-in-out_infinite]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-accent/5 blur-[120px] animate-[drift2_10s_ease-in-out_infinite]" />
+        <div className="absolute top-1/2 left-1/2 w-[300px] h-[500px] bg-primary/4 blur-[80px] animate-[drift3_12s_ease-in-out_infinite]" />
       </div>
 
       {/* Logo */}
-      <div className="relative mb-8">
-        {/* Rotating ring */}
-        <div className="absolute -inset-6 rounded-full border border-primary/20 animate-[spin_4s_linear_infinite]" />
-        <div className="absolute -inset-10 rounded-full border border-primary/10 animate-[spin_6s_linear_infinite_reverse]" />
+      <div className="relative mb-10">
+        {/* Soft breathing glow */}
+        <div className="absolute -inset-8 bg-primary/15 blur-3xl animate-[breathe_3s_ease-in-out_infinite] rounded-[40%_60%_55%_45%]" />
+        <div className="absolute -inset-14 bg-primary/6 blur-[60px] animate-[breathe_4s_ease-in-out_infinite_0.5s] rounded-[55%_45%_50%_50%]" />
 
-        {/* Logo with pulse glow */}
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
-          <img
-            src={logo}
-            alt="Logo"
-            className="relative w-24 h-24 object-contain rounded-full animate-[pulse_2s_ease-in-out_infinite]"
-          />
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="w-48 h-1 rounded-full bg-secondary overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-150 ease-out"
-          style={{ width: `${Math.min(progress, 100)}%` }}
+        <img
+          src={logo}
+          alt="Logo"
+          className="relative w-28 h-28 object-contain rounded-full animate-[float_3s_ease-in-out_infinite] drop-shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
         />
       </div>
 
+      {/* Progress dots */}
+      <div className="flex gap-2 items-center">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-primary/60 animate-[wave_1.4s_ease-in-out_infinite]"
+            style={{ animationDelay: `${i * 0.2}s` }}
+          />
+        ))}
+      </div>
+
       {/* Loading text */}
-      <p className="mt-4 text-xs text-muted-foreground tracking-[0.3em] uppercase">
+      <p className="mt-5 text-[11px] text-muted-foreground tracking-[0.4em] uppercase font-light">
         Loading
       </p>
     </div>
