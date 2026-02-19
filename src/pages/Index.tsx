@@ -475,17 +475,26 @@ const Index = () => {
   }
   
   const [showLoading, setShowLoading] = useState(true);
+  const [animationReady, setAnimationReady] = useState(false);
+  const [dbReady, setDbReady] = useState(false);
   const headerLogoRef = useRef<HTMLImageElement>(null);
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
   const [activeTab, setActiveTab] = useState<string>('standings');
-  const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams);
+  const [teamsData, setTeamsData] = useState<Team[]>([]);
   const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
 
-  const handleLoadingComplete = useCallback(() => setShowLoading(false), []);
+  const handleLoadingComplete = useCallback(() => setAnimationReady(true), []);
+
+  // Only dismiss loading screen once BOTH animation AND DB fetch are done
+  useEffect(() => {
+    if (animationReady && dbReady) {
+      setShowLoading(false);
+    }
+  }, [animationReady, dbReady]);
 
   // Modal stack utility functions
   const pushModal = (type: 'team' | 'competition', data: any) => {
@@ -723,9 +732,10 @@ const Index = () => {
         console.error('Error loading data:', error);
         // Fallback to fallback teams if database fails
         setTeamsData(fallbackTeams);
-        setCompetitions([]); // Add empty competitions array as fallback
+        setCompetitions([]);
       } finally {
         setLoading(false);
+        setDbReady(true); // DB attempt complete — loading screen may now dismiss
       }
     };
     
@@ -1301,7 +1311,8 @@ const Index = () => {
 
         <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           <div className="px-4">
-            <CompetitionsTab 
+            <CompetitionsTab
+              competitions={competitions}
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
               teams={teamsData}

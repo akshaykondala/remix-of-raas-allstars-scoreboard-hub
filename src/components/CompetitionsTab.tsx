@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { CompetitionDetail } from './CompetitionDetail';
 import { CompetitionTimeline } from './CompetitionTimeline';
 import { ChevronDown } from 'lucide-react';
-import { fetchFromDirectus } from '../lib/api';
 import { Competition, SimulationData, Team } from '../lib/types';
-import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 export interface CompetitionsTabProps {
+  competitions: Competition[];
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: {
     first: string;
     second: string;
@@ -586,13 +585,12 @@ function SimulationDropdown({
     </div>;
 }
 export function CompetitionsTab({
+  competitions,
   onSimulationSet,
   simulationData,
   teams,
   onTeamClick
 }: CompetitionsTabProps) {
-  const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [simulatingCompetition, setSimulatingCompetition] = useState<Competition | null>(null);
   const [predictions, setPredictions] = useState<{
@@ -605,29 +603,6 @@ export function CompetitionsTab({
     third: ''
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  useEffect(() => {
-    const fetchCompetitions = async () => {
-      const data = await fetchFromDirectus('competitions');
-
-      // If no data from API, use fallback competition data
-      if (!data || data.length === 0) {
-        console.warn('No competition data from API, using fallback data');
-        setCompetitions(fallbackCompetitions);
-        setLoading(false);
-        return;
-      }
-      const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-      const mapped = data.map(item => {
-        const mappedComp = mapCompetitionTeamsFull(item, teams);
-        console.log('[DEBUG] Raw item.lineup:', item.lineup);
-        console.log('[DEBUG] Mapped lineup:', mappedComp.lineup);
-        return mappedComp;
-      });
-      setCompetitions(mapped);
-      setLoading(false);
-    };
-    fetchCompetitions();
-  }, [teams]);
   const currentDate = new Date();
   const pastCompetitions = competitions.filter(comp => comp.date && new Date(comp.date) < currentDate);
   const futureCompetitions = competitions.filter(comp => !comp.date || new Date(comp.date) >= currentDate);
@@ -697,10 +672,6 @@ export function CompetitionsTab({
         <h2 className="text-xl font-bold text-foreground mb-2">Competitions</h2>
       </div>
 
-      {loading && <div className="text-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground mt-2">Loading competitions...</p>
-        </div>}
 
       {/* Simulation Modal */}
       {simulatingCompetition && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -727,7 +698,7 @@ export function CompetitionsTab({
           </div>
         </div>}
 
-      {!loading && <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full">
           <CompetitionTimeline
             competitions={[...competitions].sort((a, b) => {
               if (!a.date && !b.date) return 0;
@@ -744,7 +715,7 @@ export function CompetitionsTab({
             }}
             onSimulationStart={handleSimulationStart}
           />
-        </div>}
+        </div>
 
       {/* Competition Detail Modal */}
       {selectedCompetition && <>
