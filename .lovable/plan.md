@@ -1,55 +1,56 @@
 
-## Fix: Date Display Shows Full ISO String + Live Indicator Still Broken
+## Root Cause: Directus Returns `time` Field as a Full ISO Datetime Too
 
-### The Single Root Cause
+Looking at the screenshot carefully: **NJ Naach** (Feb 21) shows `"2026-02-19T14:00:00"` in the time row. This tells us that `comp.time` from Directus is *also* a full ISO datetime string — not just `"HH:MM:SS"`. So the current mapping:
 
-Directus is returning the `date` field as a full ISO datetime string: `"2026-02-19T14:00:00"` — not just `"2026-02-19"` as expected.
-
-This one fact causes both problems:
-
-**Problem 1 — Date displays as `"2026-02-19T14:00:00"`**
-
-`formatDate` in `CompetitionDetail.tsx` does `dateString.split('-').map(Number)` which gives `[2026, '02', '19T14:00:00']`. The third element `'19T14:00:00'` parses as `19` via `Number()` (JavaScript ignores trailing text), so the date itself renders correctly — but anywhere `competition.date` is rendered raw in the UI (like in the timeline date labels or card subtitle), it shows the full ugly string.
-
-**Problem 2 — Live indicator never triggers**
-
-In `isCurrentlyLive` (`utils.ts`), the date is split: `date.split('-')` on `"2026-02-19T14:00:00"` gives `["2026", "02", "19T14:00:00"]`. Then `.map(Number)` gives `[2026, 2, 19]` (the `T14:00:00` is stripped by `Number()`), so the date comparison actually passes. 
-
-But then `time` is `""` (empty string) — because in `Index.tsx` line 566, `time: comp.time || ''` — if Directus stores the time embedded inside the date field only (and `comp.time` is null/undefined), then `time` is always empty string, making `isCurrentlyLive` return `false` immediately at the `if (!date || !time) return false` guard.
-
-### The Fix — One File, Two Lines
-
-In `src/pages/Index.tsx`, in the competition mapping (around line 552-566):
-
-**Line 552 — Strip the time component from date:**
 ```ts
-// BEFORE:
-date: comp.date,
-
-// AFTER:
-date: comp.date ? comp.date.split('T')[0] : comp.date,
-```
-
-**Line 566 — Extract time from the date field if `comp.time` is empty:**
-```ts
-// BEFORE:
-time: comp.time || '',
-
-// AFTER:
 time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
 ```
 
-This extracts `"14:00:00"` from `"2026-02-19T14:00:00"` as a fallback when `comp.time` is empty. The existing `parseTimeString` regex in `utils.ts` already handles `"HH:MM:SS"` format (with the `(?::\d{2})?` fix applied earlier), so `isCurrentlyLive` will now correctly parse it.
+…uses `comp.time` as-is because it's truthy, storing `"2026-02-19T14:00:00"` in the `time` field. Then:
 
-### Why No Other Files Need to Change
+- `formatTime("2026-02-19T14:00:00")` — regex `/^(\d{1,2}:\d{2})/` expects a string starting with 1-2 digits then a colon. `"2026"` doesn't match. Returns the full ugly string.
+- `parseTimeString("2026-02-19T14:00:00")` in `utils.ts` — neither the 12-hour nor 24-hour regex matches, returns `null`, so `isCurrentlyLive` returns `false` every time.
 
-- `utils.ts` — `parseTimeString` already handles `HH:MM:SS` ✓
-- `CompetitionDetail.tsx` — `formatDate` already manually splits by `-` so `"2026-02-19"` (after fix) works fine; `formatTime` already strips seconds ✓  
-- `CompetitionTimeline.tsx` — `groupByWeekend` already does `comp.date.split('T')[0]` to extract the date key ✓
+This explains both bugs simultaneously: same bad value, two downstream failures.
 
-### Technical Summary
+### The Fix — Two Places
 
-| Problem | Root Cause | File | Fix |
-|---|---|---|---|
-| Date shows as `"2026-02-19T14:00:00"` | Raw ISO string passed through mapping | `Index.tsx` line 552 | Strip `T` suffix: `comp.date.split('T')[0]` |
-| Live indicator never fires | `comp.time` is empty; time is embedded in date string | `Index.tsx` line 566 | Extract time from date ISO string as fallback |
+**Fix 1: `src/pages/Index.tsx` line 566** — Strip the date prefix from `comp.time` if Directus returns it as a full ISO datetime:
+
+```ts
+// BEFORE:
+time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
+
+// AFTER:
+time: (() => {
+  const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
+  // If Directus returned "2026-02-19T14:00:00", extract just "14:00:00"
+  return raw.includes('T') ? raw.split('T')[1] : raw;
+})(),
+```
+
+This ensures `time` is always just `"14:00:00"` regardless of what shape Directus returns.
+
+**Fix 2: `src/components/CompetitionDetail.tsx` `formatTime` function** — Add a defensive fallback that handles the ISO case if it ever slips through:
+
+```ts
+const formatTime = (time?: string): string => {
+  if (!time) return 'TBA';
+  // Strip date prefix if Directus returned a full ISO datetime in the time field
+  const t = time.includes('T') ? time.split('T')[1] : time;
+  const match = t.match(/^(\d{1,2}:\d{2})/);
+  return match ? match[1] : t;
+};
+```
+
+### Why the Live Indicator Will Work After This
+
+Once `competition.time` is `"14:00:00"`, `parseTimeString` in `utils.ts` matches the 24-hour regex `/^(\d{1,2}):(\d{2})(?::\d{2})?$/` and correctly extracts `hours=14, minutes=0`. Then `isCurrentlyLive` compares the current time against the 4-hour window (14:00–18:00 CST) and returns `true` — lighting up the LIVE badge everywhere.
+
+### Files to Modify
+
+| File | Change |
+|---|---|
+| `src/pages/Index.tsx` | Line 566: strip `T` prefix from `comp.time` before storing |
+| `src/components/CompetitionDetail.tsx` | `formatTime`: add `T`-prefix guard before regex |
