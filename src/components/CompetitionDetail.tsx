@@ -125,6 +125,11 @@ export function CompetitionDetail({
   // Settable current date for testing; switch to `new Date()` for production
   const CURRENT_DATE = new Date();
   const isLive = isCurrentlyLive(competition.date, competition.time);
+  const formatTime = (time?: string): string => {
+    if (!time) return 'TBA';
+    const match = time.match(/^(\d{1,2}:\d{2})/);
+    return match ? match[1] : time;
+  };
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const [year, month, day] = dateString.split('-').map(Number);
@@ -287,7 +292,7 @@ export function CompetitionDetail({
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
                         <span className="animate-pulse">●</span> LIVE NOW
                       </div>
-                      <div className="text-red-400/80 text-xs">{competition.time} · Watch Live →</div>
+                      <div className="text-red-400/80 text-xs">{formatTime(competition.time)} · Watch Live →</div>
                     </div>
                     <ExternalLink className="h-3 w-3 text-red-300" />
                   </a>
@@ -300,7 +305,7 @@ export function CompetitionDetail({
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
                         <span className="animate-pulse">●</span> LIVE NOW
                       </div>
-                      <div className="text-red-400/70 text-xs">{competition.time} · {competition.timezone || 'Local time'}</div>
+                      <div className="text-red-400/70 text-xs">{formatTime(competition.time)} · {competition.timezone || 'Local time'}</div>
                     </div>
                   </div>
                 )
@@ -316,7 +321,7 @@ export function CompetitionDetail({
                   </div>
                   <div className="flex-1">
                     <div className="text-red-300 font-semibold text-sm">
-                      {competition.time || 'TBA'}
+                      {formatTime(competition.time)}
                     </div>
                     <div className="text-red-400/70 text-xs">
                       {competition.timezone || 'Time zone TBA'} • Watch Live
@@ -331,7 +336,7 @@ export function CompetitionDetail({
                   </div>
                   <div className="flex-1">
                     <div className="text-white font-semibold text-sm">
-                      {competition.time || 'TBA'}
+                      {formatTime(competition.time)}
                     </div>
                     <div className="text-slate-400 text-xs">
                       {competition.timezone || 'Time zone TBA'}
