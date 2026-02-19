@@ -662,11 +662,6 @@ export function CompetitionsTab({
     }));
     return availableTeams;
   };
-  useEffect(() => {
-    if (selectedCompetition) {
-      console.log('[DEBUG] Passing to CompetitionDetail:', selectedCompetition);
-    }
-  }, [selectedCompetition]);
   return <div className="py-4 w-full overflow-hidden">
       <div className="mb-6 text-center px-4">
         <h2 className="text-xl font-bold text-foreground mb-2">Competitions</h2>

@@ -14,11 +14,16 @@ export async function fetchFromDirectus(collection: string) {
     if (collection === 'teams') {
       url += '?fields=*,competitions_attending.competitions_id.*';
     }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(url, {
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${TOKEN}`,
       },
     });
+    clearTimeout(timeoutId);
 
     if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
 

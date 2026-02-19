@@ -13,8 +13,6 @@ interface TeamCardProps {
 }
 
 export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showLockedIn }: TeamCardProps) => {
-  // Debug: Log bidPoints value and type for each team
-  console.log('Rendering TeamCard:', team.name, 'bidPoints:', team.bidPoints, 'type:', typeof team.bidPoints);
   const pointsNeeded = Math.max(0, cutoffPoints - team.bidPoints);
   
   return (
