@@ -1003,7 +1003,7 @@ const Index = () => {
 
         <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
           {/* Header with Centered Logo and Discord Button */}
-          <div className="relative pt-6 pb-8">
+          <div className="relative pt-10 pb-8">
             {/* Centered Logo */}
             <div className="flex justify-center">
               <img 
