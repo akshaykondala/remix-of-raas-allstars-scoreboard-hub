@@ -436,7 +436,7 @@ export function CompetitionDetail({
             </div>}
           
           {/* Bottom padding for safe area */}
-          <div className="h-6"></div>
+          <div className="pb-20"></div>
         </div>
       </DrawerContent>
     </Drawer>;

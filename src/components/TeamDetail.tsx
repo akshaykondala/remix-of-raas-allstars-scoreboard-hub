@@ -376,6 +376,8 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
               </a>
             </div>
           )}
+          {/* Bottom safe area padding */}
+          <div className="pb-20"></div>
         </div>
       </DrawerContent>
     </Drawer>

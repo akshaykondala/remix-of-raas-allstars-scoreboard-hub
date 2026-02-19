@@ -994,7 +994,7 @@ const Index = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
 
-        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
+        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
           {/* Header with Centered Logo and Discord Button */}
           <div className="relative pt-6 pb-8">
             {/* Centered Logo */}
@@ -1199,7 +1199,7 @@ const Index = () => {
                   <div 
                     key={team.id}
                     onClick={() => pushModal('team', team)}
-                    className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/70 hover:border-slate-600/50 hover:scale-[1.02] active:scale-[0.98]"
+                    className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover-scale hover-glow active:scale-[0.98]"
                   >
                     {/* Subtle glow effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/5 to-blue-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -1263,7 +1263,7 @@ const Index = () => {
                   <div 
                     key={team.id}
                     onClick={() => pushModal('team', team)}
-                    className="group relative bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/40 hover:border-slate-600/30 hover:scale-[1.01] active:scale-[0.99]"
+                    className="group relative bg-slate-800/20 backdrop-blur-sm border border-slate-700/20 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover-scale-sm active:scale-[0.99]"
                   >
                     <div className="flex items-center gap-4">
                       {/* Muted rank */}
@@ -1304,7 +1304,7 @@ const Index = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
           <div className="px-4">
             <CompetitionsTab 
               onSimulationSet={handleSimulationSet}
@@ -1315,7 +1315,7 @@ const Index = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-20">
+        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
           <div className="px-4 py-6">
             {loading ? (
               <div className="text-center py-8">
@@ -1346,7 +1346,7 @@ const Index = () => {
                     <div 
                       key={team.id}
                       onClick={() => pushModal('team', team)}
-                      className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover:bg-slate-800/60 hover:border-slate-600/40 hover:scale-[1.01] active:scale-[0.99]"
+                      className="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/30 rounded-2xl p-4 cursor-pointer transition-all duration-300 hover-scale-sm active:scale-[0.99]"
                     >
                       <div className="flex flex-col items-center justify-center text-center gap-3">
                         {/* Team Logo */}
@@ -1373,7 +1373,7 @@ const Index = () => {
         </TabsContent>
 
         {/* Mobile Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50 flex-shrink-0">
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <TabsList className="grid grid-cols-3 bg-transparent border-none rounded-none w-full h-16 p-0">
             <TabsTrigger 
               value="standings" 

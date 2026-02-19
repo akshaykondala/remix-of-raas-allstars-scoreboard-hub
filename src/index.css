@@ -76,6 +76,29 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+  }
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Hover effects only on devices with a real pointer */
+@media (hover: hover) {
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+  .hover-scale-sm:hover {
+    transform: scale(1.01);
+  }
+  .hover-glow:hover {
+    background-color: rgba(30, 41, 59, 0.7);
+    border-color: rgba(71, 85, 105, 0.5);
   }
 }
 
