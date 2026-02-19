@@ -1,60 +1,120 @@
 
-## Fix: Merge Past and Future Competitions into One Unified Timeline
+## Live Link + "Currently Live" Indicator
 
-### Root Cause
+### What We're Building
 
-In `src/components/CompetitionsTab.tsx` (lines 698–735), there are **two completely separate `<CompetitionTimeline>` components** rendered one after the other — one for past competitions and one for future ones:
+Two connected features:
 
-```tsx
-{/* Past Competitions */}
-<CompetitionTimeline competitions={pastCompetitions.sort(...)} ... isPast={true} />
+1. **Wire `livelink` from Directus to the "Watch Live" button** — the backend field `livelink` is never currently mapped to `livestreamLink` in the app, so the button never activates.
 
-{/* Divider */}
-<div className="w-16 h-px bg-border my-4" />
+2. **"Currently Live" visual state** — when the current time is within a 4-hour window starting from the competition's start time (on competition day), the card and drawer header get a red live-pulsing indicator, glowing border, and the "Watch Live" row transforms into a prominent live badge.
 
-{/* Future Competitions */}
-<CompetitionTimeline competitions={futureCompetitions.sort(...)} ... isPast={false} />
+---
+
+### Part 1: Wire `livelink` from Directus
+
+**`src/lib/competitionMapping.ts`**
+
+Add `livestreamLink: competition.livelink || ''` to the return object so the field flows through:
+
+```ts
+return {
+  ...competition,
+  logo: logoUrl,
+  lineup: mappedLineup,
+  judges: Array.isArray(competition.judges) ? competition.judges : [],
+  showTicketsLink: competition.showtickets || '',
+  afterpartyTicketsLink: competition.aptickets || '',
+  livestreamLink: competition.livelink || '',   // NEW
+};
 ```
 
-When both past AND future competitions exist, both timelines render and stack vertically — creating the "duplicate" appearance.
+**`src/lib/types.ts`**
 
-### Fix
+The `livestreamLink` field already exists in the `Competition` interface — no change needed.
 
-Merge all competitions into a single `<CompetitionTimeline>` with everything sorted chronologically by date. Competitions without dates go at the end (they're future/upcoming).
+---
 
-**`src/components/CompetitionsTab.tsx`** — Replace the two-timeline block with one unified one:
+### Part 2: "Currently Live" Detection Logic
 
-```tsx
-// BEFORE: Two separate timelines
-{pastCompetitions.length > 0 && <CompetitionTimeline competitions={pastCompetitions.sort(...)} isPast={true} ... />}
-{/* divider */}
-{futureCompetitions.length > 0 && <CompetitionTimeline competitions={futureCompetitions.sort(...)} isPast={false} ... />}
+We need a helper function that determines if a competition is currently live. The rule is:
 
-// AFTER: Single unified timeline
-<CompetitionTimeline
-  competitions={[...competitions].sort((a, b) => {
-    if (!a.date && !b.date) return 0;
-    if (!a.date) return 1;  // no date goes to end
-    if (!b.date) return -1;
-    return new Date(a.date).getTime() - new Date(b.date).getTime();
-  })}
-  onCompetitionClick={...}
-  onSimulationStart={handleSimulationStart}
-/>
+- The competition `date` matches today's date (local time)
+- The current time is within the window `[start time, start time + 4 hours]`
+- The `time` field from Directus is a string like `"6:00 PM"` or `"18:00"` — parse it to get hours/minutes
+
+```ts
+function isCurrentlyLive(date: string, time?: string, timezone?: string): boolean {
+  if (!date || !time) return false;
+  const now = new Date();
+  
+  // Check date matches today
+  const [year, month, day] = date.split('-').map(Number);
+  if (now.getFullYear() !== year || (now.getMonth() + 1) !== month || now.getDate() !== day) {
+    return false;
+  }
+  
+  // Parse the time string (handles "6:00 PM", "18:00", etc.)
+  const parsed = parseTimeString(time);
+  if (!parsed) return false;
+  
+  const startMs = new Date(year, month - 1, day, parsed.hours, parsed.minutes).getTime();
+  const endMs = startMs + 4 * 60 * 60 * 1000; // +4 hours
+  const nowMs = now.getTime();
+  
+  return nowMs >= startMs && nowMs <= endMs;
+}
 ```
 
-The `isPast` prop on the individual `CompetitionTimeline` component can still be used per-card — but since `CompetitionTimeline` already internally uses `isPast` as a visual opacity modifier, we can instead pass it down to each card individually using the date. Or more simply: remove the `isPast` prop from the `CompetitionTimeline` level entirely, and let the `TimelineCompetitionCard` inside check the date itself to decide opacity.
+---
 
-The cleanest approach that requires the fewest changes:
+### Part 3: Visual Changes
 
-1. **Remove the two separate `<CompetitionTimeline>` blocks** in `CompetitionsTab.tsx` and replace with a single one passing all competitions sorted by date
-2. **Remove the divider** between them (no longer needed)
-3. **Remove the `pastCompetitions`/`futureCompetitions` split** (no longer needed for the timeline — the filter logic can stay for future use)
-4. **Inside `CompetitionTimeline`**, pass `isPast` per card based on each individual competition's date rather than a global prop — so past dots still appear dimmed while future ones are bright
+#### `src/components/CompetitionDetail.tsx`
+
+**A. Header — glowing red border + "LIVE" badge when live:**
+
+When `isLive` is true, the `DrawerHeader` gradient changes from purple/blue to red, and a pulsing "● LIVE" badge appears next to the competition name.
+
+**B. Time row — transforms into a "LIVE NOW" banner:**
+
+When `isLive && livestreamLink`:
+- The row changes from the standard red-tinted link style to a bright, pulsing "● LIVE NOW — Watch Live" styled row with a stronger red glow and `animate-pulse` on the dot
+
+When `isLive && !livestreamLink`:
+- Shows "● LIVE NOW" in the time row without a link, just an informational state
+
+When not live but `livestreamLink` exists (future comp with a stream URL set early):
+- Keeps the existing "Watch Live" clickable link behavior unchanged
+
+#### `src/components/CompetitionTimeline.tsx` — `TimelineCompetitionCard`
+
+When a competition is currently live, add a "● LIVE" pill badge on the card and change its border from the standard primary color to a glowing red border:
+
+```tsx
+{isLive && (
+  <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-500/20 border border-red-400/40 rounded-full px-2 py-0.5">
+    <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+    <span className="text-red-400 text-[10px] font-bold uppercase tracking-wide">Live</span>
+  </div>
+)}
+```
+
+And the card border becomes `border-red-500/60 shadow-red-500/20` when live.
+
+---
 
 ### Files to Modify
-- `src/components/CompetitionsTab.tsx` — Merge two `CompetitionTimeline` renders into one, passing all competitions sorted by date
-- `src/components/CompetitionTimeline.tsx` — Derive `isPast` per card from `comp.date` vs today (instead of a global `isPast` prop), so the visual distinction between past and future dots is preserved
 
-### Result
-One single horizontal timeline bar showing all competition dates in order — past ones slightly dimmed (as they are now), upcoming ones bright, all navigable via the same dots and swipe gesture.
+1. **`src/lib/competitionMapping.ts`** — Add `livestreamLink: competition.livelink || ''`
+2. **`src/components/CompetitionDetail.tsx`** — Add `isCurrentlyLive` helper + live state visuals in header and time row
+3. **`src/components/CompetitionTimeline.tsx`** — Add live badge and red border to `TimelineCompetitionCard` when currently live
+
+---
+
+### Technical Notes
+
+- The `isCurrentlyLive` helper will be defined locally in both components (or extracted to a shared `src/lib/utils.ts` helper — the cleaner approach). We'll add it to `src/lib/utils.ts` and import it in both components.
+- Time string parsing supports both 12-hour (`"6:00 PM"`) and 24-hour (`"18:00"`) formats since Directus time fields can return either.
+- The 4-hour window means if a show starts at 6:00 PM, it's considered "live" until 10:00 PM — which is realistic for a Raas show.
+- No interval/polling is needed — the live state is computed once when the component mounts. The app is a scoreboard opened event-day, not a long-running background tab, so this is fine.
