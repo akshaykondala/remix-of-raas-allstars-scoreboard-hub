@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Competition } from '@/lib/types';
 import { isCurrentlyLive } from '@/lib/utils';
@@ -21,7 +21,12 @@ export function CompetitionTimeline({
   onSimulationStart,
 }: CompetitionTimelineProps) {
   const today = new Date();
-  const [activeWeekIndex, setActiveWeekIndex] = useState(0);
+  const [activeWeekIndex, setActiveWeekIndex] = useState(() => {
+    const groups = groupByWeekend(competitions);
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const idx = groups.findIndex(g => g.date >= todayMidnight);
+    return idx === -1 ? Math.max(0, groups.length - 1) : idx;
+  });
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const mouseStartX = useRef(0);
@@ -62,7 +67,8 @@ export function CompetitionTimeline({
       groups[dateKey].push(comp);
     });
     return Object.entries(groups).map(([dateKey, comps]) => {
-      const date = new Date(dateKey);
+      const [y, m, d] = dateKey.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
       return {
         date,
         day: date.getDate(),
@@ -73,7 +79,7 @@ export function CompetitionTimeline({
       };
     }).sort((a, b) => a.date.getTime() - b.date.getTime());
   };
-  const weekendGroups = groupByWeekend(competitions);
+  const weekendGroups = useMemo(() => groupByWeekend(competitions), [competitions]);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -198,7 +204,7 @@ export function CompetitionTimeline({
           {weekendGroups.map(group => <div key={`cards-${group.day}-${group.month}`} className="w-full flex-shrink-0 px-4">
               <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
                 {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
-                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={competition.date ? new Date(competition.date) < today : false} />
+                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={competition.date ? (() => { const [y,m,d] = competition.date.split('-').map(Number); return new Date(y, m-1, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate()); })() : false} />
                   </div>)}
               </div>
             </div>)}
