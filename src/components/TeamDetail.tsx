@@ -32,7 +32,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         <div className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
-          <DrawerHeader className="relative bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-transparent p-6 pb-4 py-[20px] px-[22px]">
+          <DrawerHeader className="relative bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-transparent p-6 pb-4 pt-[28px] px-[22px]">
             {/* Hero Team Presentation */}
             <div className="flex flex-col items-center text-center space-y-4">
               {/* Large Team Logo */}
