@@ -127,9 +127,21 @@ export function CompetitionDetail({
   const isLive = isCurrentlyLive(competition.date, competition.time);
   const formatTime = (time?: string): string => {
     if (!time) return 'TBA';
+    // Strip date prefix if Directus returned a full ISO datetime
     const t = time.includes('T') ? time.split('T')[1] : time;
-    const match = t.match(/^(\d{1,2}:\d{2})/);
-    return match ? match[1] : t;
+    // Already in 12-hour format (contains AM/PM) — just normalize it
+    if (/AM|PM/i.test(t)) {
+      const match = t.match(/^(\d{1,2}:\d{2})\s*(AM|PM)/i);
+      return match ? `${match[1]} ${match[2].toUpperCase()}` : t;
+    }
+    // 24-hour format: convert to 12-hour AM/PM
+    const match24 = t.match(/^(\d{1,2}):(\d{2})/);
+    if (!match24) return t;
+    let hours = parseInt(match24[1], 10);
+    const minutes = match24[2];
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${hours}:${minutes} ${ampm}`;
   };
   const formatDate = (dateString: string) => {
     if (!dateString) return '';

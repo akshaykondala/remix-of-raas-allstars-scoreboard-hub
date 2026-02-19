@@ -18,6 +18,38 @@ export interface CompetitionsTabProps {
 
 // Fallback competition data for visualization
 const fallbackCompetitions: Competition[] = [{
+  id: '0',
+  name: 'Live Demo Showcase',
+  city: 'New Brunswick, NJ',
+  date: '2026-02-19',
+  time: '13:00',
+  timezone: 'EST',
+  livestreamLink: 'https://youtube.com/live/example',
+  showTicketsLink: 'https://example.com/tickets',
+  logo: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop&crop=center',
+  lineup: [{
+    id: { id: '1' } as Team,
+    name: 'Texas Raas'
+  }, {
+    id: { id: '2' } as Team,
+    name: 'CMU Raasta'
+  }, {
+    id: { id: '3' } as Team,
+    name: 'UF Gatoraas'
+  }, {
+    id: { id: '4' } as Team,
+    name: 'UCLA Nashaa'
+  }, {
+    id: { id: '5' } as Team,
+    name: 'Michigan Maize Mirchi'
+  }, {
+    id: { id: '6' } as Team,
+    name: 'NYU Bhangra'
+  }],
+  bid_status: true,
+  judges: [{ name: 'TBD', category: 'All Categories' }],
+  media: { photos: [], videos: [] }
+}, {
   id: '1',
   name: 'Raas Chaos',
   city: 'Atlanta, GA',
