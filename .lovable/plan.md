@@ -1,70 +1,76 @@
 
+## Fix: Future Competition Crash (White/Dark Screen)
 
-## Fix Drawer Swipe-to-Dismiss (Take 2)
+### Root Cause
 
-### Why the Previous Fix Didn't Work
+Two unguarded `.split()` calls on `competition.date` crash the app when a competition has a missing or null date:
 
-The `onScroll` handler fires **after** the scroll settles, but vaul reads `scrollTop` during the **touch event sequence** (`touchstart`/`touchmove`). So by the time our `onScroll` snaps `scrollTop` to 0, vaul has already decided "this container is scrolled, don't allow drag-to-dismiss."
+1. **`CompetitionDetail.tsx` line 138** — `isFutureCompetition` is computed as an IIFE at component render time with no null guard:
+   ```tsx
+   const [year, month, day] = competition.date.split('-').map(Number);
+   // Crashes with TypeError if competition.date is null/undefined
+   ```
 
-Additionally, Safari's momentum scrolling can leave `scrollTop` at values up to ~3px, not just sub-pixel values. The threshold of `< 1` was too tight.
+2. **`CompetitionTimeline.tsx` line 57** — `groupByWeekend` also crashes before the detail even opens:
+   ```tsx
+   const dateKey = comp.date.split('T')[0];
+   // Crashes if any comp in the list has no date
+   ```
 
-### New Approach
+Future competitions are more likely to have missing dates in the database (date not yet set in Directus). Past competitions typically always have dates, which is why past ones work and future ones crash.
 
-1. **Add a `touchstart` listener** that snaps `scrollTop` to 0 if it's below a small threshold (e.g., 3px). This runs *before* vaul processes the touch, so vaul will see `scrollTop === 0` and allow drag-to-dismiss.
-2. **Keep the `onScroll` handler** with a wider threshold as a secondary safety net.
+### Fixes
 
-### Changes
-
-**`src/components/TeamDetail.tsx`** and **`src/components/CompetitionDetail.tsx`**
-
-Replace the current scroll-snap logic:
+**`src/components/CompetitionDetail.tsx`** — Add null guard to `isFutureCompetition`:
 
 ```tsx
-const scrollRef = useRef<HTMLDivElement>(null);
+// BEFORE (crashes):
+const isFutureCompetition = (() => {
+  const [year, month, day] = competition.date.split('-').map(Number);
+  const compDate = new Date(year, month - 1, day);
+  return compDate > CURRENT_DATE;
+})();
 
-const handleScroll = () => {
-  const el = scrollRef.current;
-  if (el && el.scrollTop > 0 && el.scrollTop < 1) {
-    el.scrollTop = 0;
-  }
-};
+// AFTER (safe):
+const isFutureCompetition = (() => {
+  if (!competition.date) return true; // No date = assume future/upcoming
+  const [year, month, day] = competition.date.split('-').map(Number);
+  const compDate = new Date(year, month - 1, day);
+  return compDate > CURRENT_DATE;
+})();
 ```
 
-With:
+**`src/components/CompetitionTimeline.tsx`** — Add null guard in `groupByWeekend`:
 
 ```tsx
-const scrollRef = useRef<HTMLDivElement>(null);
+// BEFORE (crashes):
+comps.forEach(comp => {
+  const dateKey = comp.date.split('T')[0];
+  ...
+});
 
-// Snap near-zero scrollTop to exactly 0 so vaul allows drag-to-dismiss
-const snapScrollTop = () => {
-  const el = scrollRef.current;
-  if (el && el.scrollTop > 0 && el.scrollTop < 3) {
-    el.scrollTop = 0;
-  }
-};
-
-// Run before vaul processes touch events
-const handleTouchStart = () => {
-  snapScrollTop();
-};
-
-const handleScroll = () => {
-  snapScrollTop();
-};
+// AFTER (safe):
+comps.forEach(comp => {
+  if (!comp.date) return; // Skip competitions without a date
+  const dateKey = comp.date.split('T')[0];
+  ...
+});
 ```
 
-And on the scrollable div, add the `onTouchStart` handler:
+**`src/components/CompetitionsTab.tsx`** — The filter for future/past competitions also calls `new Date(comp.date)` which returns `Invalid Date` when `comp.date` is null, causing incorrect sorting and potential issues. Add a guard:
 
 ```tsx
-<div
-  ref={scrollRef}
-  onScroll={handleScroll}
-  onTouchStart={handleTouchStart}
-  className="overflow-y-auto flex-1 scrollbar-hide"
->
+// BEFORE:
+const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
+const futureCompetitions = competitions.filter(comp => new Date(comp.date) >= currentDate);
+
+// AFTER:
+const pastCompetitions = competitions.filter(comp => comp.date && new Date(comp.date) < currentDate);
+const futureCompetitions = competitions.filter(comp => !comp.date || new Date(comp.date) >= currentDate);
+// No date = treat as upcoming (show in future section)
 ```
 
 ### Files to Modify
-- `src/components/TeamDetail.tsx`
-- `src/components/CompetitionDetail.tsx`
-
+- `src/components/CompetitionDetail.tsx` — Guard `isFutureCompetition` against missing date
+- `src/components/CompetitionTimeline.tsx` — Guard `groupByWeekend` forEach against missing date
+- `src/components/CompetitionsTab.tsx` — Guard past/future filter against missing date
