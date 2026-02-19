@@ -6,8 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 function parseTimeString(time: string): { hours: number; minutes: number } | null {
+  // If a full ISO datetime was passed (e.g. "2026-02-19T19:00:00.000Z"), extract just the time part
+  const timeOnly = time.includes('T') ? time.split('T')[1] : time;
   // Strip any trailing fractional seconds and timezone indicator (e.g. ".000Z" or "Z")
-  const cleaned = time.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+  const cleaned = timeOnly.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
   // Handle "6:00 PM" / "6:00 AM" format
   const match12 = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
   if (match12) {
