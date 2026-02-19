@@ -197,12 +197,6 @@ export function CompetitionDetail({
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
-        <button
-          onClick={() => handleOpenChange(false)}
-          className="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white"
-        >
-          <X className="h-5 w-5" />
-        </button>
         
         <div className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
