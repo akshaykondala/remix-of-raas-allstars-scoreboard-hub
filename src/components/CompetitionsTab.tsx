@@ -597,8 +597,8 @@ export function CompetitionsTab({
     fetchCompetitions();
   }, [teams]);
   const currentDate = new Date();
-  const pastCompetitions = competitions.filter(comp => new Date(comp.date) < currentDate);
-  const futureCompetitions = competitions.filter(comp => new Date(comp.date) >= currentDate);
+  const pastCompetitions = competitions.filter(comp => comp.date && new Date(comp.date) < currentDate);
+  const futureCompetitions = competitions.filter(comp => !comp.date || new Date(comp.date) >= currentDate);
   const handleSimulationStart = (competition: Competition) => {
     setSimulatingCompetition(competition);
     // Load existing predictions if available

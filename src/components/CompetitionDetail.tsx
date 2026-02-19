@@ -135,6 +135,7 @@ export function CompetitionDetail({
     });
   };
   const isFutureCompetition = (() => {
+    if (!competition.date) return true; // No date = assume future/upcoming
     const [year, month, day] = competition.date.split('-').map(Number);
     const compDate = new Date(year, month - 1, day);
     return compDate > CURRENT_DATE;
