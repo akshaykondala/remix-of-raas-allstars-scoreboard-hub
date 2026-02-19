@@ -99,11 +99,19 @@ export function CompetitionDetail({
   const [open, setOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleScroll = () => {
+  const snapScrollTop = () => {
     const el = scrollRef.current;
-    if (el && el.scrollTop > 0 && el.scrollTop < 1) {
+    if (el && el.scrollTop > 0 && el.scrollTop < 3) {
       el.scrollTop = 0;
     }
+  };
+
+  const handleTouchStart = () => {
+    snapScrollTop();
+  };
+
+  const handleScroll = () => {
+    snapScrollTop();
   };
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -206,7 +214,7 @@ export function CompetitionDetail({
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
-        <div ref={scrollRef} onScroll={handleScroll} className="overflow-y-auto flex-1 scrollbar-hide">
+        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4 py-[20px] px-[22px]">
             {/* Close Button */}
