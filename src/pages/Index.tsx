@@ -599,7 +599,7 @@ const Index = () => {
             color: team.color || team.theme || 'bg-slate-600',
             theme: team.theme || '',
             bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
-            qualified: team.rasqual === true || team.rasqual === 'true',
+            qualified: team.qualified ?? false,
             competitions_attending: Array.isArray(team.competitions_attending) 
               ? team.competitions_attending.map((comp: any) => 
                   typeof comp === 'string' ? comp : comp.name || comp.id || comp
