@@ -242,13 +242,6 @@ function TimelineCompetitionCard({
     <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isLive ? 'bg-red-500/20' : isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
     <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isLive ? 'bg-orange-500/15' : isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
 
-    {/* LIVE badge */}
-    {isLive && (
-      <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-500/20 border border-red-400/40 rounded-full px-2 py-0.5 z-10">
-        <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-        <span className="text-red-400 text-[10px] font-bold uppercase tracking-wide">Live</span>
-      </div>
-    )}
 
     {/* Content */}
     <div className="relative p-4">

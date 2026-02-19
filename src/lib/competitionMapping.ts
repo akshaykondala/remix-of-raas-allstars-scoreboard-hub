@@ -45,8 +45,17 @@ export function mapCompetitionTeamsFull(competition, teams) {
     
   console.log('🔍 Final mapped lineup:', mappedLineup);
   
+  const sanitizeTime = (raw?: string): string => {
+    if (!raw) return '';
+    // Strip "2026-02-19T" prefix if Directus returned a full ISO datetime
+    const t = raw.includes('T') ? raw.split('T')[1] : raw;
+    // Strip fractional seconds and UTC marker e.g. ".000Z" or "Z"
+    return t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+  };
+
   return {
     ...competition,
+    time: sanitizeTime(competition.time),
     logo: logoUrl,
     lineup: mappedLineup,
     judges: Array.isArray(competition.judges) ? competition.judges : [],
