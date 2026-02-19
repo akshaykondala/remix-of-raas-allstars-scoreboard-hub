@@ -549,7 +549,7 @@ const Index = () => {
             id: comp.id,
             name: comp.name,
             city: comp.city,
-            date: comp.date,
+            date: comp.date ? comp.date.split('T')[0] : comp.date,
             logo: comp.logo
               ? (typeof comp.logo === 'string'
                   ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
@@ -563,7 +563,7 @@ const Index = () => {
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
             instagramlink: comp.instagramlink || '',
-            time: comp.time || '',
+            time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
             timezone: comp.timezone || '',
             showTicketsLink: comp.showtickets || '',
             afterpartyTicketsLink: comp.aptickets || '',
