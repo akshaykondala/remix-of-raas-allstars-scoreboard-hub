@@ -1,107 +1,121 @@
 
-## The Problem
+# App Store Readiness Audit
 
-There are **two independent timers racing each other**:
-
-1. The `LoadingScreen` animation runs for ~2 seconds and then calls `onComplete` → `setShowLoading(false)`, revealing the app regardless of DB status
-2. The DB fetch in `Index.tsx` (`loadData`) runs in parallel and may finish before or after the loading screen — but often finishes **after**, especially on mobile/network connections where latency is higher
-
-When the DB fetch is slow, the sequence is:
-- t=0: App mounts, `teamsData` initialized with `fallbackTeams`, loading screen shown
-- t=2s: Loading screen timer fires, reveals app — DB still pending — user sees fallback data
-- t=3-5s: DB responds, real data replaces fallback data — visible "flicker" of content changing
-
-The fix is to **tie the loading screen's completion to the DB fetch, not to an animation timer**.
+No, the app is **not ready for the App Store** right now. Here is a complete list of everything that needs to be addressed, organized by severity.
 
 ---
 
-## The Fix: 3 targeted changes
+## Blockers — Will cause App Store rejection
 
-### 1. `src/pages/Index.tsx` — Initialize with empty arrays, track DB readiness
+### 1. Capacitor config points to the wrong app ID
 
-**Change the initial state** so fallback data is never the starting state:
-```ts
-// Before:
-const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams);
-const [loading, setLoading] = useState(false);
+`capacitor.config.ts` uses the app ID `app.lovable.bac76a5137e0434da7a94238d1557291` and the server URL for a **different project** (`bac76a51-...`). The current project's ID is `7e3a2619-93e4-441f-b0fe-7bf56515ac53`. Any native build from this config would be misconfigured.
 
-// After:
-const [teamsData, setTeamsData] = useState<Team[]>([]);
-const [dbReady, setDbReady] = useState(false);
-```
+### 2. iOS/Android native projects are not set up
 
-**Add a `dbReady` flag** that gets set to `true` after `loadData()` completes (whether it succeeded or failed — we just need to know the fetch is done). In the `finally` block:
-```ts
-} finally {
-  setLoading(false);
-  setDbReady(true); // DB attempt is complete — loading screen may now dismiss
-}
-```
+There is no `ios/` or `android/` folder in the project. `@capacitor/android` is installed as a dependency but `npx cap add ios` and `npx cap add android` have never been run. There is nothing to submit to any app store.
 
-**Gate `handleLoadingComplete`** so the loading screen only dismisses once BOTH the animation AND the DB fetch are done:
-```ts
-// The loading screen calls this when its animation is ready to complete
-const [animationReady, setAnimationReady] = useState(false);
+### 3. App metadata is all placeholder
 
-const handleLoadingComplete = useCallback(() => {
-  setAnimationReady(true);
-}, []);
+`index.html` still has:
+- `<title>raas-allstars-scoreboard-hub</title>` — a dev slug, not a user-facing name
+- `<meta name="description" content="Lovable Generated Project">` — generic placeholder
+- Open Graph and Twitter card images point to `lovable.dev` — not your app's branding
 
-// Only actually hide the loading screen when BOTH are ready
-useEffect(() => {
-  if (animationReady && dbReady) {
-    setShowLoading(false);
-  }
-}, [animationReady, dbReady]);
-```
+Apple and Google both require real app names, descriptions, and icons during review.
 
-**If the DB fetch fails**, the `catch` block sets `teamsData` to the fallback — which is fine because at that point we've confirmed the DB is not reachable. The loading screen will still dismiss after both animation + fetch attempt are complete. The key is users never see a flicker of fallback-then-real data.
+### 4. No real app icons or splash screens
 
-### 2. `src/components/CompetitionsTab.tsx` — Remove the separate fetch, use `teams` prop
+There are no Capacitor-format icons (1024×1024 for iOS, adaptive icons for Android) or splash screens. Apple will reject a submission with placeholder or missing icons outright.
 
-`CompetitionsTab` currently does its **own** `fetchFromDirectus('competitions')` call independently, which is what causes the second round of "loading → fallback → real data" visible on the competitions tab. Since `Index.tsx` already fetches and maps competitions, we should pass them as a prop instead.
+### 5. `cleartext: true` in Capacitor config
 
-**Change the `CompetitionsTabProps`** to accept competitions as a prop:
-```ts
-export interface CompetitionsTabProps {
-  competitions: Competition[]; // NEW — passed from Index
-  onSimulationSet?: ...;
-  simulationData?: SimulationData;
-  teams: any[];
-  onTeamClick?: (team: any) => void;
-}
-```
-
-**Remove the internal `useEffect` fetch** (lines 608-630) and instead use the passed `competitions` prop directly. The `loading` state inside `CompetitionsTab` is also removed — `Index.tsx` controls the loading screen.
-
-**In `Index.tsx`**, pass the already-fetched competitions down:
-```tsx
-<CompetitionsTab
-  competitions={competitions}  // pass from Index state
-  teams={teamsData}
-  onSimulationSet={...}
-  simulationData={simulationData}
-  onTeamClick={...}
-/>
-```
-
-### 3. `src/pages/Index.tsx` — Never use fallback teams data (only on confirmed DB failure)
-
-The `catch` block at line 722-726 currently sets `teamsData(fallbackTeams)`. This is acceptable as a last resort, but only after the actual fetch attempt has failed. With the `dbReady` gate, users won't see fallback data flash-then-switch — they'll only see fallback data if the DB is genuinely unreachable. This behavior is acceptable and is what you'd want as a last resort.
+The server config has `cleartext: true`, which means the app is allowed to make unencrypted HTTP requests. Apple's App Transport Security blocks this by default on iOS, and Google Play flags it as a security issue. This must be removed for a production build (it is only needed during development with a non-HTTPS server URL).
 
 ---
 
-## Files to Modify
+## Serious issues — Will cause crashes or a broken experience in production
 
-| File | Change |
-|---|---|
-| `src/pages/Index.tsx` | Initialize `teamsData` as `[]`, add `dbReady` + `animationReady` flags, gate loading screen dismissal on both being true |
-| `src/components/CompetitionsTab.tsx` | Accept `competitions` as a prop, remove internal `fetchFromDirectus` call and `loading` state |
+### 6. The app entirely depends on the Lovable preview server URL
+
+`capacitor.config.ts` has a `server.url` pointing to the Lovable preview. This means:
+- Users would be loading your app **from Lovable's servers**, not a self-contained binary
+- If Lovable's preview goes down or the URL changes, the app breaks for all users
+- Apple reviews the exact binary submitted — this setup means Apple's reviewers are seeing a live URL, not a bundled app
+
+For a real App Store release, the `server` block must be removed entirely so Capacitor serves the app from the bundled `dist/` folder.
+
+### 7. Fallback data still exists and is shown on DB failure
+
+`Index.tsx` lines 731–735: if the database fetch throws an error (network failure, bad token, rate limit), `setTeamsData(fallbackTeams)` populates the standings with completely fake teams like "NYU Bhangra" and "UIUC Roshni" that don't actually compete in this circuit. Real users with a momentary connection problem would see completely wrong data and not know it.
+
+### 8. Excessive `console.log` debug statements in production code
+
+`Index.tsx` has dozens of `console.log` and `console.error` calls (lines 508, 514, 521, 538–596, 719–727, 915–918, 931–970, 1451–1455, etc.) that will:
+- Leak internal data structure details to anyone using developer tools
+- Slow down the app on older phones due to the volume of logging
+- Potentially flag the app during Apple's security review if they include sensitive API URLs or tokens
+
+### 9. Discord button points to a placeholder URL
+
+Line 1036: `href="https://discord.gg/your-discord-invite"` — this is a dead link that will error for any user who taps it.
+
+### 10. No error state when the database is unreachable
+
+If the Directus API is down, the loading screen will spin indefinitely because `dbReady` never becomes `true` — the `finally` block only fires after `await Promise.all(...)` resolves or rejects. If the network request hangs (no timeout is set on `fetch`), the loading screen never dismisses. There is no timeout, no retry button, and no user-facing error message.
 
 ---
 
-## Technical Notes
+## Moderate issues — Bad user experience but not an immediate rejection
 
-- The loading screen animation typically completes in ~2 seconds. On a fast connection, the DB fetch likely beats that. On mobile/slow connections, the DB fetch takes longer — the loading screen will now wait for it, stretching to 3-5s if needed.
-- The loading screen component (`LoadingScreenWrapper`) has its own internal animation phases (loading → fading → traveling). These are unaffected — we just delay calling `onComplete`'s side-effect until the DB is also ready.
-- The `CompetitionsTab` still has access to `teams` (for rendering lineup, simulation dropdowns) — that's unchanged. Only the competitions fetch is removed from it.
+### 11. `@capacitor/cli` is in `dependencies`, not `devDependencies`
+
+`package.json` lists `@capacitor/cli` in `dependencies`. The CLI is a build tool and should be in `devDependencies`. This inflates the production bundle unnecessarily.
+
+### 12. The `appName` in Capacitor config is the dev slug
+
+`appName: 'raas-allstars-scoreboard-hub'` — this slug will appear as the app's display name on a user's home screen. It should be something like `"Raas All Stars"`.
+
+### 13. Privacy policy and terms of service
+
+Both Apple and Google require apps that collect or transmit any user data (including analytics, API calls, etc.) to have a linked privacy policy. There is none.
+
+---
+
+## Summary Table
+
+| # | Issue | Severity |
+|---|---|---|
+| 1 | Wrong Capacitor app ID/server URL | Blocker |
+| 2 | No native iOS/Android project created | Blocker |
+| 3 | Placeholder HTML metadata | Blocker |
+| 4 | No app icons or splash screens | Blocker |
+| 5 | `cleartext: true` in production config | Blocker |
+| 6 | App depends on Lovable preview server, not bundled | Blocker |
+| 7 | Fake fallback data shown on DB failure | Serious |
+| 8 | Excessive debug `console.log` in prod | Serious |
+| 9 | Dead Discord link | Serious |
+| 10 | No network timeout → infinite loading | Serious |
+| 11 | `@capacitor/cli` in wrong dependency section | Moderate |
+| 12 | App display name is a dev slug | Moderate |
+| 13 | No privacy policy | Moderate |
+
+---
+
+## What I Can Fix in Code Right Now
+
+From the list above, the following are pure code changes I can make immediately:
+
+- **Fix Capacitor config**: correct app ID, app name, remove `cleartext: true`, remove the `server.url` block (so it uses bundled assets)
+- **Clean up `index.html`**: real title, real description, your app's OG image
+- **Remove all `console.log` debug statements** from `Index.tsx`
+- **Fix the Discord URL** to the real invite link (you provide it)
+- **Add a fetch timeout + error screen** so the loading screen dismisses with an error state instead of spinning forever
+- **Move `@capacitor/cli` to devDependencies**
+
+What requires **your action outside of code**:
+- Create and run `npx cap add ios` / `npx cap add android` after exporting to GitHub
+- Generate proper app icons (1024×1024 PNG) — I can set up the icon placeholder structure
+- Write and host a privacy policy
+- Provide your real Discord invite link
+- Set up App Store Connect / Google Play Console accounts
