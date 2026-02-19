@@ -49,6 +49,7 @@ export function mapCompetitionTeamsFull(competition, teams) {
     ...competition,
     logo: logoUrl,
     lineup: mappedLineup,
+    judges: Array.isArray(competition.judges) ? competition.judges : [],
     showTicketsLink: competition.showtickets || '',
     afterpartyTicketsLink: competition.aptickets || '',
   };
