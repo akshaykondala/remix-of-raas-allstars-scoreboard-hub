@@ -49,5 +49,7 @@ export function mapCompetitionTeamsFull(competition, teams) {
     ...competition,
     logo: logoUrl,
     lineup: mappedLineup,
+    showTicketsLink: competition.showtickets || '',
+    afterpartyTicketsLink: competition.aptickets || '',
   };
 } 
