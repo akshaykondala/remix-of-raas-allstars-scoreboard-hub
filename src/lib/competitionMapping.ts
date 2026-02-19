@@ -52,5 +52,6 @@ export function mapCompetitionTeamsFull(competition, teams) {
     judges: Array.isArray(competition.judges) ? competition.judges : [],
     showTicketsLink: competition.showtickets || '',
     afterpartyTicketsLink: competition.aptickets || '',
+    livestreamLink: competition.livelink || '',
   };
 } 

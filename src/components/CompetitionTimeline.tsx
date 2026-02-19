@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Competition } from '@/lib/types';
+import { isCurrentlyLive } from '@/lib/utils';
 interface CompetitionTimelineProps {
   competitions: Competition[];
   onCompetitionClick: (competition: Competition) => void;
@@ -216,6 +217,7 @@ function TimelineCompetitionCard({
   isPast
 }: TimelineCompetitionCardProps) {
   const isBid = competition.bid_status;
+  const isLive = isCurrentlyLive(competition.date, competition.time);
   
   return <div onClick={e => {
     e.stopPropagation();
@@ -227,48 +229,58 @@ function TimelineCompetitionCard({
         hover:-translate-y-1 hover:shadow-xl
         active:scale-[0.98]
         ${isPast ? 'opacity-60' : ''}
-        ${isBid 
-          ? 'border-2 border-transparent bg-clip-padding shadow-amber-500/10 hover:shadow-amber-500/25' 
-          : 'border border-primary/30 shadow-primary/5 hover:shadow-primary/20 hover:border-primary/50'
+        ${isLive
+          ? 'border-2 border-red-500/60 shadow-red-500/20 hover:shadow-red-500/35 hover:border-red-400/80'
+          : isBid 
+            ? 'border-2 border-transparent bg-clip-padding shadow-amber-500/10 hover:shadow-amber-500/25' 
+            : 'border border-primary/30 shadow-primary/5 hover:shadow-primary/20 hover:border-primary/50'
         }
-      `} style={isBid ? {
+      `} style={!isLive && isBid ? {
         background: 'linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--card) / 0.95)) padding-box, linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b, #fbbf24) border-box'
       } : undefined}>
-      {/* Top accent bar */}
-      <div className={`absolute top-0 left-0 right-0 h-1 ${isBid ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500' : 'bg-gradient-to-r from-primary via-primary/80 to-primary/50'}`} />
-      
-      {/* Background glow */}
-      <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
-      <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
+    {/* Top accent bar */}
+    <div className={`absolute top-0 left-0 right-0 h-1 ${isLive ? 'bg-gradient-to-r from-red-400 via-red-500 to-orange-500' : isBid ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500' : 'bg-gradient-to-r from-primary via-primary/80 to-primary/50'}`} />
+    
+    {/* Background glow */}
+    <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isLive ? 'bg-red-500/20' : isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
+    <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isLive ? 'bg-orange-500/15' : isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
 
-      {/* Content */}
-      <div className="relative p-4">
-        <div className="flex items-center gap-3">
-          {/* Logo with ring */}
-          <div className="relative flex-shrink-0">
-            {competition.logo ? <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' : 'ring-primary/40 group-hover:ring-primary/60'}`}>
-                <img src={competition.logo} alt={`${competition.name} logo`} className="w-full h-full object-cover" loading="lazy" />
-              </div> : <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ring-2 shadow-md ${isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'}`}>
-                <span className={`text-lg sm:text-xl font-bold ${isBid ? 'text-amber-400' : 'text-primary'}`}>
-                  {competition.name.charAt(0)}
-                </span>
-              </div>}
-          </div>
+    {/* LIVE badge */}
+    {isLive && (
+      <div className="absolute top-2 right-2 flex items-center gap-1 bg-red-500/20 border border-red-400/40 rounded-full px-2 py-0.5 z-10">
+        <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+        <span className="text-red-400 text-[10px] font-bold uppercase tracking-wide">Live</span>
+      </div>
+    )}
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-bold text-sm sm:text-base line-clamp-1 transition-colors duration-300 ${isBid ? 'text-foreground group-hover:text-amber-400' : 'text-foreground group-hover:text-primary'}`}>
-              {competition.name}
-            </h3>
-            <div className="flex items-center gap-1.5 mt-1">
-              <MapPin className={`h-3 w-3 flex-shrink-0 ${isBid ? 'text-amber-500' : 'text-primary'}`} />
-              <span className="text-xs sm:text-sm text-muted-foreground truncate">{competition.city}</span>
-            </div>
+    {/* Content */}
+    <div className="relative p-4">
+      <div className="flex items-center gap-3">
+        {/* Logo with ring */}
+        <div className="relative flex-shrink-0">
+          {competition.logo ? <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${isLive ? 'ring-red-500/50 group-hover:ring-red-400/70' : isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' : 'ring-primary/40 group-hover:ring-primary/60'}`}>
+              <img src={competition.logo} alt={`${competition.name} logo`} className="w-full h-full object-cover" loading="lazy" />
+            </div> : <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ring-2 shadow-md ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/10 ring-red-500/50' : isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'}`}>
+              <span className={`text-lg sm:text-xl font-bold ${isLive ? 'text-red-400' : isBid ? 'text-amber-400' : 'text-primary'}`}>
+                {competition.name.charAt(0)}
+              </span>
+            </div>}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className={`font-bold text-sm sm:text-base line-clamp-1 transition-colors duration-300 ${isLive ? 'text-foreground group-hover:text-red-400' : isBid ? 'text-foreground group-hover:text-amber-400' : 'text-foreground group-hover:text-primary'}`}>
+            {competition.name}
+          </h3>
+          <div className="flex items-center gap-1.5 mt-1">
+            <MapPin className={`h-3 w-3 flex-shrink-0 ${isLive ? 'text-red-500' : isBid ? 'text-amber-500' : 'text-primary'}`} />
+            <span className="text-xs sm:text-sm text-muted-foreground truncate">{competition.city}</span>
           </div>
         </div>
       </div>
+    </div>
 
-      {/* Shine effect on hover */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none ${isBid ? 'via-amber-200/15' : 'via-white/10'}`} />
-    </div>;
+    {/* Shine effect on hover */}
+    <div className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none ${isLive ? 'via-red-200/10' : isBid ? 'via-amber-200/15' : 'via-white/10'}`} />
+  </div>;
 }
