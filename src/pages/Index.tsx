@@ -505,20 +505,14 @@ const Index = () => {
       zIndex: 50 + (modalStack.length * 10)
     };
     setModalStack(prev => [...prev, newModal]);
-    console.log('📱 Pushed modal to stack:', { type, zIndex: newModal.zIndex, stackDepth: modalStack.length + 1 });
   };
 
   const popModal = () => {
-    setModalStack(prev => {
-      const newStack = prev.slice(0, -1);
-      console.log('📱 Popped modal from stack. New depth:', newStack.length);
-      return newStack;
-    });
+    setModalStack(prev => prev.slice(0, -1));
   };
 
   const clearModalStack = () => {
     setModalStack([]);
-    console.log('📱 Cleared entire modal stack');
   };
 
   // Helper functions to get current modals
@@ -528,27 +522,11 @@ const Index = () => {
   // Fetch teams and competitions from database
   useEffect(() => {
     const loadData = async () => {
-      console.log('🔄 Loading fresh data from database...');
       try {
         const [teams, competitionsData] = await Promise.all([
           fetchTeams(),
           fetchFromDirectus('competitions')
         ]);
-        
-        // Debug: Log raw API data
-        console.log('📊 Raw teams data:', teams);
-        // Debug: Check for empty data
-        if (!teams.length) {
-          console.error('❌ No teams loaded from API!');
-        }
-        
-        // Debug: Log raw competitions data
-        console.log('📊 Raw competitions data:', competitionsData);
-        console.log('📊 Raw competitions data length:', competitionsData?.length);
-        console.log('📊 Raw competitions data sample:', competitionsData?.slice(0, 2));
-        if (!competitionsData.length) {
-          console.error('❌ No competitions loaded from API!');
-        }
         
         // Map competitions data FIRST
         let mappedCompetitions: any[] = [];
@@ -575,7 +553,6 @@ const Index = () => {
             time: (() => {
               const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
               let t = raw.includes('T') ? raw.split('T')[1] : raw;
-              // Strip fractional seconds and UTC marker (e.g. "19:00:00.000Z" → "19:00:00")
               t = t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
               return t;
             })(),
@@ -586,15 +563,7 @@ const Index = () => {
             bid_status: comp.bid_status || false,
             media: { photos: [], videos: [] }
           }));
-          // Debug: Log mapped competitions
-          console.log('🏆 Mapped competitions:', mappedCompetitions);
-          console.log('🏆 Mapped competitions length:', mappedCompetitions.length);
-          console.log('🏆 First few mapped competitions:', mappedCompetitions.slice(0, 2));
-          // Debug: Log logo URLs
-          console.log('🖼️ Competition logo URLs:', mappedCompetitions.map(c => ({ name: c.name, logo: c.logo })));
-          console.log('🎯 Setting competitions state with mapped competitions');
           setCompetitions(mappedCompetitions);
-          console.log('✅ Competitions state set');
         }
         
         // Map teams data AFTER competitions are available
@@ -647,10 +616,7 @@ const Index = () => {
                 return team.competitions_attending.map((compId: any, index: number) => {
                   // Find competition by ID from the mapped competitions array
                   const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
-                  if (!competition) {
-                    console.warn(`⚠️ Competition not found for team ${team.name}, compId: ${compId}`);
-                    return null;
-                  }
+                  if (!competition) return null;
                   
                   // Find team's placement in this competition
                   let placement = 'N/A';
@@ -676,62 +642,17 @@ const Index = () => {
                     date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
                   };
                 }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                
-                // Recalculate cumulative points in chronological order
-                let runningTotal = 0;
-                return team.competitions_attending.map((compId: any, index: number) => {
-                  // Find competition by ID from the mapped competitions array
-                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
-                  if (!competition) return null;
-                  
-                                     // Find team's placement in this competition
-                   let placement = 'N/A';
-                   let pointsEarned = 0;
-                   
-                   if (String(competition.firstplace) === String(team.id)) {
-                     placement = '1st';
-                     pointsEarned = 4;
-                   } else if (String(competition.secondplace) === String(team.id)) {
-                     placement = '2nd';
-                     pointsEarned = 2;
-                   } else if (String(competition.thirdplace) === String(team.id)) {
-                     placement = '3rd';
-                     pointsEarned = 1;
-                   }
-                  
-                  runningTotal += pointsEarned;
-                  
-                  return {
-                    competitionId: compId,
-                    competitionName: competition.name,
-                    placement: placement,
-                    bidPointsEarned: pointsEarned,
-                    cumulativeBidPoints: runningTotal,
-                    date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
-                  };
-                }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
               }
               
               return [];
             })()
           }));
-          // Debug: Log mapped data
-          console.log('🎯 Mapped teams data:', mappedTeams);
-          // Debug: Log logo URLs
-          console.log('🖼️ Team logo URLs:', mappedTeams.map(t => ({ name: t.name, logo: t.logo })));
-          // Debug: Check bidPoints type
-          mappedTeams.forEach(team => {
-            if (typeof team.bidPoints !== 'number') {
-              console.warn(`⚠️ bidPoints for ${team.name} is not a number:`, team.bidPoints);
-            }
-          });
           setTeamsData(mappedTeams);
-          setOriginalTeamsData(mappedTeams); // Store original data
+          setOriginalTeamsData(mappedTeams);
         }
       } catch (error) {
-        console.error('Error loading data:', error);
-        // Fallback to fallback teams if database fails
-        setTeamsData(fallbackTeams);
+        // DB unreachable — show empty state; loading screen will still dismiss
+        setTeamsData([]);
         setCompetitions([]);
       } finally {
         setLoading(false);
@@ -911,12 +832,6 @@ const Index = () => {
   const qualifiedOtherTeams = sortedTeams.slice(3, 9);
   const notQualifiedTeams = sortedTeams.slice(9);
 
-  // Debug: Log teamsData before rendering
-  console.log('Rendering teamsData:', teamsData);
-  console.log('Rendering sortedTeams:', sortedTeams);
-  console.log('Rendering topThreeTeams:', topThreeTeams);
-  console.log('Rendering qualifiedOtherTeams:', qualifiedOtherTeams);
-  console.log('Rendering notQualifiedTeams:', notQualifiedTeams);
 
 
   const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
@@ -928,53 +843,26 @@ const Index = () => {
   };
 
   const handleCompetitionClick = (competitionData: any) => {
-    console.log('🚀 handleCompetitionClick called with:', competitionData, 'type:', typeof competitionData);
-    console.log('🔍 Current competitions state length:', competitions.length);
-    console.log('🔍 Current teamsData state length:', teamsData.length);
-    
-    // Handle different data types - competitions_attending contains IDs
     let competitionId = '';
     if (typeof competitionData === 'string') {
       competitionId = competitionData;
-      console.log('📝 competitionData is string, using as competitionId:', competitionId);
     } else if (competitionData && typeof competitionData === 'object') {
       competitionId = competitionData.id || competitionData;
-      console.log('📦 competitionData is object, extracted competitionId:', competitionId);
     } else if (typeof competitionData === 'number') {
       competitionId = String(competitionData);
-      console.log('🔢 competitionData is number, converted to string:', competitionId);
     } else {
-      console.error('❌ Unknown competitionData type:', typeof competitionData, competitionData);
       return;
     }
     
-    console.log('🔍 Final processed competitionId:', competitionId);
-    console.log('📋 Available competitions:', competitions.map(c => ({ id: c.id, name: c.name, type: typeof c.id })));
-    
     const competition = competitions.find(comp => String(comp.id) === String(competitionId));
     if (competition) {
-      console.log('✅ Found competition:', competition);
-      console.log('🔍 Competition ID type:', typeof competition.id);
-      console.log('🔍 Competition ID value:', competition.id);
-      
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
-      console.log('[DEBUG] TeamDetail click - original lineup:', competition.lineup);
-      console.log('[DEBUG] TeamDetail click - mapped lineup:', mappedCompetition.lineup);
-
-      console.log('🎯 Pushing competition to modal stack:', mappedCompetition);
       pushModal('competition', mappedCompetition);
-      console.log('✅ Competition detail modal should now be open');
-    } else {
-      console.error('❌ Competition not found for ID:', competitionId);
-      console.error('❌ Available competition IDs:', competitions.map(c => c.id));
-      console.error('❌ Available competition names:', competitions.map(c => c.name));
     }
   };
 
   const handleTeamClick = (team: Team) => {
-    console.log('🎯 TEAM CLICKED!', { teamId: team.id, teamName: team.name });
     pushModal('team', team);
-    console.log('✅ Team detail modal should now be open');
   };
 
   const clearSimulation = () => {
@@ -1018,9 +906,8 @@ const Index = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
 
         <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
-          {/* Header with Centered Logo and Discord Button */}
+          {/* Header with Centered Logo */}
           <div className="relative pt-10 pb-8">
-            {/* Centered Logo */}
             <div className="flex justify-center">
               <img 
                 ref={headerLogoRef}
@@ -1030,18 +917,6 @@ const Index = () => {
                 style={{ opacity: showLoading ? 0 : 1, transition: 'opacity 0.3s ease' }}
               />
             </div>
-            
-            {/* Discord Button - Positioned absolutely in top right */}
-            <a
-              href="https://discord.gg/your-discord-invite"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute top-6 right-4 text-white hover:text-slate-300 transition-colors duration-200 p-2"
-            >
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-              </svg>
-            </a>
           </div>
           {loading ? (
             <div className="text-center py-8">
@@ -1408,17 +1283,12 @@ const Index = () => {
 
       {/* Modal Stack Rendering */}
       {modalStack.map((modal, index) => {
-        const isTopModal = index === modalStack.length - 1;
-        
         if (modal.type === 'competition') {
           return (
             <CompetitionDetail 
               key={modal.id}
               competition={modal.data} 
-              onClose={() => {
-                popModal();
-                console.log('📱 Competition modal closed, remaining modals:', modalStack.length - 1);
-              }}
+              onClose={popModal}
               onSimulationSet={handleSimulationSet}
               simulationData={simulationData}
               teams={teamsData}
@@ -1433,10 +1303,7 @@ const Index = () => {
             <TeamDetail 
               key={modal.id}
               team={modal.data} 
-              onClose={() => {
-                popModal();
-                console.log('📱 Team modal closed, remaining modals:', modalStack.length - 1);
-              }}
+              onClose={popModal}
               onCompetitionClick={handleCompetitionClick}
               competitions={competitions}
               zIndex={modal.zIndex}
@@ -1446,15 +1313,6 @@ const Index = () => {
         
         return null;
       })}
-
-      {/* Debug: Log modal stack state */}
-      {modalStack.length > 0 && (() => {
-        console.log('📱 Modal stack state:', {
-          depth: modalStack.length,
-          modals: modalStack.map(m => ({ type: m.type, zIndex: m.zIndex }))
-        });
-        return null;
-      })()}
     </div>
     </>
   );
