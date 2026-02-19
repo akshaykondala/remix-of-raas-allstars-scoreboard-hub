@@ -1,75 +1,40 @@
 
-## Fix: Live Indicator Not Triggering — Two Root Causes
+## Fix: Display Time in Clean HH:MM Format
 
-### Root Cause 1: Wrong field name in the competition mapping (Index.tsx line 570)
+### The Problem
 
-The inline competition mapping in `Index.tsx` reads `comp.livestreamLink` from the raw Directus API response. But Directus returns the field as `livelink` (the raw backend name), not `livestreamLink`. So the value is always `undefined`, which falls back to `''`, and the Watch Live button is never active.
+Directus returns the `time` field as `"HH:MM:SS"` (e.g., `"18:30:00"`). The app renders `{competition.time}` raw in 4 places inside `CompetitionDetail.tsx`, which means users see `"18:30:00"` — the ugly full format with seconds.
 
-```ts
-// Index.tsx line 570 — what it currently says (WRONG):
-livestreamLink: comp.livestreamLink || '',
+### The Fix
 
-// What it should be (reads the actual Directus field name):
-livestreamLink: comp.livelink || '',
-```
-
-### Root Cause 2: Time string format mismatch
-
-Directus returns **time** fields as `"HH:MM:SS"` (e.g., `"18:30:00"` — with seconds). The current `parseTimeString` regex in `utils.ts` only matches `"HH:MM"` (two-part, no seconds), so it always returns `null` for any time from Directus. When `parseTimeString` returns `null`, `isCurrentlyLive` immediately returns `false`.
+Add a `formatTime` helper function inside `CompetitionDetail.tsx` that trims the time string down to just `"HH:MM"`, and pipe every time display through it.
 
 ```ts
-// Current 24h regex — only matches "18:30", NOT "18:30:00":
-const match24 = time.match(/^(\d{1,2}):(\d{2})$/);
-
-// Fix — also match "18:30:00" with optional seconds:
-const match24 = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+const formatTime = (time?: string): string => {
+  if (!time) return 'TBA';
+  // Strip seconds from "HH:MM:SS" → "HH:MM"
+  const match = time.match(/^(\d{1,2}:\d{2})/);
+  return match ? match[1] : time;
+};
 ```
+
+This handles:
+- `"18:30:00"` → `"18:30"`
+- `"18:30"` → `"18:30"` (already clean, no change)
+- `"6:00 PM"` → `"6:00"` (edge case — strips the AM/PM and seconds, leaving clean HH:MM)
+- `undefined` → `"TBA"`
+
+### The 4 Places to Update in `CompetitionDetail.tsx`
+
+| Line | Current | After |
+|---|---|---|
+| 290 | `{competition.time} · Watch Live →` | `{formatTime(competition.time)} · Watch Live →` |
+| 303 | `{competition.time} · {competition.timezone...}` | `{formatTime(competition.time)} · {competition.timezone...}` |
+| 319 | `{competition.time \|\| 'TBA'}` | `{formatTime(competition.time)}` |
+| 334 | `{competition.time \|\| 'TBA'}` | `{formatTime(competition.time)}` |
 
 ### Files to Modify
 
-**1. `src/pages/Index.tsx` — line 570**
+- **`src/components/CompetitionDetail.tsx`** — Add `formatTime` helper and replace all 4 raw `{competition.time}` display usages with `{formatTime(competition.time)}`
 
-Change `comp.livestreamLink` → `comp.livelink` so the raw Directus field is read correctly:
-
-```ts
-// BEFORE:
-livestreamLink: comp.livestreamLink || '',
-
-// AFTER:
-livestreamLink: comp.livelink || '',
-```
-
-**2. `src/lib/utils.ts` — the 24-hour regex in `parseTimeString`**
-
-Add optional seconds capture group `(?::\d{2})?` to the 24-hour format pattern:
-
-```ts
-// BEFORE:
-const match24 = time.match(/^(\d{1,2}):(\d{2})$/);
-
-// AFTER:
-const match24 = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-```
-
-Also add optional seconds to the 12-hour format regex for safety:
-
-```ts
-// BEFORE:
-const match12 = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-
-// AFTER:
-const match12 = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
-```
-
-### Why These Were Silent Failures
-
-- The `livelink` → `livestreamLink` mismatch caused no error — JavaScript just read `undefined` and `|| ''` masked it as an empty string
-- The time regex mismatch also caused no error — `parseTimeString` returned `null`, `isCurrentlyLive` returned `false`, and everything rendered as non-live with no warning
-
-### Technical Summary
-
-| Bug | File | Line | Fix |
-|---|---|---|---|
-| Wrong Directus field name | `Index.tsx` | 570 | `comp.livestreamLink` → `comp.livelink` |
-| Time regex misses seconds | `utils.ts` | 20 | Add `(?::\d{2})?` to 24h pattern |
-| Time regex misses seconds (12h) | `utils.ts` | 10 | Add `(?::\d{2})?` to 12h pattern |
+That's the only file that needs to change. The `isCurrentlyLive` logic in `utils.ts` already handles the full `"HH:MM:SS"` format correctly for the live detection — we don't touch that.
