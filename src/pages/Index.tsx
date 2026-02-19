@@ -563,7 +563,10 @@ const Index = () => {
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
             instagramlink: comp.instagramlink || '',
-            time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
+            time: (() => {
+              const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
+              return raw.includes('T') ? raw.split('T')[1] : raw;
+            })(),
             timezone: comp.timezone || '',
             showTicketsLink: comp.showtickets || '',
             afterpartyTicketsLink: comp.aptickets || '',

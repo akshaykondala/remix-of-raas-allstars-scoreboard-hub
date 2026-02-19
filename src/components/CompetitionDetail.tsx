@@ -127,8 +127,9 @@ export function CompetitionDetail({
   const isLive = isCurrentlyLive(competition.date, competition.time);
   const formatTime = (time?: string): string => {
     if (!time) return 'TBA';
-    const match = time.match(/^(\d{1,2}:\d{2})/);
-    return match ? match[1] : time;
+    const t = time.includes('T') ? time.split('T')[1] : time;
+    const match = t.match(/^(\d{1,2}:\d{2})/);
+    return match ? match[1] : t;
   };
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
