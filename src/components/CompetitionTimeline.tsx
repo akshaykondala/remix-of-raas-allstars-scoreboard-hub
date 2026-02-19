@@ -15,6 +15,29 @@ interface WeekendGroup {
   year: number;
   competitions: Competition[];
 }
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function groupByWeekend(comps: Competition[]): WeekendGroup[] {
+  const groups: { [key: string]: Competition[] } = {};
+  comps.forEach(comp => {
+    if (!comp.date) return;
+    const dateKey = comp.date.split('T')[0];
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(comp);
+  });
+  return Object.entries(groups).map(([dateKey, comps]) => {
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return {
+      date,
+      day: date.getDate(),
+      month: monthNames[date.getMonth()],
+      monthShort: monthShortNames[date.getMonth()],
+      year: date.getFullYear(),
+      competitions: comps
+    };
+  }).sort((a, b) => a.date.getTime() - b.date.getTime());
+}
 export function CompetitionTimeline({
   competitions,
   onCompetitionClick,
@@ -41,44 +64,12 @@ export function CompetitionTimeline({
     if (activeDot && container) {
       const containerRect = container.getBoundingClientRect();
       const dotRect = activeDot.getBoundingClientRect();
-
-      // Calculate the scroll position to center the dot
       const dotCenter = dotRect.left + dotRect.width / 2;
       const containerCenter = containerRect.left + containerRect.width / 2;
       const scrollOffset = dotCenter - containerCenter;
-      container.scrollBy({
-        left: scrollOffset,
-        behavior: 'smooth'
-      });
+      container.scrollBy({ left: scrollOffset, behavior: 'smooth' });
     }
   }, [activeWeekIndex]);
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const groupByWeekend = (comps: Competition[]): WeekendGroup[] => {
-    const groups: {
-      [key: string]: Competition[];
-    } = {};
-    comps.forEach(comp => {
-      if (!comp.date) return; // Skip competitions without a date
-      const dateKey = comp.date.split('T')[0];
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(comp);
-    });
-    return Object.entries(groups).map(([dateKey, comps]) => {
-      const [y, m, d] = dateKey.split('-').map(Number);
-      const date = new Date(y, m - 1, d);
-      return {
-        date,
-        day: date.getDate(),
-        month: monthNames[date.getMonth()],
-        monthShort: monthShortNames[date.getMonth()],
-        year: date.getFullYear(),
-        competitions: comps
-      };
-    }).sort((a, b) => a.date.getTime() - b.date.getTime());
-  };
   const weekendGroups = useMemo(() => groupByWeekend(competitions), [competitions]);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
