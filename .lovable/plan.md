@@ -1,116 +1,55 @@
 
-## Fix: Live Indicator, Time Display, and Auto-Select Current Week
+## Fix: Date Display Shows Full ISO String + Live Indicator Still Broken
 
-### The Real Root Causes (All Three)
+### The Single Root Cause
 
-#### Bug 1: UTC Date Parsing (why live never triggers)
+Directus is returning the `date` field as a full ISO datetime string: `"2026-02-19T14:00:00"` — not just `"2026-02-19"` as expected.
 
-This is the core issue. When `"YYYY-MM-DD"` date strings are passed to `new Date("2026-02-19")`, JavaScript parses them as **UTC midnight**. In US timezones (EST = UTC-5, CST = UTC-6, PST = UTC-8), this shifts the date backwards by one day.
+This one fact causes both problems:
 
-So `new Date("2026-02-19").getDate()` returns **18**, not **19**, in Eastern time. Then `isCurrentlyLive` compares `now.getDate()` (19) against `day` (18) and returns false — every single time, even on the exact competition day.
+**Problem 1 — Date displays as `"2026-02-19T14:00:00"`**
 
-**Fix:** In `CompetitionTimeline.tsx`, the `groupByWeekend` function uses `new Date(dateKey)` to build the `date` property. Parse the date string manually instead to stay in local time:
+`formatDate` in `CompetitionDetail.tsx` does `dateString.split('-').map(Number)` which gives `[2026, '02', '19T14:00:00']`. The third element `'19T14:00:00'` parses as `19` via `Number()` (JavaScript ignores trailing text), so the date itself renders correctly — but anywhere `competition.date` is rendered raw in the UI (like in the timeline date labels or card subtitle), it shows the full ugly string.
 
-```ts
-// BEFORE (UTC-parsed, date shifts in US timezones):
-const date = new Date(dateKey);
+**Problem 2 — Live indicator never triggers**
 
-// AFTER (local time, parses "2026-02-19" as local Feb 19):
-const [y, m, d] = dateKey.split('-').map(Number);
-const date = new Date(y, m - 1, d);
-```
+In `isCurrentlyLive` (`utils.ts`), the date is split: `date.split('-')` on `"2026-02-19T14:00:00"` gives `["2026", "02", "19T14:00:00"]`. Then `.map(Number)` gives `[2026, 2, 19]` (the `T14:00:00` is stripped by `Number()`), so the date comparison actually passes. 
 
-Similarly, `isPast` check on line 201 also uses `new Date(competition.date)` which has the same UTC bug — past competitions will appear as future on the day of the competition. Fix it the same way.
+But then `time` is `""` (empty string) — because in `Index.tsx` line 566, `time: comp.time || ''` — if Directus stores the time embedded inside the date field only (and `comp.time` is null/undefined), then `time` is always empty string, making `isCurrentlyLive` return `false` immediately at the `if (!date || !time) return false` guard.
 
-`isCurrentlyLive` in `utils.ts` already correctly parses manually with `date.split('-').map(Number)` — that part is fine.
+### The Fix — One File, Two Lines
 
-#### Bug 2: `formatTime` — the regex works but the field name in `Competition` type may not match
+In `src/pages/Index.tsx`, in the competition mapping (around line 552-566):
 
-Looking at Index.tsx line 548-573, the mapped competition object contains the key `showtickets` and `aptickets` (raw Directus names), but `competition.showTicketsLink` and `competition.afterpartyTicketsLink` are what the detail component reads. The mapping at line 568-569 sets these as `showtickets` and `aptickets` on the object (not `showTicketsLink`/`afterpartyTicketsLink`), so the detail component's `competition.showTicketsLink` is always `undefined`.
-
-Wait — looking more carefully at lines 568-569:
-```ts
-showtickets: comp.showtickets || '',
-aptickets: comp.aptickets || '',
-```
-
-These are stored as `showtickets`/`aptickets` keys on the mapped object, but the `Competition` type and `CompetitionDetail.tsx` reads `competition.showTicketsLink` and `competition.afterpartyTicketsLink`. TypeScript would catch this if the mapping was typed, but since it's typed as `any`, it silently stores under wrong keys.
-
-These need to be:
-```ts
-showTicketsLink: comp.showtickets || '',
-afterpartyTicketsLink: comp.aptickets || '',
-```
-
-The `formatTime` regex itself is correct (`/^(\d{1,2}:\d{2})/` captures `"18:30"` from `"18:30:00"`). The time display fix from the last edit should work once the data flows correctly.
-
-#### Bug 3: Auto-select current week (or nearest upcoming week)
-
-In `CompetitionTimeline.tsx`, the initial state is hardcoded to `0`:
-```ts
-const [activeWeekIndex, setActiveWeekIndex] = useState(0);
-```
-
-We need to compute the correct initial index after `weekendGroups` is built. The logic: find the first group whose date is today or in the future. If all dates are past, default to the last group.
-
-```ts
-// After building weekendGroups, compute the starting index
-const today = new Date();
-const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-const defaultIndex = weekendGroups.findIndex(g => g.date >= todayMidnight);
-const initialIndex = defaultIndex === -1 ? weekendGroups.length - 1 : defaultIndex;
-
-const [activeWeekIndex, setActiveWeekIndex] = useState(initialIndex);
-```
-
-However, `weekendGroups` is derived inside the component body from `competitions` (a prop), so we need to use `useMemo` for the groups and then compute the initial index only once. The safest approach is to derive the initial index inside a `useState` initializer function so it only runs once on mount:
-
-```ts
-const weekendGroups = useMemo(() => groupByWeekend(competitions), [competitions]);
-
-const [activeWeekIndex, setActiveWeekIndex] = useState(() => {
-  const groups = groupByWeekend(competitions);
-  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const idx = groups.findIndex(g => g.date >= todayMidnight);
-  return idx === -1 ? Math.max(0, groups.length - 1) : idx;
-});
-```
-
----
-
-### Files to Modify
-
-**1. `src/pages/Index.tsx`** — lines 568-569
-
-Change the key names so `showTicketsLink` and `afterpartyTicketsLink` are stored under the correct property names that `CompetitionDetail.tsx` reads:
-
+**Line 552 — Strip the time component from date:**
 ```ts
 // BEFORE:
-showtickets: comp.showtickets || '',
-aptickets: comp.aptickets || '',
+date: comp.date,
 
 // AFTER:
-showTicketsLink: comp.showtickets || '',
-afterpartyTicketsLink: comp.aptickets || '',
+date: comp.date ? comp.date.split('T')[0] : comp.date,
 ```
 
-**2. `src/components/CompetitionTimeline.tsx`** — three changes:
+**Line 566 — Extract time from the date field if `comp.time` is empty:**
+```ts
+// BEFORE:
+time: comp.time || '',
 
-- Add `useMemo` import
-- Fix UTC date parsing in `groupByWeekend` (line 65: `new Date(dateKey)` → manual parse)
-- Fix UTC date parsing in `isPast` check (line 201)
-- Change `useState(0)` to auto-select the nearest upcoming/current week using a lazy initializer
+// AFTER:
+time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
+```
 
-**3. `src/lib/utils.ts`** — no changes needed (the regex and date parsing there are already correct)
+This extracts `"14:00:00"` from `"2026-02-19T14:00:00"` as a fallback when `comp.time` is empty. The existing `parseTimeString` regex in `utils.ts` already handles `"HH:MM:SS"` format (with the `(?::\d{2})?` fix applied earlier), so `isCurrentlyLive` will now correctly parse it.
 
-**4. `src/components/CompetitionDetail.tsx`** — no changes needed (formatTime is correct, isLive uses the correctly-fixed utils.ts)
+### Why No Other Files Need to Change
 
----
+- `utils.ts` — `parseTimeString` already handles `HH:MM:SS` ✓
+- `CompetitionDetail.tsx` — `formatDate` already manually splits by `-` so `"2026-02-19"` (after fix) works fine; `formatTime` already strips seconds ✓  
+- `CompetitionTimeline.tsx` — `groupByWeekend` already does `comp.date.split('T')[0]` to extract the date key ✓
 
 ### Technical Summary
 
-| # | Bug | File | Fix |
+| Problem | Root Cause | File | Fix |
 |---|---|---|---|
-| 1 | UTC date shift (`new Date("YYYY-MM-DD")` is 1 day off in US timezones) | `CompetitionTimeline.tsx` | Parse date components manually |
-| 2 | Wrong property keys (`showtickets`/`aptickets` vs `showTicketsLink`/`afterpartyTicketsLink`) | `Index.tsx` | Rename keys to match the `Competition` type |
-| 3 | Timeline always starts on first week | `CompetitionTimeline.tsx` | Lazy `useState` initializer finds nearest upcoming date |
+| Date shows as `"2026-02-19T14:00:00"` | Raw ISO string passed through mapping | `Index.tsx` line 552 | Strip `T` suffix: `comp.date.split('T')[0]` |
+| Live indicator never fires | `comp.time` is empty; time is embedded in date string | `Index.tsx` line 566 | Extract time from date ISO string as fallback |
