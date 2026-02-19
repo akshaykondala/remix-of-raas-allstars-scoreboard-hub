@@ -565,8 +565,8 @@ const Index = () => {
             instagramlink: comp.instagramlink || '',
             time: comp.time || '',
             timezone: comp.timezone || '',
-            showtickets: comp.showtickets || '',
-            aptickets: comp.aptickets || '',
+            showTicketsLink: comp.showtickets || '',
+            afterpartyTicketsLink: comp.aptickets || '',
             livestreamLink: comp.livelink || '',
             bid_status: comp.bid_status || false,
             media: { photos: [], videos: [] }
