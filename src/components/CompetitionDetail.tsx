@@ -217,7 +217,7 @@ export function CompetitionDetail({
         
         <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
-          <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4 py-[20px] px-[22px]">
+          <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4 pt-[28px] px-[22px]">
             {/* Close Button */}
             
             
