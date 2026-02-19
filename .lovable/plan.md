@@ -1,83 +1,85 @@
 
-## What's Actually Happening (Root Cause)
+## Root Cause: UTC vs Local Timezone Mismatch in `isCurrentlyLive`
 
-The console logs reveal the real issue: **"Directus URL not configured, using fallback data"**. The app is running in the preview without a Directus connection, so it uses the hardcoded `fallbackCompetitions` array in `CompetitionsTab.tsx`. The Directus ISO-stripping fixes in `Index.tsx` never run because the fallback data is used directly.
+The `isCurrentlyLive` function in `src/lib/utils.ts` uses `new Date()` which returns the current time in the **browser's local timezone**. However, `now.getFullYear()`, `now.getMonth()`, and `now.getDate()` extract local date components — which should be fine for a user's browser.
 
-The fallback data has:
-- All past dates (2024) — so `isCurrentlyLive` always returns `false`
-- No competition set to today's date (2026-02-19)
-- `formatTime` outputs 24-hour format (e.g. `14:00`) instead of 12-hour AM/PM
-
-### Three Changes Required
-
-**1. Add a "today" competition to the fallback data** (`CompetitionsTab.tsx`)
-
-Add one entry with `date: '2026-02-19'` (today) and `time: '14:00'` (or whatever makes sense within the 4-hour window), so the LIVE indicator can actually trigger in the preview. This also verifies the full LIVE UI flow works end-to-end before real Directus data is connected.
-
-**2. Convert `formatTime` to 12-hour AM/PM** (`CompetitionDetail.tsx`)
-
-The current `formatTime` strips seconds but leaves 24-hour format. Update it to convert to 12-hour AM/PM:
+But the **real problem** is subtler. The competition `date` is `"2026-02-19"` and `time` is `"14:00:00"` (EST). When `isCurrentlyLive` builds the start timestamp:
 
 ```ts
-const formatTime = (time?: string): string => {
-  if (!time) return 'TBA';
-  const t = time.includes('T') ? time.split('T')[1] : time;
-  const match = t.match(/^(\d{1,2}):(\d{2})/);
-  if (!match) return t;
-  let hours = parseInt(match[1], 10);
-  const minutes = match[2];
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12;
-  return `${hours}:${minutes} ${ampm}`;
-};
+const startMs = new Date(year, month - 1, day, parsed.hours, parsed.minutes).getTime();
 ```
 
-This handles both `"14:00:00"` (from Directus) and `"6:00 PM"` (already formatted — the regex won't match the PM part but still captures `6:00`, then re-formats it cleanly).
+This creates a local-time Date: **Feb 19, 2026 at 2:00 PM in whatever timezone the browser is in**. If the user's browser is in PST (UTC-8), that's `14:00 PST`. If the competition is actually at `14:00 EST` (UTC-5), then the window is wrong by 3 hours.
 
-Wait — `"6:00 PM"` would match `/^(\d{1,2}):(\d{2})/` giving hours=6, minutes="00", then `6 % 12 = 6`, ampm = AM (wrong! 6 < 12). We need to detect already-formatted strings first.
+More critically, the current time check `now.getDate() !== day` compares local browser date to the stored date string — if those differ (e.g., user is in a timezone far from EST), the function returns `false` before even checking the time window.
 
-Better approach:
+**The simplest and most reliable fix**: Treat the competition `date` + `time` as a **wall-clock local time** (since users of this app are all attending US competitions and viewing in US timezones) — which is actually what the code already does. The real bug is almost certainly that **Directus is returning the `time` field as a full timestamp like `"2026-02-19T19:00:00.000Z"` (UTC) instead of just `"14:00:00"`**, because Directus `datetime` fields are stored/returned in UTC.
+
+So when the mapping does:
 ```ts
-const formatTime = (time?: string): string => {
-  if (!time) return 'TBA';
-  // Strip date prefix if full ISO string
-  const t = time.includes('T') ? time.split('T')[1] : time;
-  // Already in 12-hour format (contains AM/PM)
-  if (/AM|PM/i.test(t)) {
-    const match = t.match(/^(\d{1,2}:\d{2})\s*(AM|PM)/i);
-    return match ? `${match[1]} ${match[2].toUpperCase()}` : t;
-  }
-  // 24-hour format: convert to 12-hour AM/PM
-  const match24 = t.match(/^(\d{1,2}):(\d{2})/);
-  if (!match24) return t;
-  let hours = parseInt(match24[1], 10);
-  const minutes = match24[2];
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12;
-  return `${hours}:${minutes} ${ampm}`;
-};
+const raw = comp.time || ...
+return raw.includes('T') ? raw.split('T')[1] : raw;
 ```
 
-**3. Also update `parseTimeString` in `utils.ts`** — currently already handles both `"6:00 PM"` and `"18:00:00"`. No change needed there.
+`raw` becomes `"19:00:00.000Z"` — with a **Z suffix** (UTC marker). Then `parseTimeString("19:00:00.000Z")` tries to match `/^(\d{1,2}):(\d{2})(?::\d{2})?$/` — this FAILS because of the `.000Z` at the end. So `parseTimeString` returns `null`, and `isCurrentlyLive` returns `false`.
+
+### The Fix
+
+**Two targeted changes:**
+
+**1. `src/lib/utils.ts` — Strip milliseconds and Z suffix in `parseTimeString`**
+
+The 24-hour regex currently is:
+```ts
+const match24 = time.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+```
+
+This fails on `"19:00:00.000Z"` or `"19:00:00Z"`. Change it to strip trailing fractional seconds and Z before matching:
+
+```ts
+function parseTimeString(time: string): { hours: number; minutes: number } | null {
+  // Strip any trailing fractional seconds and timezone indicator (e.g. ".000Z" or "Z")
+  const cleaned = time.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+  
+  // Handle "6:00 PM" / "6:00 AM" format
+  const match12 = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)$/i);
+  if (match12) { ... }
+  
+  // Handle "18:00" or "18:00:00" format
+  const match24 = cleaned.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (match24) { ... }
+  return null;
+}
+```
+
+**2. `src/pages/Index.tsx` — Also strip `.000Z` from the raw time string**
+
+The existing IIFE only strips the `T` prefix but leaves the Z suffix:
+
+```ts
+time: (() => {
+  const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
+  let t = raw.includes('T') ? raw.split('T')[1] : raw;
+  // Also strip fractional seconds and UTC marker (e.g. "19:00:00.000Z" → "19:00:00")
+  t = t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+  return t;
+})(),
+```
+
+**3. Remove one of the two LIVE indicators in `CompetitionDetail.tsx`**
+
+The user said there are two LIVE indicators and it's "a little too much." Looking at the component, there's likely a pulsing badge in the header AND another one in the time/LIVE NOW row. The header badge should be removed, keeping only the LIVE NOW banner in the time row — which is the most contextually meaningful one.
 
 ### Files to Modify
 
 | File | Change |
 |---|---|
-| `src/components/CompetitionsTab.tsx` | Add one fallback competition with today's date (`2026-02-19`) and a time that is currently within the live window (e.g., a time a few hours before now) so the LIVE badge can be seen |
-| `src/components/CompetitionDetail.tsx` | Update `formatTime` to output 12-hour AM/PM format, handling both `"6:00 PM"` and `"14:00:00"` input shapes |
+| `src/lib/utils.ts` | Strip `.000Z` / `Z` from time string before regex matching in `parseTimeString` |
+| `src/pages/Index.tsx` | Strip `.000Z` / `Z` suffix from `comp.time` in the IIFE mapping |
+| `src/components/CompetitionDetail.tsx` | Remove the header pulsing LIVE badge (keep only the LIVE NOW time row) |
 
-### Why Only These Two Files
+### Why This Works
 
-- `Index.tsx` — the Directus mapping fixes are already correct; they just never run in the preview because Directus isn't configured
-- `utils.ts` — `parseTimeString` already handles both 12-hour and 24-hour formats correctly; `isCurrentlyLive` logic is fine
-- `CompetitionTimeline.tsx` — local date parsing is already correct
+Once `"19:00:00.000Z"` is cleaned to `"19:00:00"`, `parseTimeString` correctly extracts `hours=19, minutes=0`. Then `isCurrentlyLive` creates `startMs = Feb 19 at 19:00 local` and `endMs = Feb 19 at 23:00 local`. At 4:27 PM local time (16:27), that's within the window — LIVE fires correctly.
 
-### Technical Detail: The Fallback Competition
-
-The new fallback entry will use:
-- `date: '2026-02-19'` (today)
-- `time: '14:00'` — which is 2:00 PM. Since current time is ~4:18 PM and the window is `startTime` to `startTime + 4 hours`, we can use `'13:00'` (1:00 PM) so that 4:18 PM falls within the 1:00 PM–5:00 PM window.
-- `livestreamLink` set so the full LIVE NOW → Watch Live row appears
-
-This lets the LIVE indicator, glowing red header, pulsing badge, and LIVE NOW time row all be verified visually in the preview.
+Note: The competition time from Directus is stored in UTC (19:00 UTC = 14:00 EST), so this approach correctly reflects the competition's actual start time as intended.
