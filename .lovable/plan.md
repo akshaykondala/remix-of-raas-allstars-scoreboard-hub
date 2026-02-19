@@ -1,29 +1,40 @@
 
 
-## Connect Directus Competition Fields to the App
+## Fix Missing Backend Field Connections
 
-The UI already renders `competition.time`, `competition.timezone`, `competition.showTicketsLink`, and `competition.afterpartyTicketsLink` in `CompetitionDetail.tsx`. The only gap is that two Directus field names differ from what the app expects:
+There are two root problems causing backend fields to not show up in the app:
 
-| Directus field | App field | Status |
-|---|---|---|
-| `time` | `time` | Already matches |
-| `timezone` | `timezone` | Already matches |
-| `showtickets` | `showTicketsLink` | Needs mapping |
-| `aptickets` | `afterpartyTicketsLink` | Needs mapping |
+### Problem 1: Competition fields dropped in Index.tsx
 
-### Change
+In `Index.tsx` (lines 548-567), competitions from Directus are manually re-mapped into a new object, but several fields are **not included**: `time`, `timezone`, `showtickets`, `aptickets`, `livestreamLink`, and `bid_status`. This means even though `competitionMapping.ts` correctly maps `showtickets` to `showTicketsLink`, etc., the data is already gone before it gets there.
 
-In `src/lib/competitionMapping.ts`, add two field mappings to the returned object so that the Directus names get translated to the app's expected names:
+**Fix:** Add the missing fields to the competition mapping object in `Index.tsx`:
+- `time: comp.time || ''`
+- `timezone: comp.timezone || ''`
+- `showtickets: comp.showtickets || ''`
+- `aptickets: comp.aptickets || ''`
+- `livestreamLink: comp.livestreamLink || ''`
+- `bid_status: comp.bid_status || false`
 
-```
-showTicketsLink: competition.showtickets || '',
-afterpartyTicketsLink: competition.aptickets || '',
-```
+### Problem 2: Team `theme` field not passed through in Index.tsx
 
-This is a 2-line addition in the return statement of `mapCompetitionTeamsFull`. Since the function already spreads `...competition`, `time` and `timezone` will pass through automatically. The explicit mappings for tickets will override any spread values with the correctly-named keys.
+In `Index.tsx` (line 593), `team.theme` is mapped to `color` (for the color strip), but the `theme` field itself is never passed through as its own property. The `TeamDetail.tsx` component checks `team.theme` (line 83) to show the "Season Theme" card, so it always comes up empty.
 
-### Files to modify
+**Fix:** Add `theme: team.theme || ''` to the team mapping object in `Index.tsx` (around line 593), so it exists alongside `color`.
 
-- **`src/lib/competitionMapping.ts`** -- add `showTicketsLink` and `afterpartyTicketsLink` mappings in the return object
+### Also in api.ts
 
-No other files need changes. The team `theme` field is already wired up in `api.ts` line 77.
+The `fetchTeams` function in `api.ts` (line 77) has the same issue -- it maps `team.theme` to `color` but never passes `theme` as its own field.
+
+**Fix:** Add `theme: team.theme || ''` to the return object in `api.ts`.
+
+### Summary of files to modify
+
+1. **`src/pages/Index.tsx`**
+   - Competition mapping (~line 548): add `time`, `timezone`, `showtickets`, `aptickets`, `livestreamLink`, `bid_status`
+   - Team mapping (~line 593): add `theme: team.theme || ''`
+
+2. **`src/lib/api.ts`**
+   - Team mapping (~line 77): add `theme: team.theme || ''` alongside the existing `color` line
+
+No changes needed in `CompetitionsTab.tsx` (it already passes raw data through `mapCompetitionTeamsFull` correctly) or `competitionMapping.ts` (already has the right mappings).
