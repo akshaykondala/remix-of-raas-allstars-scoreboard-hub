@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Trophy, Calendar, Target, Users, MapPin, Instagram, ExternalLink, Star, Award, Mail, Phone, Globe, User, Clock, Sparkles, X } from 'lucide-react';
 import { Team, Competition } from '@/lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -13,6 +13,14 @@ interface TeamDetailProps {
 
 export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [] }: TeamDetailProps) => {
   const [open, setOpen] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop > 0 && el.scrollTop < 1) {
+      el.scrollTop = 0;
+    }
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -30,7 +38,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
-        <div className="overflow-y-auto flex-1 scrollbar-hide">
+        <div ref={scrollRef} onScroll={handleScroll} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className="relative bg-gradient-to-br from-blue-600/20 via-purple-600/15 to-transparent p-6 pb-4 pt-[28px] px-[22px]">
             {/* Hero Team Presentation */}
