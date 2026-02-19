@@ -1,40 +1,23 @@
 
 
-## Fix Missing Backend Field Connections
+## Fix Mobile UI Inconsistencies
 
-There are two root problems causing backend fields to not show up in the app:
+Two visual/interaction bugs to address:
 
-### Problem 1: Competition fields dropped in Index.tsx
+### 1. Scroll Trapping on Mobile Safari
 
-In `Index.tsx` (lines 548-567), competitions from Directus are manually re-mapped into a new object, but several fields are **not included**: `time`, `timezone`, `showtickets`, `aptickets`, `livestreamLink`, and `bid_status`. This means even though `competitionMapping.ts` correctly maps `showtickets` to `showTicketsLink`, etc., the data is already gone before it gets there.
+When you scroll to the bottom of a tab's content, you get "stuck" and can't naturally bounce back or switch context. This is caused by `overscroll-behavior: none` in the body CSS combined with the nested scroll containers.
 
-**Fix:** Add the missing fields to the competition mapping object in `Index.tsx`:
-- `time: comp.time || ''`
-- `timezone: comp.timezone || ''`
-- `showtickets: comp.showtickets || ''`
-- `aptickets: comp.aptickets || ''`
-- `livestreamLink: comp.livestreamLink || ''`
-- `bid_status: comp.bid_status || false`
+**Fix in `src/index.css`:** Remove the `overscroll-behavior: none` line from the body styles. This restores Safari's natural rubber-band scrolling so you never feel trapped at the edges. This same fix carries over to the Capacitor native app since it uses a WebView with the same behavior.
 
-### Problem 2: Team `theme` field not passed through in Index.tsx
+### 2. Dim Gray Box Behind Top 3 Podium
 
-In `Index.tsx` (line 593), `team.theme` is mapped to `color` (for the color strip), but the `theme` field itself is never passed through as its own property. The `TeamDetail.tsx` component checks `team.theme` (line 83) to show the "Season Theme" card, so it always comes up empty.
+A faint gray rectangle appears behind the top 3 teams section when scrolling. This comes from two decorative gradient `div` elements using `absolute inset-0` with blurred backgrounds.
 
-**Fix:** Add `theme: team.theme || ''` to the team mapping object in `Index.tsx` (around line 593), so it exists alongside `color`.
+**Fix in `src/pages/Index.tsx`:** Remove the two decorative gradient divs in the "Top 3 Flowing Podium" section (the ones with `bg-gradient-to-r from-slate-800/5...` and `bg-gradient-to-b from-transparent via-slate-700/8...`).
 
-### Also in api.ts
+### Files to modify
 
-The `fetchTeams` function in `api.ts` (line 77) has the same issue -- it maps `team.theme` to `color` but never passes `theme` as its own field.
+- **`src/index.css`** -- remove `overscroll-behavior: none` from body
+- **`src/pages/Index.tsx`** -- remove the two gradient background divs in the podium section
 
-**Fix:** Add `theme: team.theme || ''` to the return object in `api.ts`.
-
-### Summary of files to modify
-
-1. **`src/pages/Index.tsx`**
-   - Competition mapping (~line 548): add `time`, `timezone`, `showtickets`, `aptickets`, `livestreamLink`, `bid_status`
-   - Team mapping (~line 593): add `theme: team.theme || ''`
-
-2. **`src/lib/api.ts`**
-   - Team mapping (~line 77): add `theme: team.theme || ''` alongside the existing `color` line
-
-No changes needed in `CompetitionsTab.tsx` (it already passes raw data through `mapCompetitionTeamsFull` correctly) or `competitionMapping.ts` (already has the right mappings).
