@@ -1074,9 +1074,6 @@ const Index = () => {
           {/* Top 3 Flowing Podium - Reduced Brightness */}
           <section className="px-4 pb-8">
             <div className="relative">
-              {/* Subtle flowing background that doesn't reach the logo */}
-              <div className="absolute inset-0 top-4 bg-gradient-to-r from-slate-800/5 via-slate-700/10 to-slate-800/5 rounded-3xl blur-2xl"></div>
-              <div className="absolute inset-0 top-8 bg-gradient-to-b from-transparent via-slate-700/8 to-slate-800/15 rounded-3xl blur-xl"></div>
               
               <div className="relative flex gap-4 justify-center items-end py-8">
                 {/* 2nd Place */}

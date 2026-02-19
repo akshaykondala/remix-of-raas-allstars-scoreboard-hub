@@ -80,7 +80,7 @@
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    overscroll-behavior: none;
+    
   }
   input, textarea, [contenteditable] {
     -webkit-user-select: text;
