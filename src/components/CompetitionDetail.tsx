@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDown, Ticket, PartyPopper, X } from 'lucide-react';
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { isCurrentlyLive } from '@/lib/utils';
 interface CompetitionDetailProps {
   competition: Competition;
   onClose: () => void;
@@ -123,6 +124,7 @@ export function CompetitionDetail({
 
   // Settable current date for testing; switch to `new Date()` for production
   const CURRENT_DATE = new Date();
+  const isLive = isCurrentlyLive(competition.date, competition.time);
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const [year, month, day] = dateString.split('-').map(Number);
@@ -217,27 +219,32 @@ export function CompetitionDetail({
         
         <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
-          <DrawerHeader className="relative bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent p-6 pb-4 pt-[28px] px-[22px]">
-            {/* Close Button */}
-            
-            
+          <DrawerHeader className={`relative p-6 pb-4 pt-[28px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
             <div className="flex flex-col items-center text-center space-y-4">
               {/* Large Competition Logo */}
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-3xl blur-xl"></div>
-                {competition.logo ? <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl">
+                <div className={`absolute inset-0 rounded-3xl blur-xl ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/20' : 'bg-gradient-to-br from-purple-500/20 to-blue-500/20'}`}></div>
+                {competition.logo ? <div className={`relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 ${isLive ? 'border-red-400/50' : 'border-white/20'}`}>
                     <img src={competition.logo} alt={competition.name} className="w-full h-full object-cover" />
-                  </div> : <div className="relative w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl border-2 border-white/20">
+                  </div> : <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 ${isLive ? 'bg-gradient-to-br from-red-500 to-orange-600 border-red-400/50' : 'bg-gradient-to-br from-purple-500 to-blue-600 border-white/20'}`}>
                     <Trophy className="h-10 w-10 text-white" />
                   </div>}
               </div>
               
               {/* Competition Name & Info */}
               <div className="space-y-1">
-                <DrawerTitle className="text-2xl font-black bg-gradient-to-r from-white via-purple-100 to-blue-100 bg-clip-text text-transparent">
-                  {competition.name}
-                </DrawerTitle>
+                <div className="flex items-center justify-center gap-2">
+                  <DrawerTitle className={`text-2xl font-black bg-gradient-to-r bg-clip-text text-transparent ${isLive ? 'from-white via-red-100 to-orange-100' : 'from-white via-purple-100 to-blue-100'}`}>
+                    {competition.name}
+                  </DrawerTitle>
+                  {isLive && (
+                    <div className="flex items-center gap-1 bg-red-500/25 border border-red-400/50 rounded-full px-2 py-0.5 flex-shrink-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                      <span className="text-red-300 text-[10px] font-bold uppercase tracking-wide">Live</span>
+                    </div>
+                  )}
+                </div>
                 
                 {/* Elegant flowing info text */}
                 <p className="text-white/70 text-sm font-medium tracking-wide">
@@ -252,8 +259,8 @@ export function CompetitionDetail({
                     {competition.bid_status ? 'Bid Competition' : 'Non-Bid'}
                   </span>
                   <span className="mx-2 text-white/30">•</span>
-                  <span className={isFutureCompetition ? 'text-blue-400/90' : 'text-emerald-400/90'}>
-                    {isFutureCompetition ? 'Upcoming' : 'Completed'}
+                  <span className={isLive ? 'text-red-400/90' : isFutureCompetition ? 'text-blue-400/90' : 'text-emerald-400/90'}>
+                    {isLive ? 'Live Now' : isFutureCompetition ? 'Upcoming' : 'Completed'}
                   </span>
                 </p>
               </div>
@@ -264,7 +271,40 @@ export function CompetitionDetail({
           <div className="px-4 pb-4 py-[24px]">
             <div className="flex flex-col gap-2">
               {/* Competition Time */}
-              {competition.livestreamLink ? (
+              {isLive ? (
+                /* LIVE NOW state */
+                competition.livestreamLink ? (
+                  <a
+                    href={competition.livestreamLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-gradient-to-r from-red-500/30 to-red-600/20 border-2 border-red-400/60 rounded-xl px-4 py-3 hover:from-red-500/40 hover:to-red-600/30 transition-all duration-200 cursor-pointer shadow-lg shadow-red-500/20"
+                  >
+                    <div className="bg-red-500/30 rounded-full p-2">
+                      <div className="w-4 h-4 rounded-full bg-red-400 animate-pulse" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
+                        <span className="animate-pulse">●</span> LIVE NOW
+                      </div>
+                      <div className="text-red-400/80 text-xs">{competition.time} · Watch Live →</div>
+                    </div>
+                    <ExternalLink className="h-3 w-3 text-red-300" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-red-500/20 to-red-600/10 border-2 border-red-400/50 rounded-xl px-4 py-3 shadow-lg shadow-red-500/15">
+                    <div className="bg-red-500/20 rounded-full p-2">
+                      <div className="w-4 h-4 rounded-full bg-red-400 animate-pulse" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
+                        <span className="animate-pulse">●</span> LIVE NOW
+                      </div>
+                      <div className="text-red-400/70 text-xs">{competition.time} · {competition.timezone || 'Local time'}</div>
+                    </div>
+                  </div>
+                )
+              ) : competition.livestreamLink ? (
                 <a 
                   href={competition.livestreamLink} 
                   target="_blank" 
