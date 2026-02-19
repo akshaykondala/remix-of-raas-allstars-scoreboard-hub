@@ -20,7 +20,7 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showL
   return (
     <div 
       onClick={onClick}
-      className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
+      className="relative overflow-hidden rounded-lg p-4 sm:p-5 cursor-pointer transform transition-all duration-200 hover-scale active:scale-[0.98] touch-manipulation bg-slate-800 border border-slate-600"
     >
       {/* Rank Badge */}
       <div className={`absolute top-3 left-3 px-2 py-1 rounded text-xs font-bold ${
@@ -111,8 +111,8 @@ export const TeamCard = ({ team, rank, isQualified, cutoffPoints, onClick, showL
         )}
       </div>
 
-      {/* Hover Effect */}
-      <div className="absolute inset-0 bg-white/5 opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
+      {/* Hover Effect - only on pointer devices */}
+      <div className="absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-200 pointer-events-none" style={{}} />
     </div>
   );
 };
