@@ -1,59 +1,40 @@
 
 
-## Fix Safari Blur Rendering Artifacts (Revised Approach)
+## Fix Drawer Swipe-to-Dismiss After Scrolling
 
 ### Problem
-The previous fix (adding `transform-gpu`) did not resolve the Safari rendering bug. Safari still shows visible rectangular bounding boxes around elements that use CSS `blur` filter on absolutely-positioned divs. This is visible on:
-- The 1st place podium card (dark rectangle around rounded gold card)
-- The logo/header area (rectangular glow box behind the star logo)
-
-### Why transform-gpu Didn't Work
-Safari's rendering engine draws the rectangular bounding box of any element with a `filter: blur()` applied, regardless of GPU compositing hints. The only reliable fix is to stop using blur-based glow divs altogether.
+When you open a Team or Competition drawer and scroll down, then scroll back up, you can only close the drawer by dragging the sticky handle at the top. Before scrolling, you can drag down from anywhere to dismiss. This inconsistency happens because Safari's momentum scrolling leaves `scrollTop` at a tiny fractional pixel value (like 0.3px) instead of exactly 0, and vaul requires `scrollTop === 0` to allow content-area drag-to-dismiss.
 
 ### Solution
-Replace all blur-based glow divs with CSS `box-shadow` and `drop-shadow` on the actual card/element itself. Box shadows are rendered natively by the browser compositor and never produce rectangular artifacts.
+Add a small scroll-snap helper to the scrollable container in both detail components. On each scroll event, if `scrollTop` is less than 1px, snap it to exactly 0. This ensures vaul always recognizes the container as "at the top" and allows the full drag-to-dismiss gesture.
 
 ### Changes
 
-**`src/pages/Index.tsx`**
+**`src/components/TeamDetail.tsx`**
+- Add a `useRef` for the scrollable div
+- Attach an `onScroll` handler that snaps `scrollTop` to 0 when it's below 1px
+- Apply the ref to the `<div className="overflow-y-auto flex-1 scrollbar-hide">` element
 
-1. **Remove all "glow" blur divs** -- Delete the 9 absolutely-positioned glow divs in the podium section:
-   - Line 1086: 2nd place card glow div (blur-xl)
-   - Line 1092: 2nd place avatar glow div (blur-lg)
-   - Line 1106: 2nd place points glow div (blur-md)
-   - Line 1124: 1st place card glow div (blur-2xl)
-   - Line 1130: 1st place avatar glow div (blur-xl)
-   - Line 1144: 1st place points glow div (blur-md)
-   - Line 1162: 3rd place card glow div (blur-xl)
-   - Line 1168: 3rd place avatar glow div (blur-lg)
-   - Line 1182: 3rd place points glow div (blur-md)
+**`src/components/CompetitionDetail.tsx`**
+- Same change: add `useRef`, `onScroll` handler, and apply to the scrollable div
 
-2. **Add box-shadow equivalents** to the actual card containers and avatar circles:
-   - 1st place card: add a warm amber/orange box-shadow glow
-   - 2nd place card: add a subtle silver/slate box-shadow glow
-   - 3rd place card: add a warm orange/red box-shadow glow
-   - Avatar circles: add matching colored box-shadow for the floating glow effect
-   - Points badges: add subtle matching box-shadow
+### Technical Detail
 
-3. **Background decorative blobs (lines 997-999)**: These are fine since they are large ambient background elements inside an `overflow-hidden` container. They likely aren't causing the visible issue. Leave them as-is.
-
-### Technical Details
-
-Example transformation for 1st place card:
-
-Before (causes Safari artifacts):
 ```tsx
-<div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 to-orange-500/60 rounded-3xl blur-2xl transform-gpu"></div>
-<div className="relative bg-gradient-to-br from-yellow-400/90 to-orange-500/95 rounded-3xl p-5 h-40 ...">
-```
+const scrollRef = useRef<HTMLDivElement>(null);
 
-After (Safari-safe):
-```tsx
-{/* glow div removed */}
-<div className="relative bg-gradient-to-br from-yellow-400/90 to-orange-500/95 rounded-3xl p-5 h-40 ..."
-  style={{ boxShadow: '0 0 30px 8px rgba(245, 158, 11, 0.4), 0 0 60px 16px rgba(234, 88, 12, 0.2)' }}>
+const handleScroll = () => {
+  const el = scrollRef.current;
+  if (el && el.scrollTop > 0 && el.scrollTop < 1) {
+    el.scrollTop = 0;
+  }
+};
+
+// On the scrollable div:
+<div ref={scrollRef} onScroll={handleScroll} className="overflow-y-auto flex-1 scrollbar-hide">
 ```
 
 ### Files to modify
-- `src/pages/Index.tsx` -- remove 9 blur glow divs, add box-shadow styles to cards/avatars/badges
+- `src/components/TeamDetail.tsx`
+- `src/components/CompetitionDetail.tsx`
 
