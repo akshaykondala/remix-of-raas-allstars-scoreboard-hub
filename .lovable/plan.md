@@ -1,56 +1,83 @@
 
-## Root Cause: Directus Returns `time` Field as a Full ISO Datetime Too
+## What's Actually Happening (Root Cause)
 
-Looking at the screenshot carefully: **NJ Naach** (Feb 21) shows `"2026-02-19T14:00:00"` in the time row. This tells us that `comp.time` from Directus is *also* a full ISO datetime string — not just `"HH:MM:SS"`. So the current mapping:
+The console logs reveal the real issue: **"Directus URL not configured, using fallback data"**. The app is running in the preview without a Directus connection, so it uses the hardcoded `fallbackCompetitions` array in `CompetitionsTab.tsx`. The Directus ISO-stripping fixes in `Index.tsx` never run because the fallback data is used directly.
 
-```ts
-time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
-```
+The fallback data has:
+- All past dates (2024) — so `isCurrentlyLive` always returns `false`
+- No competition set to today's date (2026-02-19)
+- `formatTime` outputs 24-hour format (e.g. `14:00`) instead of 12-hour AM/PM
 
-…uses `comp.time` as-is because it's truthy, storing `"2026-02-19T14:00:00"` in the `time` field. Then:
+### Three Changes Required
 
-- `formatTime("2026-02-19T14:00:00")` — regex `/^(\d{1,2}:\d{2})/` expects a string starting with 1-2 digits then a colon. `"2026"` doesn't match. Returns the full ugly string.
-- `parseTimeString("2026-02-19T14:00:00")` in `utils.ts` — neither the 12-hour nor 24-hour regex matches, returns `null`, so `isCurrentlyLive` returns `false` every time.
+**1. Add a "today" competition to the fallback data** (`CompetitionsTab.tsx`)
 
-This explains both bugs simultaneously: same bad value, two downstream failures.
+Add one entry with `date: '2026-02-19'` (today) and `time: '14:00'` (or whatever makes sense within the 4-hour window), so the LIVE indicator can actually trigger in the preview. This also verifies the full LIVE UI flow works end-to-end before real Directus data is connected.
 
-### The Fix — Two Places
+**2. Convert `formatTime` to 12-hour AM/PM** (`CompetitionDetail.tsx`)
 
-**Fix 1: `src/pages/Index.tsx` line 566** — Strip the date prefix from `comp.time` if Directus returns it as a full ISO datetime:
-
-```ts
-// BEFORE:
-time: comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '',
-
-// AFTER:
-time: (() => {
-  const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
-  // If Directus returned "2026-02-19T14:00:00", extract just "14:00:00"
-  return raw.includes('T') ? raw.split('T')[1] : raw;
-})(),
-```
-
-This ensures `time` is always just `"14:00:00"` regardless of what shape Directus returns.
-
-**Fix 2: `src/components/CompetitionDetail.tsx` `formatTime` function** — Add a defensive fallback that handles the ISO case if it ever slips through:
+The current `formatTime` strips seconds but leaves 24-hour format. Update it to convert to 12-hour AM/PM:
 
 ```ts
 const formatTime = (time?: string): string => {
   if (!time) return 'TBA';
-  // Strip date prefix if Directus returned a full ISO datetime in the time field
   const t = time.includes('T') ? time.split('T')[1] : time;
-  const match = t.match(/^(\d{1,2}:\d{2})/);
-  return match ? match[1] : t;
+  const match = t.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return t;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  return `${hours}:${minutes} ${ampm}`;
 };
 ```
 
-### Why the Live Indicator Will Work After This
+This handles both `"14:00:00"` (from Directus) and `"6:00 PM"` (already formatted — the regex won't match the PM part but still captures `6:00`, then re-formats it cleanly).
 
-Once `competition.time` is `"14:00:00"`, `parseTimeString` in `utils.ts` matches the 24-hour regex `/^(\d{1,2}):(\d{2})(?::\d{2})?$/` and correctly extracts `hours=14, minutes=0`. Then `isCurrentlyLive` compares the current time against the 4-hour window (14:00–18:00 CST) and returns `true` — lighting up the LIVE badge everywhere.
+Wait — `"6:00 PM"` would match `/^(\d{1,2}):(\d{2})/` giving hours=6, minutes="00", then `6 % 12 = 6`, ampm = AM (wrong! 6 < 12). We need to detect already-formatted strings first.
+
+Better approach:
+```ts
+const formatTime = (time?: string): string => {
+  if (!time) return 'TBA';
+  // Strip date prefix if full ISO string
+  const t = time.includes('T') ? time.split('T')[1] : time;
+  // Already in 12-hour format (contains AM/PM)
+  if (/AM|PM/i.test(t)) {
+    const match = t.match(/^(\d{1,2}:\d{2})\s*(AM|PM)/i);
+    return match ? `${match[1]} ${match[2].toUpperCase()}` : t;
+  }
+  // 24-hour format: convert to 12-hour AM/PM
+  const match24 = t.match(/^(\d{1,2}):(\d{2})/);
+  if (!match24) return t;
+  let hours = parseInt(match24[1], 10);
+  const minutes = match24[2];
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  return `${hours}:${minutes} ${ampm}`;
+};
+```
+
+**3. Also update `parseTimeString` in `utils.ts`** — currently already handles both `"6:00 PM"` and `"18:00:00"`. No change needed there.
 
 ### Files to Modify
 
 | File | Change |
 |---|---|
-| `src/pages/Index.tsx` | Line 566: strip `T` prefix from `comp.time` before storing |
-| `src/components/CompetitionDetail.tsx` | `formatTime`: add `T`-prefix guard before regex |
+| `src/components/CompetitionsTab.tsx` | Add one fallback competition with today's date (`2026-02-19`) and a time that is currently within the live window (e.g., a time a few hours before now) so the LIVE badge can be seen |
+| `src/components/CompetitionDetail.tsx` | Update `formatTime` to output 12-hour AM/PM format, handling both `"6:00 PM"` and `"14:00:00"` input shapes |
+
+### Why Only These Two Files
+
+- `Index.tsx` — the Directus mapping fixes are already correct; they just never run in the preview because Directus isn't configured
+- `utils.ts` — `parseTimeString` already handles both 12-hour and 24-hour formats correctly; `isCurrentlyLive` logic is fine
+- `CompetitionTimeline.tsx` — local date parsing is already correct
+
+### Technical Detail: The Fallback Competition
+
+The new fallback entry will use:
+- `date: '2026-02-19'` (today)
+- `time: '14:00'` — which is 2:00 PM. Since current time is ~4:18 PM and the window is `startTime` to `startTime + 4 hours`, we can use `'13:00'` (1:00 PM) so that 4:18 PM falls within the 1:00 PM–5:00 PM window.
+- `livestreamLink` set so the full LIVE NOW → Watch Live row appears
+
+This lets the LIVE indicator, glowing red header, pulsing badge, and LIVE NOW time row all be verified visually in the preview.
