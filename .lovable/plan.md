@@ -1,82 +1,107 @@
 
-## Root Cause — Definitively Identified
+## The Problem
 
-The app running at `localhost:8080` **does** have Directus configured, so it uses the **`CompetitionsTab.tsx` fetch path**, not `Index.tsx`. This path calls `fetchFromDirectus('competitions')` then `mapCompetitionTeamsFull(item, teams)`.
+There are **two independent timers racing each other**:
 
-`mapCompetitionTeamsFull` in `src/lib/competitionMapping.ts` does a simple `...competition` spread — it **never touches the `time` field**. So the raw Directus value `"2026-02-19T19:00:00.000Z"` is stored as-is in `competition.time`.
+1. The `LoadingScreen` animation runs for ~2 seconds and then calls `onComplete` → `setShowLoading(false)`, revealing the app regardless of DB status
+2. The DB fetch in `Index.tsx` (`loadData`) runs in parallel and may finish before or after the loading screen — but often finishes **after**, especially on mobile/network connections where latency is higher
 
-When `isCurrentlyLive` is called in `CompetitionDetail.tsx` with this value, it calls `parseTimeString("2026-02-19T19:00:00.000Z")`. The current cleanup strips `.000Z` → giving `"2026-02-19T19:00:00"`, but the **`T`-prefixed date portion is still there**. The 24-hour regex `/^(\d{1,2}):(\d{2})/` fails on a string starting with `"2026"`. So `parseTimeString` returns `null` → `isCurrentlyLive` returns `false`. LIVE never fires.
+When the DB fetch is slow, the sequence is:
+- t=0: App mounts, `teamsData` initialized with `fallbackTeams`, loading screen shown
+- t=2s: Loading screen timer fires, reveals app — DB still pending — user sees fallback data
+- t=3-5s: DB responds, real data replaces fallback data — visible "flicker" of content changing
 
-The previous fix to `Index.tsx` was correct but **only applies to the `Index.tsx` fetch path** (used when Directus is not configured). The `CompetitionsTab.tsx` path was never touched.
+The fix is to **tie the loading screen's completion to the DB fetch, not to an animation timer**.
 
 ---
 
-## Exact Files to Change
+## The Fix: 3 targeted changes
 
-### 1. `src/lib/competitionMapping.ts` — sanitize `time` on spread
+### 1. `src/pages/Index.tsx` — Initialize with empty arrays, track DB readiness
 
-Add a helper that strips the full date prefix and UTC markers from the raw Directus `time` field, then apply it in the returned object:
-
+**Change the initial state** so fallback data is never the starting state:
 ```ts
 // Before:
-return {
-  ...competition,
-  logo: logoUrl,
-  lineup: mappedLineup,
-  ...
-};
+const [teamsData, setTeamsData] = useState<Team[]>(fallbackTeams);
+const [loading, setLoading] = useState(false);
 
 // After:
-const sanitizeTime = (raw?: string): string => {
-  if (!raw) return '';
-  // Strip "2026-02-19T" prefix if Directus returned a full ISO datetime
-  const t = raw.includes('T') ? raw.split('T')[1] : raw;
-  // Strip fractional seconds and UTC marker e.g. ".000Z" or "Z"
-  return t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
-};
-
-return {
-  ...competition,
-  time: sanitizeTime(competition.time),
-  logo: logoUrl,
-  lineup: mappedLineup,
-  ...
-};
+const [teamsData, setTeamsData] = useState<Team[]>([]);
+const [dbReady, setDbReady] = useState(false);
 ```
 
-### 2. `src/lib/utils.ts` — add `T`-prefix guard in `parseTimeString` as safety net
-
-Even after the mapping fix, add a one-liner guard at the top of `parseTimeString` so any raw ISO string that slips through is handled:
-
+**Add a `dbReady` flag** that gets set to `true` after `loadData()` completes (whether it succeeded or failed — we just need to know the fetch is done). In the `finally` block:
 ```ts
-function parseTimeString(time: string) {
-  // If a full ISO datetime was passed (e.g. "2026-02-19T19:00:00.000Z"), extract just the time part
-  const timeOnly = time.includes('T') ? time.split('T')[1] : time;
-  const cleaned = timeOnly.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
-  // ... rest of existing logic using `cleaned`
+} finally {
+  setLoading(false);
+  setDbReady(true); // DB attempt is complete — loading screen may now dismiss
 }
 ```
 
-### 3. Remove the duplicate LIVE indicator
+**Gate `handleLoadingComplete`** so the loading screen only dismisses once BOTH the animation AND the DB fetch are done:
+```ts
+// The loading screen calls this when its animation is ready to complete
+const [animationReady, setAnimationReady] = useState(false);
 
-The user said "do away with one of the live indicators." Looking at the screenshot and the code, there is still a "Live Now" text in the header subtitle (line 275 in `CompetitionDetail.tsx`):
-```tsx
-{isLive ? 'Live Now' : isFutureCompetition ? 'Upcoming' : 'Completed'}
+const handleLoadingComplete = useCallback(() => {
+  setAnimationReady(true);
+}, []);
+
+// Only actually hide the loading screen when BOTH are ready
+useEffect(() => {
+  if (animationReady && dbReady) {
+    setShowLoading(false);
+  }
+}, [animationReady, dbReady]);
 ```
-This is **separate from** the LIVE NOW banner in the time row. The header badge was already removed in the last diff. The remaining duplication is between:
-- The status text in the header subtitle (`"Live Now"`)  
-- The LIVE NOW banner in the time row
 
-The time row banner is more impactful and functional (it also links to the livestream). The header subtitle should just stay as the small status label it is — that's not "too much." Re-reading the user's screenshot: the **competition card on the timeline** also has a `LIVE` badge (top-right corner of the card, `CompetitionTimeline.tsx` line 246-251). That badge + the LIVE NOW row inside the detail drawer = two indicators. Remove the card badge from `CompetitionTimeline.tsx`, keep only the immersive LIVE NOW row inside the drawer.
+**If the DB fetch fails**, the `catch` block sets `teamsData` to the fallback — which is fine because at that point we've confirmed the DB is not reachable. The loading screen will still dismiss after both animation + fetch attempt are complete. The key is users never see a flicker of fallback-then-real data.
+
+### 2. `src/components/CompetitionsTab.tsx` — Remove the separate fetch, use `teams` prop
+
+`CompetitionsTab` currently does its **own** `fetchFromDirectus('competitions')` call independently, which is what causes the second round of "loading → fallback → real data" visible on the competitions tab. Since `Index.tsx` already fetches and maps competitions, we should pass them as a prop instead.
+
+**Change the `CompetitionsTabProps`** to accept competitions as a prop:
+```ts
+export interface CompetitionsTabProps {
+  competitions: Competition[]; // NEW — passed from Index
+  onSimulationSet?: ...;
+  simulationData?: SimulationData;
+  teams: any[];
+  onTeamClick?: (team: any) => void;
+}
+```
+
+**Remove the internal `useEffect` fetch** (lines 608-630) and instead use the passed `competitions` prop directly. The `loading` state inside `CompetitionsTab` is also removed — `Index.tsx` controls the loading screen.
+
+**In `Index.tsx`**, pass the already-fetched competitions down:
+```tsx
+<CompetitionsTab
+  competitions={competitions}  // pass from Index state
+  teams={teamsData}
+  onSimulationSet={...}
+  simulationData={simulationData}
+  onTeamClick={...}
+/>
+```
+
+### 3. `src/pages/Index.tsx` — Never use fallback teams data (only on confirmed DB failure)
+
+The `catch` block at line 722-726 currently sets `teamsData(fallbackTeams)`. This is acceptable as a last resort, but only after the actual fetch attempt has failed. With the `dbReady` gate, users won't see fallback data flash-then-switch — they'll only see fallback data if the DB is genuinely unreachable. This behavior is acceptable and is what you'd want as a last resort.
 
 ---
 
-## Summary
+## Files to Modify
 
 | File | Change |
 |---|---|
-| `src/lib/competitionMapping.ts` | Add `sanitizeTime` helper, apply to `time` field in returned object |
-| `src/lib/utils.ts` | Add `T`-prefix guard at top of `parseTimeString` |
-| `src/components/CompetitionTimeline.tsx` | Remove the small `LIVE` badge from the timeline card (keep LIVE NOW in the drawer) |
+| `src/pages/Index.tsx` | Initialize `teamsData` as `[]`, add `dbReady` + `animationReady` flags, gate loading screen dismissal on both being true |
+| `src/components/CompetitionsTab.tsx` | Accept `competitions` as a prop, remove internal `fetchFromDirectus` call and `loading` state |
 
-This is **3 surgical changes** — no rewriting of fetch logic, no duplicating mapping code.
+---
+
+## Technical Notes
+
+- The loading screen animation typically completes in ~2 seconds. On a fast connection, the DB fetch likely beats that. On mobile/slow connections, the DB fetch takes longer — the loading screen will now wait for it, stretching to 3-5s if needed.
+- The loading screen component (`LoadingScreenWrapper`) has its own internal animation phases (loading → fading → traveling). These are unaffected — we just delay calling `onComplete`'s side-effect until the DB is also ready.
+- The `CompetitionsTab` still has access to `teams` (for rendering lineup, simulation dropdowns) — that's unchanged. Only the competitions fetch is removed from it.
