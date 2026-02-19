@@ -54,6 +54,7 @@ export function CompetitionTimeline({
       [key: string]: Competition[];
     } = {};
     comps.forEach(comp => {
+      if (!comp.date) return; // Skip competitions without a date
       const dateKey = comp.date.split('T')[0];
       if (!groups[dateKey]) {
         groups[dateKey] = [];
