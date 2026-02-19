@@ -1,23 +1,43 @@
 
 
-## Fix Mobile UI Inconsistencies
+## Fix Drawer Dismissal on Mobile
 
-Two visual/interaction bugs to address:
+### Problem
 
-### 1. Scroll Trapping on Mobile Safari
+The team and competition detail views use a Vaul `Drawer` component that takes up 98vh. When users scroll down within the drawer content, Vaul cannot distinguish between "scroll up" and "drag to dismiss," so it blocks the dismiss gesture. Users get trapped with no obvious way to close the view.
 
-When you scroll to the bottom of a tab's content, you get "stuck" and can't naturally bounce back or switch context. This is caused by `overscroll-behavior: none` in the body CSS combined with the nested scroll containers.
+### Solution
 
-**Fix in `src/index.css`:** Remove the `overscroll-behavior: none` line from the body styles. This restores Safari's natural rubber-band scrolling so you never feel trapped at the edges. This same fix carries over to the Capacitor native app since it uses a WebView with the same behavior.
+Add a visible close/back button to the top of both drawers. This gives users a reliable tap target to dismiss regardless of scroll position.
 
-### 2. Dim Gray Box Behind Top 3 Podium
+### Changes
 
-A faint gray rectangle appears behind the top 3 teams section when scrolling. This comes from two decorative gradient `div` elements using `absolute inset-0` with blurred backgrounds.
+**1. `src/components/TeamDetail.tsx`**
+- Add a sticky close button (X icon) positioned at the top-right of the drawer, inside the scrollable area but visually fixed
+- Use an `X` or `ChevronDown` icon from lucide-react
+- Wire it to the existing `handleOpenChange(false)` logic
 
-**Fix in `src/pages/Index.tsx`:** Remove the two decorative gradient divs in the "Top 3 Flowing Podium" section (the ones with `bg-gradient-to-r from-slate-800/5...` and `bg-gradient-to-b from-transparent via-slate-700/8...`).
+**2. `src/components/CompetitionDetail.tsx`**
+- Same treatment: add a sticky close button at the top-right of the drawer content
+- Wire to the existing close handler
+
+### Technical detail
+
+In both files, add a button just inside the `DrawerContent`, before the scrollable div:
+
+```tsx
+<button
+  onClick={() => handleOpenChange(false)}
+  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-white"
+>
+  <X className="h-5 w-5" />
+</button>
+```
+
+Position it with `absolute` relative to the `DrawerContent` (which is already `fixed`), so it stays visible at all times. This is a minimal, non-breaking change that solves the usability problem without altering the drawer scroll mechanics.
 
 ### Files to modify
 
-- **`src/index.css`** -- remove `overscroll-behavior: none` from body
-- **`src/pages/Index.tsx`** -- remove the two gradient background divs in the podium section
+- `src/components/TeamDetail.tsx` -- add close button
+- `src/components/CompetitionDetail.tsx` -- add close button
 
