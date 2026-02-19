@@ -72,7 +72,7 @@ export async function fetchTeams() {
       genderComposition: team.gender_comp,
       university: team.university,
       bidPoints: team.bidpoints || 0,
-      qualified: (team.bidpoints || 0) >= 5, // Auto-calculate qualification based on bid points
+      qualified: team.rasqual === true || team.rasqual === 'true',
       locked: false, // You can add this field to your database if needed
       color: team.theme || 'bg-slate-600', // Using 'theme' field for team color
       theme: team.theme || '',
