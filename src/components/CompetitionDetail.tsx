@@ -177,12 +177,12 @@ export function CompetitionDetail({
   const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
     switch (position) {
       case 'first':
-        return competition.lineup.map(team => ({
+        return (competition.lineup || []).map(team => ({
           id: typeof team.id === 'string' ? team.id : String(team.id),
           name: team.name || `Team ${team.id}`
         }));
       case 'second':
-        return competition.lineup.filter(team => {
+        return (competition.lineup || []).filter(team => {
           const teamId = typeof team.id === 'string' ? team.id : String(team.id);
           return teamId !== predictions.first;
         }).map(team => ({
@@ -190,7 +190,7 @@ export function CompetitionDetail({
           name: team.name || `Team ${team.id}`
         }));
       case 'third':
-        return competition.lineup.filter(team => {
+        return (competition.lineup || []).filter(team => {
           const teamId = typeof team.id === 'string' ? team.id : String(team.id);
           return teamId !== predictions.first && teamId !== predictions.second;
         }).map(team => ({
@@ -198,7 +198,7 @@ export function CompetitionDetail({
           name: team.name || `Team ${team.id}`
         }));
       default:
-        return competition.lineup.map(team => ({
+        return (competition.lineup || []).map(team => ({
           id: typeof team.id === 'string' ? team.id : String(team.id),
           name: team.name || `Team ${team.id}`
         }));
@@ -341,7 +341,7 @@ export function CompetitionDetail({
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
               <div className="grid gap-1.5">
-                {competition.lineup.map((team, index) => {
+                {(competition.lineup || []).map((team, index) => {
                 const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
                 const fullTeam = teams.find(t => t.id === teamIdStr);
                 return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
@@ -430,7 +430,7 @@ export function CompetitionDetail({
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
               <div className="grid gap-2">
-                {competition.judges.sort((a, b) => a.category.localeCompare(b.category)).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
+                {(competition.judges || []).sort((a, b) => a.category.localeCompare(b.category)).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
                     <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
                       <Eye className="h-3.5 w-3.5 text-purple-400" />
                     </div>
