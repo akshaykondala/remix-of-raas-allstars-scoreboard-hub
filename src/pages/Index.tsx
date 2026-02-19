@@ -567,7 +567,7 @@ const Index = () => {
             timezone: comp.timezone || '',
             showtickets: comp.showtickets || '',
             aptickets: comp.aptickets || '',
-            livestreamLink: comp.livestreamLink || '',
+            livestreamLink: comp.livelink || '',
             bid_status: comp.bid_status || false,
             media: { photos: [], videos: [] }
           }));
