@@ -5,7 +5,6 @@ interface CompetitionTimelineProps {
   competitions: Competition[];
   onCompetitionClick: (competition: Competition) => void;
   onSimulationStart?: (competition: Competition) => void;
-  isPast?: boolean;
 }
 interface WeekendGroup {
   date: Date;
@@ -19,8 +18,8 @@ export function CompetitionTimeline({
   competitions,
   onCompetitionClick,
   onSimulationStart,
-  isPast = false
 }: CompetitionTimelineProps) {
+  const today = new Date();
   const [activeWeekIndex, setActiveWeekIndex] = useState(0);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -198,7 +197,7 @@ export function CompetitionTimeline({
           {weekendGroups.map(group => <div key={`cards-${group.day}-${group.month}`} className="w-full flex-shrink-0 px-4">
               <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
                 {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
-                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={isPast} />
+                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={competition.date ? new Date(competition.date) < today : false} />
                   </div>)}
               </div>
             </div>)}

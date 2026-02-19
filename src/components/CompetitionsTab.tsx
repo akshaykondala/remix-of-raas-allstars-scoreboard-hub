@@ -696,42 +696,22 @@ export function CompetitionsTab({
         </div>}
 
       {!loading && <div className="flex flex-col items-center w-full">
-          {/* Past Competitions */}
-          {pastCompetitions.length > 0 && <div className="mb-6 w-full">
-              <CompetitionTimeline competitions={pastCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())} onCompetitionClick={competition => {
-          const {
-            media,
-            ...rest
-          } = competition;
-          setSelectedCompetition({
-            ...rest,
-            media: {
-              photos: [],
-              videos: []
-            }
-          });
-        }} isPast={true} />
-            </div>}
-
-          {/* Simple divider */}
-          {pastCompetitions.length > 0 && futureCompetitions.length > 0 && <div className="w-16 h-px bg-border my-4" />}
-
-          {/* Future Competitions */}
-          {futureCompetitions.length > 0 && <div className="w-full">
-              <CompetitionTimeline competitions={futureCompetitions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())} onCompetitionClick={competition => {
-          const {
-            media,
-            ...rest
-          } = competition;
-          setSelectedCompetition({
-            ...rest,
-            media: {
-              photos: [],
-              videos: []
-            }
-          });
-        }} onSimulationStart={handleSimulationStart} isPast={false} />
-            </div>}
+          <CompetitionTimeline
+            competitions={[...competitions].sort((a, b) => {
+              if (!a.date && !b.date) return 0;
+              if (!a.date) return 1;
+              if (!b.date) return -1;
+              return new Date(a.date).getTime() - new Date(b.date).getTime();
+            })}
+            onCompetitionClick={competition => {
+              const { media, ...rest } = competition;
+              setSelectedCompetition({
+                ...rest,
+                media: { photos: [], videos: [] }
+              });
+            }}
+            onSimulationStart={handleSimulationStart}
+          />
         </div>}
 
       {/* Competition Detail Modal */}
