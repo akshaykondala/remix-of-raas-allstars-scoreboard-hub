@@ -994,9 +994,9 @@ const Index = () => {
     <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl"></div>
-        <div className="absolute top-40 right-10 w-96 h-96 bg-slate-800/30 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-900/20 rounded-full blur-3xl transform-gpu"></div>
+        <div className="absolute top-40 right-10 w-96 h-96 bg-slate-800/30 rounded-full blur-3xl transform-gpu"></div>
+        <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-800/20 rounded-full blur-3xl transform-gpu"></div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
@@ -1083,13 +1083,13 @@ const Index = () => {
                     className="relative group cursor-pointer"
                   >
                     {/* Enhanced floating effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-500/30 to-slate-700/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-500/30 to-slate-700/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 transform-gpu"></div>
                     
-                    <div className="relative bg-gradient-to-br from-slate-600/70 to-slate-800/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/20 group-hover:border-slate-400/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
+                    <div className="relative bg-gradient-to-br from-slate-600/80 to-slate-800/95 rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-slate-500/20 group-hover:border-slate-400/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                       
                       {/* Featured Profile Picture */}
                       <div className="relative -mt-6 mb-2">
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-400/50 to-slate-600/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-400/50 to-slate-600/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500 transform-gpu"></div>
                         <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-slate-300 to-slate-500 flex items-center justify-center border-2 border-slate-400/50 group-hover:border-slate-300/70 transition-all duration-500">
                           {topThreeTeams[1]?.logo ? (
                             <img src={topThreeTeams[1].logo} alt={topThreeTeams[1].name} className="w-full h-full object-cover" />
@@ -1103,7 +1103,7 @@ const Index = () => {
                         <div className="text-slate-300 font-bold text-xs mb-0.5">2nd</div>
                         <div className="text-white font-semibold text-xs leading-tight mb-2">{topThreeTeams[1]?.name}</div>
                         <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-slate-300/30 to-slate-400/30 rounded-xl blur-md"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-slate-300/30 to-slate-400/30 rounded-xl blur-md transform-gpu"></div>
                           <div className="relative bg-gradient-to-br from-slate-200/90 to-slate-300/80 px-3 py-1.5 rounded-xl shadow-lg">
                             <span className="text-slate-800 font-black text-lg leading-none">{topThreeTeams[1]?.bidPoints}</span>
                             <span className="text-slate-600 font-semibold text-[8px] uppercase tracking-wider ml-0.5">pts</span>
@@ -1121,13 +1121,13 @@ const Index = () => {
                     className="relative group cursor-pointer"
                   >
                     {/* Epic glowing effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 to-orange-500/60 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/40 to-orange-500/60 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500 transform-gpu"></div>
                     
-                    <div className="relative bg-gradient-to-br from-yellow-400/85 to-orange-500/95 backdrop-blur-md rounded-3xl p-5 h-40 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/40 group-hover:border-yellow-200/60 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-3">
+                    <div className="relative bg-gradient-to-br from-yellow-400/90 to-orange-500/95 rounded-3xl p-5 h-40 flex flex-col items-center justify-between shadow-2xl border border-yellow-300/40 group-hover:border-yellow-200/60 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-3">
                       
                       {/* Hero Profile Picture */}
                       <div className="relative -mt-8 mb-3">
-                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/60 to-orange-400/60 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-300/60 to-orange-400/60 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 transform-gpu"></div>
                         <div className="relative w-20 h-20 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-yellow-200 to-yellow-400 flex items-center justify-center border-3 border-yellow-300/60 group-hover:border-yellow-200/80 transition-all duration-500">
                           {topThreeTeams[0]?.logo ? (
                             <img src={topThreeTeams[0].logo} alt={topThreeTeams[0].name} className="w-full h-full object-cover" />
@@ -1141,7 +1141,7 @@ const Index = () => {
                         <div className="text-yellow-800 font-bold text-sm mb-0.5">1st</div>
                         <div className="text-yellow-900 font-bold text-sm leading-tight mb-2">{topThreeTeams[0]?.name}</div>
                         <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-amber-300/50 rounded-xl blur-md"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-yellow-200/50 to-amber-300/50 rounded-xl blur-md transform-gpu"></div>
                           <div className="relative bg-gradient-to-br from-yellow-100 to-amber-200 px-4 py-2 rounded-xl shadow-lg border border-yellow-300/50">
                             <span className="text-amber-900 font-black text-xl leading-none">{topThreeTeams[0]?.bidPoints}</span>
                             <span className="text-amber-700 font-bold text-[9px] uppercase tracking-wider ml-1">pts</span>
@@ -1159,13 +1159,13 @@ const Index = () => {
                     className="relative group cursor-pointer"
                   >
                     {/* Enhanced floating effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 to-red-600/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/30 to-red-600/50 rounded-3xl blur-xl group-hover:blur-2xl transition-all duration-500 transform-gpu"></div>
                     
-                    <div className="relative bg-gradient-to-br from-orange-500/70 to-red-600/90 backdrop-blur-md rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/20 group-hover:border-orange-300/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
+                    <div className="relative bg-gradient-to-br from-orange-500/80 to-red-600/95 rounded-3xl p-4 h-32 flex flex-col items-center justify-between border border-orange-400/20 group-hover:border-orange-300/40 transition-all duration-500 group-hover:scale-110 group-hover:-translate-y-2">
                       
                       {/* Featured Profile Picture */}
                       <div className="relative -mt-6 mb-2">
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-400/50 to-red-500/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-400/50 to-red-500/50 rounded-full blur-lg group-hover:blur-xl transition-all duration-500 transform-gpu"></div>
                         <div className="relative w-16 h-16 rounded-full overflow-hidden shadow-2xl bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center border-2 border-orange-400/50 group-hover:border-orange-300/70 transition-all duration-500">
                           {topThreeTeams[2]?.logo ? (
                             <img src={topThreeTeams[2].logo} alt={topThreeTeams[2].name} className="w-full h-full object-cover" />
@@ -1179,7 +1179,7 @@ const Index = () => {
                         <div className="text-orange-200 font-bold text-xs mb-0.5">3rd</div>
                         <div className="text-orange-100 font-semibold text-xs leading-tight mb-2">{topThreeTeams[2]?.name}</div>
                         <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-orange-300/30 to-amber-400/30 rounded-xl blur-md"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-orange-300/30 to-amber-400/30 rounded-xl blur-md transform-gpu"></div>
                           <div className="relative bg-gradient-to-br from-orange-200/90 to-amber-300/80 px-3 py-1.5 rounded-xl shadow-lg">
                             <span className="text-orange-900 font-black text-lg leading-none">{topThreeTeams[2]?.bidPoints}</span>
                             <span className="text-orange-700 font-semibold text-[8px] uppercase tracking-wider ml-0.5">pts</span>
