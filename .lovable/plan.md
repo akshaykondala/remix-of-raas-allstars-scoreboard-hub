@@ -1,27 +1,27 @@
 
 
-## Fix "Qualified for RAS" Not Applying from Backend
+## Fix: Disable Hover Effects on Touch/Mobile Devices
 
-### Root Cause
+### Problem
+On mobile, scrolling triggers `hover:` and `group-hover:` effects on whatever element is under your finger. This causes cards to scale up, glow, and change borders mid-scroll, creating a jarring experience.
 
-The `rasqual` to `qualified` mapping happens twice, but the second one (in `Index.tsx` line 602) breaks it.
+The custom `.hover-scale` and `.hover-glow` classes in `index.css` are already protected with `@media (hover: hover)`, but the many Tailwind `hover:` and `group-hover:` utilities used throughout the app (e.g., `hover:scale-[1.02]`, `group-hover:scale-110`, `hover:bg-slate-800/70`) are not.
 
-Here is what happens:
-1. `fetchTeams()` in `api.ts` correctly maps `team.rasqual` to `qualified` -- this works fine
-2. Then `Index.tsx` re-maps the already-transformed teams, but checks `team.rasqual` again -- which no longer exists on the mapped object (it was already converted to `team.qualified`), so it always evaluates to `false`
+### Solution
+Add `hoverOnlyWhenSupported: true` to the Tailwind config. This is a built-in Tailwind v3 feature that wraps all `hover:` variants in `@media (hover: hover)`, so they only activate on devices with a real pointer (mouse/trackpad) -- not on touchscreens.
 
-### Fix
+### Changes
 
-**`src/pages/Index.tsx` (line 602)** -- Change from checking the raw Directus field to preserving the already-mapped value:
-
+**`tailwind.config.ts`** -- Add one line:
 ```ts
-// Before (broken - rasqual doesn't exist on mapped team objects)
-qualified: team.rasqual === true || team.rasqual === 'true',
-
-// After (use the already-mapped qualified field)
-qualified: team.qualified ?? false,
+export default {
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  darkMode: ["class"],
+  // ... rest unchanged
+}
 ```
 
-### Files to modify
-- `src/pages/Index.tsx` -- one line change at line 602
+This single change fixes all `hover:` and `group-hover:` effects across the entire app (TeamCard, podium cards, competition cards, fantasy tab, buttons, etc.) without needing to touch any component files.
 
