@@ -256,12 +256,6 @@ export function CompetitionDetail({
                   <DrawerTitle className={`text-2xl font-black bg-gradient-to-r bg-clip-text text-transparent ${isLive ? 'from-white via-red-100 to-orange-100' : 'from-white via-purple-100 to-blue-100'}`}>
                     {competition.name}
                   </DrawerTitle>
-                  {isLive && (
-                    <div className="flex items-center gap-1 bg-red-500/25 border border-red-400/50 rounded-full px-2 py-0.5 flex-shrink-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                      <span className="text-red-300 text-[10px] font-bold uppercase tracking-wide">Live</span>
-                    </div>
-                  )}
                 </div>
                 
                 {/* Elegant flowing info text */}

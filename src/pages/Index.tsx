@@ -565,7 +565,10 @@ const Index = () => {
             instagramlink: comp.instagramlink || '',
             time: (() => {
               const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
-              return raw.includes('T') ? raw.split('T')[1] : raw;
+              let t = raw.includes('T') ? raw.split('T')[1] : raw;
+              // Strip fractional seconds and UTC marker (e.g. "19:00:00.000Z" → "19:00:00")
+              t = t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+              return t;
             })(),
             timezone: comp.timezone || '',
             showTicketsLink: comp.showtickets || '',
