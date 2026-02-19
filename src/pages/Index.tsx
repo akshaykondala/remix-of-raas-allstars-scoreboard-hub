@@ -1001,7 +1001,7 @@ const Index = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full relative z-10 h-screen flex flex-col">
 
-        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
+        <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* Header with Centered Logo and Discord Button */}
           <div className="relative pt-10 pb-8">
             {/* Centered Logo */}
@@ -1293,7 +1293,7 @@ const Index = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           <div className="px-4">
             <CompetitionsTab 
               onSimulationSet={handleSimulationSet}
@@ -1304,7 +1304,7 @@ const Index = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-24">
+        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           <div className="px-4 py-6">
             {loading ? (
               <div className="text-center py-8">
