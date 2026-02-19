@@ -563,6 +563,12 @@ const Index = () => {
               ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
               : [],
             instagramlink: comp.instagramlink || '',
+            time: comp.time || '',
+            timezone: comp.timezone || '',
+            showtickets: comp.showtickets || '',
+            aptickets: comp.aptickets || '',
+            livestreamLink: comp.livestreamLink || '',
+            bid_status: comp.bid_status || false,
             media: { photos: [], videos: [] }
           }));
           // Debug: Log mapped competitions
@@ -591,6 +597,7 @@ const Index = () => {
                   : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
               : '',
             color: team.color || team.theme || 'bg-slate-600',
+            theme: team.theme || '',
             bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
             qualified: (team.bidPoints || team.bid_points || team.bidpoints || 0) >= 5,
             competitions_attending: Array.isArray(team.competitions_attending) 

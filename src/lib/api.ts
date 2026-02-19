@@ -75,6 +75,7 @@ export async function fetchTeams() {
       qualified: (team.bidpoints || 0) >= 5, // Auto-calculate qualification based on bid points
       locked: false, // You can add this field to your database if needed
       color: team.theme || 'bg-slate-600', // Using 'theme' field for team color
+      theme: team.theme || '',
       city: team.city || '',
       instagramlink: team.instagramlink || '',
       competitions_attending: Array.isArray(team.competitions_attending) 
