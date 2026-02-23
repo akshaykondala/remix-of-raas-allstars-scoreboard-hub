@@ -137,13 +137,16 @@ const Index = () => {
                   let placement = 'N/A';
                   let pointsEarned = 0;
                   
-                  if (String(competition.firstplace) === String(team.id)) {
+                  const teamId = String(team.id);
+                  const teamName = team.name;
+
+                  if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
                     placement = '1st';
                     pointsEarned = 4;
-                  } else if (String(competition.secondplace) === String(team.id)) {
+                  } else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
                     placement = '2nd';
                     pointsEarned = 2;
-                  } else if (String(competition.thirdplace) === String(team.id)) {
+                  } else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
                     placement = '3rd';
                     pointsEarned = 1;
                   }

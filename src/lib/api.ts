@@ -99,13 +99,13 @@ export async function fetchTeams() {
             let placement = 'N/A';
             let pointsEarned = 0;
             
-            if (competition.firstplace === team.id) {
+            if (competition.firstplace === team.id || competition.firstplace === team.name) {
               placement = '1st';
               pointsEarned = 4;
-            } else if (competition.secondplace === team.id) {
+            } else if (competition.secondplace === team.id || competition.secondplace === team.name) {
               placement = '2nd';
               pointsEarned = 2;
-            } else if (competition.thirdplace === team.id) {
+            } else if (competition.thirdplace === team.id || competition.thirdplace === team.name) {
               placement = '3rd';
               pointsEarned = 1;
             }
