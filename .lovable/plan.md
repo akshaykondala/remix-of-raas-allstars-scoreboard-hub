@@ -1,36 +1,29 @@
 
-## Replace RAS Timeline Dot with Competition Logo + Minimal Holographic Effects
 
-### What Changes
+## Two Changes: Minimalist RAS Label + Judges Fallback for Nationals
 
-**`src/components/CompetitionTimeline.tsx` (lines 150, 163-207)**
+### 1. Simplify "RAS" label on timeline dot
 
-Replace the current diamond-shaped dot with the RAS competition's actual logo, plus a subtle holographic glow:
+**File: `src/components/CompetitionTimeline.tsx` (line 199)**
 
-1. **Get the RAS logo from the group**: Extract the logo URL from the first RAS competition in the weekend group (`group.competitions.find(c => c.ras)?.logo`)
+Replace the rainbow gradient text with a simple, clean amber/gold label:
+- Remove `bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent`
+- Use a solid `text-amber-400` instead -- minimal, elegant, still stands out
 
-2. **Replace the entire RAS dot block (lines 165-179)** with:
-   - A small circular logo image (~20x20px, `w-5 h-5 rounded-full object-cover`) as the dot
-   - One subtle holographic glow ring behind it using `animate-ras-glow` (the existing animation, just toned down -- a `w-7 h-7` blurred circle at ~30% opacity with the rainbow gradient)
-   - No pulse rings, no diamond shape, no Crown icon
+### 2. Show location + date when no judges for RAS competitions
 
-3. **Keep the "RAS" micro-label** below (lines 199-202) -- it already looks clean
+**File: `src/components/CompetitionDetail.tsx` (lines 535-556)**
 
-4. **Keep the amber date label** styling (line 158) as-is
+In the Judges section, when `competition.ras` is true and the judges array is empty (no judges filled out), instead of showing an empty panel, display a stylish placeholder with the competition's city and formatted date. Something like:
 
-### Result
-
-The RAS weekend dot becomes: the actual RAS logo as a tiny circle on the timeline, with a soft rainbow glow halo behind it and a "RAS" label underneath. Minimal but unmistakably special.
-
-### Technical Detail
-
-```text
-Before:                        After:
-  [diamond + crown icon]         [circular logo image]
-  [2 pulse rings]                [1 subtle glow ring]
-  [holographic ring]             
-  "RAS" label                    "RAS" label
+```
+  ── Houston, TX ──
+  April 12, 2026
 ```
 
+Styled with amber/gold tones to match the RAS theme -- centered text, elegant typography, subtle border treatment. When judges ARE filled out, the normal judge list renders as usual.
+
 ### Files Modified
-- `src/components/CompetitionTimeline.tsx` -- replace RAS dot markup (lines 165-179)
+- `src/components/CompetitionTimeline.tsx` -- line 199, simplify RAS label color
+- `src/components/CompetitionDetail.tsx` -- lines 543-555, add RAS no-judges fallback
+
