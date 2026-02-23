@@ -1,24 +1,36 @@
 
+## Replace RAS Timeline Dot with Competition Logo + Minimal Holographic Effects
 
-## Fix: RAS Field Not Connected + Add Logo Animation
+### What Changes
 
-### Root Cause
+**`src/components/CompetitionTimeline.tsx` (lines 150, 163-207)**
 
-The `ras` field is **never mapped** in the main competition data pipeline in `src/pages/Index.tsx` (lines 89-119). Every other field is explicitly copied from the API response, but `ras` is missing. So `competition.ras` is always `undefined`, and the timeline/card styling never triggers.
+Replace the current diamond-shaped dot with the RAS competition's actual logo, plus a subtle holographic glow:
 
-The `CompetitionTimeline` component already has all the visual code for RAS -- it just never receives `ras: true`.
+1. **Get the RAS logo from the group**: Extract the logo URL from the first RAS competition in the weekend group (`group.competitions.find(c => c.ras)?.logo`)
 
-### Changes
+2. **Replace the entire RAS dot block (lines 165-179)** with:
+   - A small circular logo image (~20x20px, `w-5 h-5 rounded-full object-cover`) as the dot
+   - One subtle holographic glow ring behind it using `animate-ras-glow` (the existing animation, just toned down -- a `w-7 h-7` blurred circle at ~30% opacity with the rainbow gradient)
+   - No pulse rings, no diamond shape, no Crown icon
 
-**1. `src/pages/Index.tsx` (line ~118)** -- Add `ras` to the competition mapping
+3. **Keep the "RAS" micro-label** below (lines 199-202) -- it already looks clean
 
-Add `ras: comp.ras === true || comp.ras === 'true',` alongside the other mapped fields (near `bid_status`). This is the only thing needed to make the timeline dot and card visuals work.
+4. **Keep the amber date label** styling (line 158) as-is
 
-**2. `src/components/CompetitionDetail.tsx` (line ~246)** -- Add logo entrance animation
+### Result
 
-When the competition detail drawer opens, animate the logo with a scale + fade-in effect:
-- Add CSS classes to the logo container: a scale-up from 0.5 to 1 with a slight bounce, plus fade-in
-- Use Tailwind's `animate-` utility with a custom or inline animation
-- Apply to both the image logo and the fallback icon versions
-- Add a subtle rotating glow ring behind the logo that plays once on open
+The RAS weekend dot becomes: the actual RAS logo as a tiny circle on the timeline, with a soft rainbow glow halo behind it and a "RAS" label underneath. Minimal but unmistakably special.
 
+### Technical Detail
+
+```text
+Before:                        After:
+  [diamond + crown icon]         [circular logo image]
+  [2 pulse rings]                [1 subtle glow ring]
+  [holographic ring]             
+  "RAS" label                    "RAS" label
+```
+
+### Files Modified
+- `src/components/CompetitionTimeline.tsx` -- replace RAS dot markup (lines 165-179)
