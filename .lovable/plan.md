@@ -1,29 +1,36 @@
 
 
-## Two Changes: Minimalist RAS Label + Judges Fallback for Nationals
+## Show City + Date on Entire RAS Competition Page (Not Just Judges)
 
-### 1. Simplify "RAS" label on timeline dot
+When a RAS-toggled competition has no judges filled out, the entire competition detail page should display a clean, elegant city and date treatment -- not just the judges panel.
 
-**File: `src/components/CompetitionTimeline.tsx` (line 199)**
+### What Changes
 
-Replace the rainbow gradient text with a simple, clean amber/gold label:
-- Remove `bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent`
-- Use a solid `text-amber-400` instead -- minimal, elegant, still stands out
+**File: `src/components/CompetitionDetail.tsx`**
 
-### 2. Show location + date when no judges for RAS competitions
+Wrap the content sections (lineup, placings, judges, Instagram) in a conditional. When `competition.ras` is true AND judges are empty:
 
-**File: `src/components/CompetitionDetail.tsx` (lines 535-556)**
-
-In the Judges section, when `competition.ras` is true and the judges array is empty (no judges filled out), instead of showing an empty panel, display a stylish placeholder with the competition's city and formatted date. Something like:
+- **Keep**: The header (logo, name, time row, ticket links) -- these are always useful
+- **Replace**: The lineup, placings, judges, and Instagram sections with a single elegant centered block showing:
 
 ```
-  ── Houston, TX ──
-  April 12, 2026
+── Houston, TX ──
+April 12, 2026
 ```
 
-Styled with amber/gold tones to match the RAS theme -- centered text, elegant typography, subtle border treatment. When judges ARE filled out, the normal judge list renders as usual.
+Styled with amber/gold tones, generous vertical padding, centered typography. This replaces lines ~446-582 (everything after the ticket links area) with the fallback when the condition is met.
+
+- **Remove**: The judges-only fallback added previously (lines 544-558) since this new whole-page approach supersedes it
+
+When judges ARE filled out, everything renders normally as it does today.
+
+### Technical Detail
+
+- Condition: `competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0`
+- If true: render a single `div` with city + formatted date in amber tones, with decorative dashes and spacious padding
+- If false: render all existing sections (lineup, placings, judges, Instagram) unchanged
+- The existing judges-only fallback block becomes redundant and gets removed
 
 ### Files Modified
-- `src/components/CompetitionTimeline.tsx` -- line 199, simplify RAS label color
-- `src/components/CompetitionDetail.tsx` -- lines 543-555, add RAS no-judges fallback
+- `src/components/CompetitionDetail.tsx` -- conditional wrap around lines 446-582
 
