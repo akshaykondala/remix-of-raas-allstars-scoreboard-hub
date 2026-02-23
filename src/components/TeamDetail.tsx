@@ -144,9 +144,9 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                   <div className="bg-purple-500/20 rounded-lg p-2">
                     <Calendar className="h-4 w-4 text-purple-400" />
                   </div>
-                  <span className="text-purple-200/80 text-sm font-medium">Competitions This Season</span>
+                  <span className="text-purple-200/80 text-sm font-medium">Competitions Completed</span>
                 </div>
-                <div className="text-xl font-bold text-white">{team.competitionResults?.length || 0}</div>
+                <div className="text-xl font-bold text-white">{team.competitionResults?.filter(r => r.placement !== 'Upcoming').length || 0}</div>
               </div>
             </div>
           </div>
