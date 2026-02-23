@@ -1,48 +1,24 @@
 
 
-## Add "Raas All Stars" (Nationals) Special Treatment
+## Fix: RAS Field Not Connected + Add Logo Animation
 
-### Overview
-Add a `ras` boolean field to competitions. When enabled, that competition is Nationals (Raas All Stars). The timeline dot and competition card will get a premium, standout visual treatment -- distinct from regular, bid, and live competitions.
+### Root Cause
+
+The `ras` field is **never mapped** in the main competition data pipeline in `src/pages/Index.tsx` (lines 89-119). Every other field is explicitly copied from the API response, but `ras` is missing. So `competition.ras` is always `undefined`, and the timeline/card styling never triggers.
+
+The `CompetitionTimeline` component already has all the visual code for RAS -- it just never receives `ras: true`.
 
 ### Changes
 
-**1. Type Update (`src/lib/types.ts`)**
-- Add `ras?: boolean` to the `Competition` interface
+**1. `src/pages/Index.tsx` (line ~118)** -- Add `ras` to the competition mapping
 
-**2. API Update (`src/lib/api.ts`)**
-- Map the `ras` field from Directus data onto the competition object
+Add `ras: comp.ras === true || comp.ras === 'true',` alongside the other mapped fields (near `bid_status`). This is the only thing needed to make the timeline dot and card visuals work.
 
-**3. Timeline Dot -- Nationals Treatment (`src/components/CompetitionTimeline.tsx`)**
+**2. `src/components/CompetitionDetail.tsx` (line ~246)** -- Add logo entrance animation
 
-When a weekend group contains a `ras: true` competition, the timeline dot gets a unique nationals style:
-- Diamond/star-shaped dot instead of a circle (rotated square with a crown/trophy icon)
-- Animated rainbow/holographic gradient glow ring (cycling through gold, cyan, magenta, purple)
-- "RAS" micro-label beneath the date
-- Larger dot size than regular weekends
-- Multi-layered animated pulse rings when active
-
-**4. Competition Card -- Nationals Treatment (`src/components/CompetitionTimeline.tsx`)**
-
-The `TimelineCompetitionCard` will detect `competition.ras` and apply a premium card style:
-- Animated gradient border cycling through gold/purple/cyan (holographic shimmer effect)
-- Thicker top accent bar with a multi-color gradient
-- Larger background glow orbs with richer colors
-- A small "NATIONALS" badge/chip in the top-right corner
-- Enhanced shine sweep on hover
-- The card content layout stays the same (logo, name, city)
-
-### Technical Details
-
-- The `ras` check is a simple boolean: `const isRAS = competition.ras === true`
-- In the timeline dot section, check `group.competitions.some(c => c.ras)` to determine if a weekend is nationals
-- RAS styling takes highest priority: RAS > Live > Bid > Regular
-- CSS animations for the holographic border use inline `@keyframes` via style props or Tailwind's `animate-` utilities with custom keyframes added to `tailwind.config.ts`
-- A new `ras-glow` keyframe will be added to `tailwind.config.ts` for the cycling gradient animation
-
-### Files Modified
-1. `src/lib/types.ts` -- add `ras` field
-2. `src/lib/api.ts` -- map `ras` from Directus
-3. `src/components/CompetitionTimeline.tsx` -- special dot + special card visuals
-4. `tailwind.config.ts` -- add `ras-glow` animation keyframe
+When the competition detail drawer opens, animate the logo with a scale + fade-in effect:
+- Add CSS classes to the logo container: a scale-up from 0.5 to 1 with a slight bounce, plus fade-in
+- Use Tailwind's `animate-` utility with a custom or inline animation
+- Apply to both the image logo and the fallback icon versions
+- Add a subtle rotating glow ring behind the logo that plays once on open
 
