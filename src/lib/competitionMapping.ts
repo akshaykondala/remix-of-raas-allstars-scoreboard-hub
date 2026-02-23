@@ -48,5 +48,6 @@ export function mapCompetitionTeamsFull(competition, teams) {
     afterpartyTicketsLink: competition.aptickets || competition.afterpartyTicketsLink || '',
     livestreamLink: competition.livelink || competition.livestreamLink || '',
     videoLink: competition.videolink || competition.videoLink || '',
+    ras: competition.ras === true || competition.ras === 'true',
   };
 } 

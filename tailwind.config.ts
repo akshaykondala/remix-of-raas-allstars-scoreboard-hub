@@ -104,21 +104,50 @@ export default {
 						transform: 'translateX(100%)'
 					}
 				},
-				'fade-in': {
-					'0%': {
-						opacity: '0'
-					},
-					'100%': {
-						opacity: '1'
-					}
+			'fade-in': {
+				'0%': {
+					opacity: '0'
+				},
+				'100%': {
+					opacity: '1'
 				}
+			},
+			'ras-glow': {
+				'0%, 100%': {
+					'background-position': '0% 50%'
+				},
+				'50%': {
+					'background-position': '100% 50%'
+				}
+			},
+			'ras-shimmer': {
+				'0%': {
+					transform: 'translateX(-100%) rotate(45deg)'
+				},
+				'100%': {
+					transform: 'translateX(200%) rotate(45deg)'
+				}
+			},
+			'ras-pulse-ring': {
+				'0%': {
+					transform: 'scale(1) rotate(45deg)',
+					opacity: '0.6'
+				},
+				'100%': {
+					transform: 'scale(2.5) rotate(45deg)',
+					opacity: '0'
+				}
+			}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'slide-in-right': 'slide-in-right 0.2s ease-out forwards',
 				'slide-out-right': 'slide-out-right 0.2s ease-out forwards',
-				'fade-in': 'fade-in 0.15s ease-out'
+			'fade-in': 'fade-in 0.15s ease-out',
+			'ras-glow': 'ras-glow 3s ease infinite',
+			'ras-shimmer': 'ras-shimmer 2.5s ease-in-out infinite',
+			'ras-pulse-ring': 'ras-pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
 			}
 		}
 	},
