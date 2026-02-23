@@ -1,29 +1,43 @@
 
 
-## Add "Watch Show" Video Link for Past Competitions
+## Fix: Ticket Links Always Grayed Out
 
-### What Changes
+### Root Cause
 
-**1. `src/lib/competitionMapping.ts`** -- Pass through the `videolink` field from Directus:
-- Add `videoLink: competition.videolink || ''` to the returned object (line 49, alongside the existing `livestreamLink`, `showTicketsLink`, etc.)
+The ticket links are being **double-mapped**, which wipes out the URLs:
 
-**2. `src/lib/types.ts`** -- Add `videoLink` to the `Competition` interface:
-- Add `videoLink?: string;` to the interface
+1. When competitions are first fetched in `Index.tsx` (line 114), the raw Directus field `comp.showtickets` is correctly mapped to `showTicketsLink`
+2. Later, when you click a competition, `mapCompetitionTeamsFull()` is called on the **already-mapped** object
+3. That function reads `competition.showtickets` -- but that raw field name no longer exists (it was already renamed to `showTicketsLink` in step 1)
+4. So it evaluates to `undefined`, and `undefined || ''` produces an empty string, overwriting the real URL
 
-**3. `src/components/CompetitionDetail.tsx`** -- Add a "Watch Show" button for past competitions:
-- Import the `Play` (or `Video`) icon from `lucide-react`
-- After the ticket links grid (around line 382), add a conditional block: only render when `!isFutureCompetition && !isLive` (i.e., past/completed competitions)
-- The button follows the same visual pattern as the ticket links -- a styled `<a>` tag with gradient background, icon, label "Watch Show", and external link arrow
-- When `videoLink` is empty, the button appears grayed out and disabled (same pattern as the ticket buttons when their links are missing)
-- Color scheme: green gradient (`from-green-500/20`) to differentiate from the blue (tickets) and pink (afterparty) buttons
+The same bug affects afterparty tickets and livestream links.
 
-### Visual Layout
+### Fix
 
-The video link will appear as a full-width button below the ticket links row, only visible on past competitions:
+Update `src/lib/competitionMapping.ts` to check for **both** the raw Directus field name AND the already-mapped field name, so it works whether the competition has been pre-mapped or not:
 
-```text
-[ Show Tickets ]  [ AP Tickets ]     <-- existing, 2-col grid
-[ Watch Show                    ]     <-- new, full-width, only for past comps
+```ts
+showTicketsLink: competition.showtickets || competition.showTicketsLink || '',
+afterpartyTicketsLink: competition.aptickets || competition.afterpartyTicketsLink || '',
+livestreamLink: competition.livelink || competition.livestreamLink || '',
 ```
 
-### No other files change. The Comps tab and Standings tab competition modals will both pick this up automatically since they both go through `mapCompetitionTeamsFull` and render `CompetitionDetail`.
+This is a one-line-each fix in a single file. No other files need to change.
+
+### Files Modified
+
+| File | Change |
+|---|---|
+| `src/lib/competitionMapping.ts` | Lines 47-49: add fallback to already-mapped field names |
+
+### Also: Add `videoLink` mapping (from the previously approved plan)
+
+Since this file is being touched, the `videoLink` field mapping will also be added here, along with the "Watch Show" button in `CompetitionDetail.tsx` and the type update in `types.ts` -- completing the previously approved plan that was interrupted.
+
+| File | Change |
+|---|---|
+| `src/lib/competitionMapping.ts` | Add `videoLink: competition.videolink || competition.videoLink || ''` |
+| `src/lib/types.ts` | Add `videoLink?: string` to Competition interface |
+| `src/components/CompetitionDetail.tsx` | Add "Watch Show" button for past competitions (green gradient, Play icon, full-width below ticket row) |
+
