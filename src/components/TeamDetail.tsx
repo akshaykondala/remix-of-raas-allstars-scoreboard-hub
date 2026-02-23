@@ -283,25 +283,28 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                               isFirst ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400/40' :
                               isSecond ? 'bg-slate-400/20 text-slate-300 border border-slate-400/40' :
                               isThird ? 'bg-orange-500/20 text-orange-400 border border-orange-400/40' :
+                              result.placement === 'Upcoming' ? 'bg-blue-500/20 text-blue-400 border border-blue-400/40' :
                               'bg-slate-600/20 text-slate-400 border border-slate-500/40'
                             }`}>
                               {result.placement || 'N/A'}
                             </div>
                           </div>
                           
-                          {/* Points breakdown */}
-                          <div className="flex items-center gap-3 text-xs">
-                            <div className="flex items-center gap-1">
-                              <span className="text-slate-400">Points:</span>
-                              <span className={`font-bold ${earnedPoints ? 'text-green-400' : 'text-slate-500'}`}>
-                                +{result.bidPointsEarned}
-                              </span>
+                          {/* Points breakdown - only show when points were earned */}
+                          {earnedPoints && (
+                            <div className="flex items-center gap-3 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="text-slate-400">Points:</span>
+                                <span className="font-bold text-green-400">
+                                  +{result.bidPointsEarned}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-slate-400">Total:</span>
+                                <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="text-slate-400">Total:</span>
-                              <span className="text-blue-400 font-bold">{result.cumulativeBidPoints} pts</span>
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -123,7 +123,11 @@ export async function fetchTeams() {
               });
             
             if (!inLineup && !inAttending) return null;
-            placement = 'Competed';
+            const [y, m, d] = (competition.date || '').split('-').map(Number);
+            const compDate = new Date(y, m - 1, d);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            placement = compDate >= now ? 'Upcoming' : 'Competed';
           }
           
           return {
