@@ -87,48 +87,44 @@ export async function fetchTeams() {
                    : (team.captains ? [team.captains] : [])
       },
       competitionResults: (() => {
-        if (team.competitionResults && Array.isArray(team.competitionResults)) {
-          return team.competitionResults;
-        }
+        if (!competitionsData || !Array.isArray(competitionsData)) return [];
         
-        if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
-          const results = team.competitions_attending.map((compObj: any, index: number) => {
-            const competition = compObj.competitions_id;
-            if (!competition) return null;
-            
-            let placement = 'N/A';
-            let pointsEarned = 0;
-            
-            if (competition.firstplace === team.id || competition.firstplace === team.name) {
-              placement = '1st';
-              pointsEarned = 4;
-            } else if (competition.secondplace === team.id || competition.secondplace === team.name) {
-              placement = '2nd';
-              pointsEarned = 2;
-            } else if (competition.thirdplace === team.id || competition.thirdplace === team.name) {
-              placement = '3rd';
-              pointsEarned = 1;
-            }
-            
-            return {
-              competitionId: competition.id,
-              competitionName: competition.name,
-              placement: placement,
-              bidPointsEarned: pointsEarned,
-              cumulativeBidPoints: 0,
-              date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
-            };
-          }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const results = competitionsData.map((competition: any) => {
+          let placement = 'N/A';
+          let pointsEarned = 0;
           
-          let runningTotal = 0;
-          results.forEach((result) => {
-            runningTotal += result.bidPointsEarned;
-            result.cumulativeBidPoints = runningTotal;
-          });
-          return results;
-        }
+          const teamIdStr = String(team.id);
+          const teamName = team.name;
+          
+          if (String(competition.firstplace) === teamIdStr || competition.firstplace === teamName) {
+            placement = '1st';
+            pointsEarned = 4;
+          } else if (String(competition.secondplace) === teamIdStr || competition.secondplace === teamName) {
+            placement = '2nd';
+            pointsEarned = 2;
+          } else if (String(competition.thirdplace) === teamIdStr || competition.thirdplace === teamName) {
+            placement = '3rd';
+            pointsEarned = 1;
+          }
+          
+          if (placement === 'N/A') return null;
+          
+          return {
+            competitionId: competition.id,
+            competitionName: competition.name,
+            placement,
+            bidPointsEarned: pointsEarned,
+            cumulativeBidPoints: 0,
+            date: competition.date || ''
+          };
+        }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
-        return [];
+        let runningTotal = 0;
+        results.forEach((result: any) => {
+          runningTotal += result.bidPointsEarned;
+          result.cumulativeBidPoints = runningTotal;
+        });
+        return results;
       })()
     }));
   } catch (err) {
