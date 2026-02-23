@@ -1,41 +1,31 @@
 
 
-## Calculate Bid Points from Placings Instead of Backend Field
+## Fix: Bid Points Always Zero
 
-### What Changes
+### Root Cause
 
-Currently, each team's `bidPoints` comes directly from the Directus `bidpoints` field. This will be replaced with a calculated value derived from actual competition placings: 1st = +4, 2nd = +2, 3rd = +1.
+The `competitions_attending` array coming from `fetchTeams()` (in `api.ts`) contains **competition names** like `"Raas Chaos"`, because line 69 maps them via `compObj.competitions_id?.name`.
 
-The tiebreaker logic is already implemented in `tiebreakerSort` (lines 275-380 of Index.tsx) and covers tiebreakers 1-4. Tiebreakers 5-7 (standardized scores, bonus points) remain as TODOs since that data isn't available yet.
-
----
-
-### File: `src/pages/Index.tsx`
-
-**1. Team mapping (line 139)**: After `competitionResults` is built (lines 162-202), sum the `bidPointsEarned` values to produce `bidPoints` instead of reading from the backend:
-
+But in `Index.tsx` line 134, the lookup tries to match by **ID**:
 ```ts
-// Replace line 139:
-bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
-
-// With: calculate after competitionResults is built
-bidPoints: 0, // placeholder, will be set below
+mappedCompetitions.find((c) => String(c.id) === String(compId))
 ```
 
-Then after the `competitionResults` IIFE completes, compute bidPoints as the sum of all `bidPointsEarned` from those results. This requires a small refactor: extract `competitionResults` into a variable before spreading it into the team object, then derive `bidPoints` from it.
+Comparing `"1"` (an ID) to `"Raas Chaos"` (a name) never matches, so every team gets zero competition results and zero bid points.
 
-**2. `calculateBidPoints` function (lines 221-255)**: Change the base from `originalTeam.bidPoints` to recalculating from `competitionResults`. The simulation overlay logic stays the same:
+### Fix
+
+**File: `src/pages/Index.tsx`, line 134** -- Also match by competition name:
 
 ```ts
-// Base points = sum of competitionResults bidPointsEarned (not backend field)
-const basePoints = (team.competitionResults || [])
-  .reduce((sum, r) => sum + r.bidPointsEarned, 0);
-pointsMap[team.id] = basePoints;
+const competition = mappedCompetitions.find(
+  (c: any) => String(c.id) === String(compId) || c.name === compId
+);
 ```
 
-**3. Also recalculate `cumulativeBidPoints`** in the competitionResults (currently left at 0 on line 195). After building the results array, sort by date and compute running totals -- this is already done in `api.ts` but not in the `Index.tsx` mapping. Add the same running-total logic after the `.filter(Boolean).sort(...)` call.
+This single change makes the lookup work whether `competitions_attending` contains IDs or names. Everything downstream (placement detection, `bidPointsEarned`, cumulative totals) is already correct and will start producing real values once competitions are actually found.
 
 ### No other files change
 
-The `TeamCard`, podium, and standings all read `team.bidPoints` which will now reflect the calculated value. The tiebreaker sort already uses `competitionResults` for its logic.
+The calculation logic, cumulative tracking, and tiebreaker sort are all already correct -- they just never ran because the competition lookup always returned `null`.
 
