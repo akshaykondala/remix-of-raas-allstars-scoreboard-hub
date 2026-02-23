@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDown, Ticket, PartyPopper, X } from 'lucide-react';
+import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDown, Ticket, PartyPopper, Play, X } from 'lucide-react';
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
@@ -380,6 +380,31 @@ export function CompetitionDetail({
                   {competition.afterpartyTicketsLink && <ExternalLink className="h-3 w-3 text-pink-400/70" />}
                 </a>
               </div>
+
+              {/* Watch Show Video Link - Past Competitions Only */}
+              {!isFutureCompetition && !isLive && (
+                <a
+                  href={competition.videoLink || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => !competition.videoLink && e.preventDefault()}
+                  className={`flex items-center gap-2 rounded-xl px-3 py-3 transition-all duration-200 ${
+                    competition.videoLink
+                      ? 'bg-gradient-to-r from-green-500/20 to-green-600/10 border border-green-400/30 hover:from-green-500/30 hover:to-green-600/20 cursor-pointer'
+                      : 'bg-slate-800/30 border border-slate-700/30 opacity-50 cursor-not-allowed'
+                  }`}
+                >
+                  <div className={`rounded-full p-1.5 ${competition.videoLink ? 'bg-green-500/20' : 'bg-slate-600/20'}`}>
+                    <Play className={`h-4 w-4 ${competition.videoLink ? 'text-green-400' : 'text-slate-500'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-semibold text-xs ${competition.videoLink ? 'text-green-300' : 'text-slate-500'}`}>
+                      Watch Show
+                    </div>
+                  </div>
+                  {competition.videoLink && <ExternalLink className="h-3 w-3 text-green-400/70" />}
+                </a>
+              )}
             </div>
           </div>
 

@@ -44,8 +44,9 @@ export function mapCompetitionTeamsFull(competition, teams) {
     logo: logoUrl,
     lineup: mappedLineup,
     judges: Array.isArray(competition.judges) ? competition.judges : [],
-    showTicketsLink: competition.showtickets || '',
-    afterpartyTicketsLink: competition.aptickets || '',
-    livestreamLink: competition.livelink || '',
+    showTicketsLink: competition.showtickets || competition.showTicketsLink || '',
+    afterpartyTicketsLink: competition.aptickets || competition.afterpartyTicketsLink || '',
+    livestreamLink: competition.livelink || competition.livestreamLink || '',
+    videoLink: competition.videolink || competition.videoLink || '',
   };
 } 
