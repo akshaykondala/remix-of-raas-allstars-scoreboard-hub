@@ -107,7 +107,16 @@ export async function fetchTeams() {
             pointsEarned = 1;
           }
           
-          if (placement === 'N/A') return null;
+          if (placement === 'N/A') {
+            // Check if team is in the lineup (attended but didn't place)
+            const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry: any) => {
+              const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
+              return String(entryTeamId) === teamIdStr || 
+                     (entry?.teams_id?.name && entry.teams_id.name === teamName);
+            });
+            if (!inLineup) return null;
+            placement = 'Competed';
+          }
           
           return {
             competitionId: competition.id,
