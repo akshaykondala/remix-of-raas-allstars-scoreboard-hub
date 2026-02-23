@@ -499,21 +499,50 @@ export function CompetitionDetail({
                   Competition Lineup
                 </h3>
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
-                  <div className="grid gap-1.5">
-                    {(competition.lineup || []).map((team, index) => {
-                    const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                    const fullTeam = teams.find(t => t.id === teamIdStr);
-                    return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                          {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
-                              <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
-                            </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
-                              {(team.name || 'T').charAt(0)}
-                            </div>}
-                          <span className="font-medium text-sm truncate">
-                            {team.name || `Team ${team.id}`}
-                          </span>
-                        </div>;
-                  })}
+                <div className="grid gap-1.5">
+                    {(() => {
+                      // Compute leaderboard rank map
+                      const ranked = teams
+                        .filter(t => t.bidPoints > 0)
+                        .sort((a, b) => {
+                          if (b.bidPoints !== a.bidPoints) return b.bidPoints - a.bidPoints;
+                          const aResults = a.competitionResults || [];
+                          const bResults = b.competitionResults || [];
+                          const aAttended = aResults.length || 1;
+                          const bAttended = bResults.length || 1;
+                          const aRatio = aResults.filter(r => r.placement && r.placement !== 'Competed' && r.placement !== 'N/A').length / aAttended;
+                          const bRatio = bResults.filter(r => r.placement && r.placement !== 'Competed' && r.placement !== 'N/A').length / bAttended;
+                          if (bRatio !== aRatio) return bRatio - aRatio;
+                          const aFirsts = aResults.filter(r => r.placement === '1st').length;
+                          const bFirsts = bResults.filter(r => r.placement === '1st').length;
+                          if (bFirsts !== aFirsts) return bFirsts - aFirsts;
+                          const aSeconds = aResults.filter(r => r.placement === '2nd').length;
+                          const bSeconds = bResults.filter(r => r.placement === '2nd').length;
+                          return bSeconds - aSeconds;
+                        });
+                      const rankMap = new Map(ranked.map((t, i) => [t.id, i + 1]));
+
+                      return (competition.lineup || []).map((team, index) => {
+                        const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                        const fullTeam = teams.find(t => t.id === teamIdStr);
+                        const rank = rankMap.get(teamIdStr);
+                        return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                              {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
+                                  <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+                                  {(team.name || 'T').charAt(0)}
+                                </div>}
+                              <span className="font-medium text-sm truncate flex-1">
+                                {team.name || `Team ${team.id}`}
+                              </span>
+                              {rank && (
+                                <span className="ml-auto text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full px-2 py-0.5">
+                                  #{rank}
+                                </span>
+                              )}
+                            </div>;
+                      });
+                    })()}
                   </div>
                 </div>
               </div>
