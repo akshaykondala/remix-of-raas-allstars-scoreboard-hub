@@ -3,6 +3,7 @@ import { CompetitionDetail } from './CompetitionDetail';
 import { CompetitionTimeline } from './CompetitionTimeline';
 import { ChevronDown } from 'lucide-react';
 import { Competition, SimulationData, Team } from '../lib/types';
+import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 export interface CompetitionsTabProps {
   competitions: Competition[];
   onSimulationSet?: (competitionName: string, competitionId: string, predictions: {
@@ -702,9 +703,9 @@ export function CompetitionsTab({
               return new Date(a.date).getTime() - new Date(b.date).getTime();
             })}
             onCompetitionClick={competition => {
-              const { media, ...rest } = competition;
+              const mapped = mapCompetitionTeamsFull(competition, teams);
               setSelectedCompetition({
-                ...rest,
+                ...mapped,
                 media: { photos: [], videos: [] }
               });
             }}
