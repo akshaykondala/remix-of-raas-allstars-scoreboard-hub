@@ -1,13 +1,37 @@
 
-## Fix: Bid Points Not Matching Official Leaderboard
+
+## Fix: Bid Points Missing Because Not All Competitions Are Checked
 
 ### Root Cause
 
-There are **two** placement-matching locations that both fail because `competition.firstplace`/`secondplace`/`thirdplace` from Directus likely contain **team names** (e.g., "Texas Raas"), but the code compares them against `team.id` (a UUID like `"abc-123-..."`). The comparison always fails, so every team gets 0 points.
+The placement matching (comparing team names/IDs against `firstplace`/`secondplace`/`thirdplace`) **works correctly** -- Texas Raas getting 8 points proves this.
 
-Worse, the fix in `api.ts` takes priority: it pre-builds `competitionResults` on the team objects, and `Index.tsx` line 128 returns those pre-built results immediately -- so the Index.tsx matching logic never even runs.
+The real problem: the code only checks competitions listed in each team's `competitions_attending` junction table. If a team placed at a competition but isn't linked via that relationship, they get zero credit. UTD TaRaas likely competed at 3+ competitions earning 6 points, but only 1 of those competitions appears in its `competitions_attending` data.
 
-### Expected Result (Official Leaderboard)
+### The Fix
+
+Instead of building `competitionResults` from `team.competitions_attending`, build it from **ALL competitions** by checking every competition's `firstplace`/`secondplace`/`thirdplace` against the team.
+
+### Changes (2 files)
+
+**File 1: `src/lib/api.ts`** -- In `fetchTeams()`, replace the `competitionResults` builder (lines 89-132):
+
+- Instead of iterating `team.competitions_attending`, iterate the full `competitionsData` array (already fetched on line 41)
+- For each competition, check if `firstplace`/`secondplace`/`thirdplace` matches this team (by id or name)
+- Only include competitions where the team actually placed (skip N/A entries)
+- Keep the same running-total logic for cumulative bid points
+
+**File 2: `src/pages/Index.tsx`** -- In the team mapping (lines 127-166):
+
+- Same change: iterate `mappedCompetitions` (all competitions) instead of `team.competitions_attending`
+- Check each competition's placings against the current team
+- Remove the early return on line 128-130 that returns pre-built (incomplete) results from `api.ts`
+
+### Why This Fixes It
+
+A team like UTD TaRaas may have placed 2nd at three different competitions (earning 2+2+2 = 6), but only one of those was linked in `competitions_attending`. By scanning all competitions, every placement is captured and the sums will match the official leaderboard.
+
+### Expected Result
 
 | Points | Team |
 |--------|------|
@@ -27,51 +51,7 @@ Worse, the fix in `api.ts` takes priority: it pre-builds `competitionResults` on
 | 1 | UF GatoRaas |
 | 1 | Michigan Wolveraas |
 
-### Fix (2 files)
-
-**File 1: `src/lib/api.ts` (lines 102-110)**
-
-Add name-based matching alongside ID matching for all three placements:
-
-```ts
-if (competition.firstplace === team.id || competition.firstplace === team.name) {
-  placement = '1st';
-  pointsEarned = 4;
-} else if (competition.secondplace === team.id || competition.secondplace === team.name) {
-  placement = '2nd';
-  pointsEarned = 2;
-} else if (competition.thirdplace === team.id || competition.thirdplace === team.name) {
-  placement = '3rd';
-  pointsEarned = 1;
-}
-```
-
-This is the primary fix since `api.ts` is the first code that builds `competitionResults`.
-
-**File 2: `src/pages/Index.tsx` (lines 140-148)**
-
-Apply the same fix as a safety net for the secondary mapping path:
-
-```ts
-const teamId = String(team.id);
-const teamName = team.name;
-
-if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
-  placement = '1st';
-  pointsEarned = 4;
-} else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
-  placement = '2nd';
-  pointsEarned = 2;
-} else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
-  placement = '3rd';
-  pointsEarned = 1;
-}
-```
-
-### Why This Will Match the Official Leaderboard
-
-The calculation logic (1st = +4, 2nd = +2, 3rd = +1, summed across all competitions) is already correct. The only problem was that the placement comparisons always returned false because they compared UUIDs to team names. Once the matching works, the sums will produce the correct totals.
-
 ### No other changes needed
 
-The tiebreaker sort, podium rendering, standings display, and cumulative tracking are all already implemented correctly -- they just never received non-zero values.
+The tiebreaker sort, podium rendering, standings display, simulation overlay, and cumulative tracking all remain the same -- they just need correct input data.
+
