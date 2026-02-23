@@ -240,15 +240,50 @@ export function CompetitionDetail({
           <DrawerHeader className={`relative p-6 pb-4 pt-[28px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
             <div className="flex flex-col items-center text-center space-y-4">
-              {/* Large Competition Logo */}
+              {/* Large Competition Logo with entrance animation */}
               <div className="relative">
-                <div className={`absolute inset-0 rounded-3xl blur-xl ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/20' : 'bg-gradient-to-br from-purple-500/20 to-blue-500/20'}`}></div>
-                {competition.logo ? <div className={`relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 ${isLive ? 'border-red-400/50' : 'border-white/20'}`}>
-                    <img src={competition.logo} alt={competition.name} className="w-full h-full object-cover" />
-                  </div> : <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 ${isLive ? 'bg-gradient-to-br from-red-500 to-orange-600 border-red-400/50' : 'bg-gradient-to-br from-purple-500 to-blue-600 border-white/20'}`}>
-                    <Trophy className="h-10 w-10 text-white" />
-                  </div>}
+                {/* Glow ring that spins once on open */}
+                <div 
+                  className="absolute -inset-3 rounded-3xl opacity-0"
+                  style={{
+                    background: competition.ras 
+                      ? 'conic-gradient(from 0deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)'
+                      : isLive 
+                        ? 'conic-gradient(from 0deg, #ef4444, #f97316, #ef4444)' 
+                        : 'conic-gradient(from 0deg, #a855f7, #3b82f6, #a855f7)',
+                    animation: 'logo-glow-spin 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+                    filter: 'blur(12px)',
+                  }}
+                />
+                <div 
+                  className="relative"
+                  style={{
+                    animation: 'logo-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                    opacity: 0,
+                    transform: 'scale(0.5)',
+                  }}
+                >
+                  <div className={`absolute inset-0 rounded-3xl blur-xl ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/20' : competition.ras ? 'bg-gradient-to-br from-amber-500/30 to-purple-500/20' : 'bg-gradient-to-br from-purple-500/20 to-blue-500/20'}`}></div>
+                  {competition.logo ? <div className={`relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 ${isLive ? 'border-red-400/50' : competition.ras ? 'border-amber-400/50' : 'border-white/20'}`}>
+                      <img src={competition.logo} alt={competition.name} className="w-full h-full object-cover" />
+                    </div> : <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 ${isLive ? 'bg-gradient-to-br from-red-500 to-orange-600 border-red-400/50' : competition.ras ? 'bg-gradient-to-br from-amber-400 to-purple-600 border-amber-400/50' : 'bg-gradient-to-br from-purple-500 to-blue-600 border-white/20'}`}>
+                      <Trophy className="h-10 w-10 text-white" />
+                    </div>}
+                </div>
               </div>
+              {/* Inline keyframes for logo animation */}
+              <style>{`
+                @keyframes logo-entrance {
+                  0% { opacity: 0; transform: scale(0.5); }
+                  60% { opacity: 1; transform: scale(1.08); }
+                  100% { opacity: 1; transform: scale(1); }
+                }
+                @keyframes logo-glow-spin {
+                  0% { opacity: 0; transform: rotate(0deg) scale(0.8); }
+                  30% { opacity: 0.7; }
+                  100% { opacity: 0; transform: rotate(360deg) scale(1.1); }
+                }
+              `}</style>
               
               {/* Competition Name & Info */}
               <div className="space-y-1">
