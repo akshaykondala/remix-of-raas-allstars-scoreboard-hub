@@ -482,7 +482,7 @@ export function CompetitionDetail({
             </h3>
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
               <div className="grid gap-2">
-                {(competition.judges || []).sort((a, b) => a.category.localeCompare(b.category)).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
+                {(competition.judges || []).filter(j => j && j.name).sort((a, b) => (a.category || '').localeCompare(b.category || '')).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
                     <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
                       <Eye className="h-3.5 w-3.5 text-purple-400" />
                     </div>
