@@ -55,6 +55,7 @@ export interface Competition {
   showTicketsLink?: string;
   afterpartyTicketsLink?: string;
   livestreamLink?: string;
+  videoLink?: string;
   bid_status: boolean;
   media: {
     photos: string[];
