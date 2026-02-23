@@ -57,6 +57,7 @@ export interface Competition {
   livestreamLink?: string;
   videoLink?: string;
   bid_status: boolean;
+  ras?: boolean;
   media: {
     photos: string[];
     videos: string[];

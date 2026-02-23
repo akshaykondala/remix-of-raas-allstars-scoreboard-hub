@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Star, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { Competition } from '@/lib/types';
 import { isCurrentlyLive } from '@/lib/utils';
 interface CompetitionTimelineProps {
@@ -147,6 +147,7 @@ export function CompetitionTimeline({
               {weekendGroups.map((group, index) => {
               const isActive = index === activeWeekIndex;
               const compCount = group.competitions.length;
+              const isRASWeekend = group.competitions.some(c => c.ras);
               return <button key={`${group.day}-${group.month}-${group.year}`} ref={el => {
                 dotRefs.current[index] = el;
               }} onClick={e => {
@@ -154,32 +155,56 @@ export function CompetitionTimeline({
                 setActiveWeekIndex(index);
               }} className="relative flex flex-col items-center transition-all duration-300 focus:outline-none group">
                     {/* Date label */}
-                    <span className={`text-xs font-bold transition-all duration-300 mb-3 whitespace-nowrap ${isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                    <span className={`text-xs font-bold transition-all duration-300 mb-3 whitespace-nowrap ${isRASWeekend ? 'text-amber-400 scale-110' : isActive ? 'text-primary scale-110' : 'text-muted-foreground group-hover:text-foreground'}`}>
                       {group.monthShort} {group.day}
                     </span>
                     
                     {/* Weekend dot container */}
                     <div className="relative">
-                      {/* Outer glow for active */}
-                      {isActive && <>
-                          <div className="absolute inset-0 w-6 h-6 -m-1 rounded-full bg-primary/40 animate-pulse" />
-                          <div className="absolute inset-0 w-8 h-8 -m-2 rounded-full bg-primary/20 animate-pulse" style={{
-                      animationDelay: '150ms'
-                    }} />
-                        </>}
-                      
-                      {/* Main weekend dot */}
-                      <div className={`relative w-4 h-4 rounded-full transition-all duration-300 ${isActive ? 'bg-primary shadow-lg shadow-primary/60 ring-2 ring-primary/30 ring-offset-2 ring-offset-background scale-125' : 'bg-muted-foreground/40 group-hover:bg-primary/60 group-hover:shadow-md group-hover:shadow-primary/30'}`}>
-                        <div className={`absolute inset-0.5 rounded-full bg-gradient-to-br from-white/40 to-transparent ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} transition-opacity duration-300`} />
-                      </div>
+                      {/* RAS Nationals dot */}
+                      {isRASWeekend ? (
+                        <>
+                          {/* Animated pulse rings */}
+                          <div className="absolute inset-0 w-8 h-8 -m-2 rotate-45 rounded-sm animate-ras-pulse-ring"
+                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899)', backgroundSize: '200% 200%' }} />
+                          <div className="absolute inset-0 w-8 h-8 -m-2 rotate-45 rounded-sm animate-ras-pulse-ring"
+                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899)', backgroundSize: '200% 200%', animationDelay: '0.7s' }} />
+                          {/* Holographic glow ring */}
+                          <div className="absolute inset-0 w-7 h-7 -m-1.5 rotate-45 rounded-sm animate-ras-glow"
+                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)', backgroundSize: '300% 300%', opacity: 0.7 }} />
+                          {/* Diamond dot */}
+                          <div className="relative w-5 h-5 rotate-45 rounded-sm bg-gradient-to-br from-amber-400 via-purple-500 to-cyan-400 shadow-lg shadow-amber-500/50 ring-2 ring-amber-300/50 ring-offset-2 ring-offset-background flex items-center justify-center"
+                            style={{ backgroundSize: '200% 200%' }}>
+                            <Crown className="w-3 h-3 -rotate-45 text-white drop-shadow-md" />
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* Outer glow for active */}
+                          {isActive && <>
+                              <div className="absolute inset-0 w-6 h-6 -m-1 rounded-full bg-primary/40 animate-pulse" />
+                              <div className="absolute inset-0 w-8 h-8 -m-2 rounded-full bg-primary/20 animate-pulse" style={{
+                          animationDelay: '150ms'
+                        }} />
+                            </>}
+                          {/* Main weekend dot */}
+                          <div className={`relative w-4 h-4 rounded-full transition-all duration-300 ${isActive ? 'bg-primary shadow-lg shadow-primary/60 ring-2 ring-primary/30 ring-offset-2 ring-offset-background scale-125' : 'bg-muted-foreground/40 group-hover:bg-primary/60 group-hover:shadow-md group-hover:shadow-primary/30'}`}>
+                            <div className={`absolute inset-0.5 rounded-full bg-gradient-to-br from-white/40 to-transparent ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'} transition-opacity duration-300`} />
+                          </div>
+                        </>
+                      )}
                     </div>
                     
-                    {/* Competition count dots */}
-                    <div className={`mt-4 flex gap-1 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-70'}`}>
-                      {Array.from({
-                    length: compCount
-                  }).map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isActive ? 'bg-primary shadow-sm shadow-primary/50' : 'bg-muted-foreground/50 group-hover:bg-primary/50'}`} />)}
-                    </div>
+                    {/* RAS micro-label or competition count dots */}
+                    {isRASWeekend ? (
+                      <span className="mt-3 text-[10px] font-black tracking-widest bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        RAS
+                      </span>
+                    ) : (
+                      <div className={`mt-4 flex gap-1 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-40 group-hover:opacity-70'}`}>
+                        {Array.from({ length: compCount }).map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${isActive ? 'bg-primary shadow-sm shadow-primary/50' : 'bg-muted-foreground/50 group-hover:bg-primary/50'}`} />)}
+                      </div>
+                    )}
                   </button>;
             })}
             </div>
@@ -215,7 +240,27 @@ function TimelineCompetitionCard({
 }: TimelineCompetitionCardProps) {
   const isBid = competition.bid_status;
   const isLive = isCurrentlyLive(competition.date, competition.time);
+  const isRAS = competition.ras === true;
   
+  // RAS takes highest priority
+  const cardBorderClass = isRAS
+    ? 'border-2 border-transparent bg-clip-padding'
+    : isLive
+      ? 'border-2 border-red-500/60 shadow-red-500/20 hover:shadow-red-500/35 hover:border-red-400/80'
+      : isBid 
+        ? 'border-2 border-transparent bg-clip-padding shadow-amber-500/10 hover:shadow-amber-500/25' 
+        : 'border border-primary/30 shadow-primary/5 hover:shadow-primary/20 hover:border-primary/50';
+
+  const cardStyle = isRAS
+    ? {
+        background: 'linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--card) / 0.95)) padding-box, linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24) border-box',
+        backgroundSize: '100% 100%, 300% 300%',
+        animation: 'ras-glow 3s ease infinite',
+      }
+    : (!isLive && isBid ? {
+        background: 'linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--card) / 0.95)) padding-box, linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b, #fbbf24) border-box'
+      } : undefined);
+
   return <div onClick={e => {
     e.stopPropagation();
     onClick();
@@ -226,32 +271,63 @@ function TimelineCompetitionCard({
         hover:-translate-y-1 hover:shadow-xl
         active:scale-[0.98]
         ${isPast ? 'opacity-60' : ''}
-        ${isLive
-          ? 'border-2 border-red-500/60 shadow-red-500/20 hover:shadow-red-500/35 hover:border-red-400/80'
-          : isBid 
-            ? 'border-2 border-transparent bg-clip-padding shadow-amber-500/10 hover:shadow-amber-500/25' 
-            : 'border border-primary/30 shadow-primary/5 hover:shadow-primary/20 hover:border-primary/50'
-        }
-      `} style={!isLive && isBid ? {
-        background: 'linear-gradient(to bottom right, hsl(var(--card)), hsl(var(--card) / 0.95)) padding-box, linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b, #fbbf24) border-box'
-      } : undefined}>
+        ${isRAS ? 'shadow-amber-500/20 hover:shadow-amber-500/40' : ''}
+        ${cardBorderClass}
+      `} style={cardStyle}>
     {/* Top accent bar */}
-    <div className={`absolute top-0 left-0 right-0 h-1 ${isLive ? 'bg-gradient-to-r from-red-400 via-red-500 to-orange-500' : isBid ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500' : 'bg-gradient-to-r from-primary via-primary/80 to-primary/50'}`} />
+    <div className={`absolute top-0 left-0 right-0 ${isRAS ? 'h-1.5' : 'h-1'} ${
+      isRAS ? '' 
+        : isLive ? 'bg-gradient-to-r from-red-400 via-red-500 to-orange-500' 
+        : isBid ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500' 
+        : 'bg-gradient-to-r from-primary via-primary/80 to-primary/50'
+    }`} style={isRAS ? {
+      background: 'linear-gradient(90deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)',
+      backgroundSize: '300% 100%',
+      animation: 'ras-glow 3s ease infinite',
+    } : undefined} />
     
     {/* Background glow */}
-    <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isLive ? 'bg-red-500/20' : isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
-    <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isLive ? 'bg-orange-500/15' : isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
+    {isRAS ? (
+      <>
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl bg-amber-500/20" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full blur-3xl bg-purple-500/20" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full blur-2xl bg-cyan-500/15" />
+      </>
+    ) : (
+      <>
+        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isLive ? 'bg-red-500/20' : isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
+        <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isLive ? 'bg-orange-500/15' : isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
+      </>
+    )}
 
+    {/* NATIONALS badge */}
+    {isRAS && (
+      <div className="absolute top-2.5 right-3 z-10">
+        <span className="text-[9px] font-black tracking-[0.2em] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 text-white shadow-lg shadow-amber-500/30 uppercase">
+          Nationals
+        </span>
+      </div>
+    )}
 
     {/* Content */}
     <div className="relative p-4">
       <div className="flex items-center gap-3">
         {/* Logo with ring */}
         <div className="relative flex-shrink-0">
-          {competition.logo ? <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${isLive ? 'ring-red-500/50 group-hover:ring-red-400/70' : isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' : 'ring-primary/40 group-hover:ring-primary/60'}`}>
+          {competition.logo ? <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden ring-2 shadow-md transition-all duration-300 ${
+            isRAS ? 'ring-amber-400/60 group-hover:ring-amber-300/80 shadow-amber-500/30'
+              : isLive ? 'ring-red-500/50 group-hover:ring-red-400/70' 
+              : isBid ? 'ring-amber-500/50 group-hover:ring-amber-400/70' 
+              : 'ring-primary/40 group-hover:ring-primary/60'
+          }`}>
               <img src={competition.logo} alt={`${competition.name} logo`} className="w-full h-full object-cover" loading="lazy" />
-            </div> : <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ring-2 shadow-md ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/10 ring-red-500/50' : isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'}`}>
-              <span className={`text-lg sm:text-xl font-bold ${isLive ? 'text-red-400' : isBid ? 'text-amber-400' : 'text-primary'}`}>
+            </div> : <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ring-2 shadow-md ${
+              isRAS ? 'bg-gradient-to-br from-amber-500/30 via-purple-500/20 to-cyan-500/10 ring-amber-400/60'
+                : isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/10 ring-red-500/50' 
+                : isBid ? 'bg-gradient-to-br from-amber-500/30 to-orange-500/10 ring-amber-500/50' 
+                : 'bg-gradient-to-br from-primary/30 to-primary/10 ring-primary/40'
+            }`}>
+              <span className={`text-lg sm:text-xl font-bold ${isRAS ? 'text-amber-400' : isLive ? 'text-red-400' : isBid ? 'text-amber-400' : 'text-primary'}`}>
                 {competition.name.charAt(0)}
               </span>
             </div>}
@@ -259,11 +335,16 @@ function TimelineCompetitionCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className={`font-bold text-sm sm:text-base line-clamp-1 transition-colors duration-300 ${isLive ? 'text-foreground group-hover:text-red-400' : isBid ? 'text-foreground group-hover:text-amber-400' : 'text-foreground group-hover:text-primary'}`}>
+          <h3 className={`font-bold text-sm sm:text-base line-clamp-1 transition-colors duration-300 ${
+            isRAS ? 'text-foreground group-hover:text-amber-400'
+              : isLive ? 'text-foreground group-hover:text-red-400' 
+              : isBid ? 'text-foreground group-hover:text-amber-400' 
+              : 'text-foreground group-hover:text-primary'
+          }`}>
             {competition.name}
           </h3>
           <div className="flex items-center gap-1.5 mt-1">
-            <MapPin className={`h-3 w-3 flex-shrink-0 ${isLive ? 'text-red-500' : isBid ? 'text-amber-500' : 'text-primary'}`} />
+            <MapPin className={`h-3 w-3 flex-shrink-0 ${isRAS ? 'text-amber-500' : isLive ? 'text-red-500' : isBid ? 'text-amber-500' : 'text-primary'}`} />
             <span className="text-xs sm:text-sm text-muted-foreground truncate">{competition.city}</span>
           </div>
         </div>
@@ -271,6 +352,15 @@ function TimelineCompetitionCard({
     </div>
 
     {/* Shine effect on hover */}
-    <div className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none ${isLive ? 'via-red-200/10' : isBid ? 'via-amber-200/15' : 'via-white/10'}`} />
+    <div className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none ${
+      isRAS ? 'via-amber-200/20' : isLive ? 'via-red-200/10' : isBid ? 'via-amber-200/15' : 'via-white/10'
+    }`} />
+
+    {/* Extra RAS shimmer sweep */}
+    {isRAS && (
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-full w-1/3 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-ras-shimmer" />
+      </div>
+    )}
   </div>;
 }
