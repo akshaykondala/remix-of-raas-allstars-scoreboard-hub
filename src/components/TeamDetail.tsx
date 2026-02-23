@@ -146,7 +146,7 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                   </div>
                   <span className="text-purple-200/80 text-sm font-medium">Competitions This Season</span>
                 </div>
-                <div className="text-xl font-bold text-white">{team.competitions_attending?.length || 0}</div>
+                <div className="text-xl font-bold text-white">{team.competitionResults?.length || 0}</div>
               </div>
             </div>
           </div>
