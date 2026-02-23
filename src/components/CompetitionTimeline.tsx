@@ -148,6 +148,7 @@ export function CompetitionTimeline({
               const isActive = index === activeWeekIndex;
               const compCount = group.competitions.length;
               const isRASWeekend = group.competitions.some(c => c.ras);
+              const rasLogo = isRASWeekend ? group.competitions.find(c => c.ras)?.logo : undefined;
               return <button key={`${group.day}-${group.month}-${group.year}`} ref={el => {
                 dotRefs.current[index] = el;
               }} onClick={e => {
@@ -164,18 +165,16 @@ export function CompetitionTimeline({
                       {/* RAS Nationals dot */}
                       {isRASWeekend ? (
                         <>
-                          {/* Animated pulse rings */}
-                          <div className="absolute inset-0 w-8 h-8 -m-2 rotate-45 rounded-sm animate-ras-pulse-ring"
-                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899)', backgroundSize: '200% 200%' }} />
-                          <div className="absolute inset-0 w-8 h-8 -m-2 rotate-45 rounded-sm animate-ras-pulse-ring"
-                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899)', backgroundSize: '200% 200%', animationDelay: '0.7s' }} />
-                          {/* Holographic glow ring */}
-                          <div className="absolute inset-0 w-7 h-7 -m-1.5 rotate-45 rounded-sm animate-ras-glow"
-                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)', backgroundSize: '300% 300%', opacity: 0.7 }} />
-                          {/* Diamond dot */}
-                          <div className="relative w-5 h-5 rotate-45 rounded-sm bg-gradient-to-br from-amber-400 via-purple-500 to-cyan-400 shadow-lg shadow-amber-500/50 ring-2 ring-amber-300/50 ring-offset-2 ring-offset-background flex items-center justify-center"
-                            style={{ backgroundSize: '200% 200%' }}>
-                            <Crown className="w-3 h-3 -rotate-45 text-white drop-shadow-md" />
+                          {/* Subtle holographic glow behind logo */}
+                          <div className="absolute inset-0 w-7 h-7 -m-1.5 rounded-full blur-sm animate-ras-glow"
+                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)', backgroundSize: '300% 300%', opacity: 0.3 }} />
+                          {/* RAS logo as dot */}
+                          <div className="relative w-5 h-5 rounded-full overflow-hidden ring-1 ring-amber-400/40 shadow-md shadow-amber-500/30">
+                            {rasLogo ? (
+                              <img src={rasLogo} alt="RAS" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-amber-400 via-purple-500 to-cyan-400" />
+                            )}
                           </div>
                         </>
                       ) : (
