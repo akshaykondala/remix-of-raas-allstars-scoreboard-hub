@@ -1,44 +1,54 @@
 
 
-## Fix: Season Journey Empty for Non-Placing Teams
+## Fix: Duplicate Competition Results Logic in Index.tsx Missing the Fix
 
 ### Root Cause
 
-The `competitionResults` builder in `src/lib/api.ts` has two checks:
-1. Did the team place 1st/2nd/3rd? (checks competition's `firstplace`/`secondplace`/`thirdplace` fields)
-2. Is the team in the competition's `lineup` array? (checks `competition.lineup` junction table)
+The previous fixes were applied to `src/lib/api.ts`, but `src/pages/Index.tsx` has its **own separate, duplicate** competition results builder (lines 128-162) that was never updated. This is the code path that runs when you view teams from the main page.
 
-**The problem:** There's a third data source being ignored -- the team's own `competitions_attending` field. In Directus, `competitions_attending` is a separate M2M relationship on the team side. A team can be listed as attending a competition through `competitions_attending` without necessarily appearing in that competition's `lineup`. These two junction tables may not always be in sync.
+Specifically, **line 149 of Index.tsx** still has:
+```
+if (placement === 'N/A') return null;
+```
 
-So for teams that didn't place AND aren't in the `lineup`, the code returns `null` and filters them out -- even though the team's own data says they attended.
+...with NO lineup or `competitions_attending` check. So any team that didn't place 1st/2nd/3rd gets all their competitions filtered out, resulting in 0 competitions and an empty Season Journey.
 
 ### Fix
 
-**File: `src/lib/api.ts` (lines ~110-118)**
+**File: `src/pages/Index.tsx` (lines ~148-149)**
 
-Add a third fallback check inside the `if (placement === 'N/A')` block: after checking `competition.lineup`, also check whether the competition's ID appears in `team.competitions_attending` (the raw Directus junction data, before it's mapped to names).
-
-Updated logic:
+Replace the simple `return null` with the same dual-check logic that exists in `api.ts`:
 
 ```
 if (placement === 'N/A') {
-  // Check 1: Is team in competition's lineup?
-  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some(...);
-  
+  // Check 1: Is team in the competition's lineup?
+  const teamId = String(team.id);
+  const teamName = team.name;
+  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry) => {
+    const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
+    return String(entryTeamId) === teamId ||
+           (entry?.teams_id?.name && entry.teams_id.name === teamName);
+  });
+
   // Check 2: Is competition in team's competitions_attending?
-  const inAttending = Array.isArray(team.competitions_attending) && 
+  const inAttending = Array.isArray(team.competitions_attending) &&
     team.competitions_attending.some((compObj) => {
-      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj;
+      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj?.id ?? compObj;
       return String(compId) === String(competition.id);
     });
-    
+
   if (!inLineup && !inAttending) return null;
   placement = 'Competed';
 }
 ```
 
-This ensures that if either the competition knows about the team (lineup) OR the team knows about the competition (competitions_attending), the competition shows up in their Season Journey.
+Note: In Index.tsx, `team` at this point is the already-fetched team from `fetchTeams()`, so `team.competitions_attending` contains mapped name strings. The `inAttending` check needs to also handle comparing competition names (not just IDs). We'll add a name comparison fallback:
+```
+return String(compId) === String(competition.id) || compId === competition.name;
+```
+
+And `competition.lineup` here uses the raw lineup from Directus (line 99: `lineup: comp.lineup || []`), so the junction-table-style check will work correctly.
 
 ### Files Modified
-- `src/lib/api.ts` -- add `competitions_attending` check as fallback in competitionResults builder
+- `src/pages/Index.tsx` -- apply the same lineup + attending check that was already applied to `api.ts`
 
