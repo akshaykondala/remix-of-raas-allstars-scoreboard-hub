@@ -1,51 +1,51 @@
 
 
-## Embed Instagram Reel in Competition Detail
+## App Store Compliance Checklist and Fixes
 
-Replace the competition content area with an embedded Instagram Reel (instead of YouTube) when a video link is available. Instagram Reels naturally autoplay and loop within their embed, which is exactly what you want.
+### Issues to Address
 
-### What Changes
+**1. Install `@capacitor/ios`**
+Add the iOS platform package so you can build for iPhone/iPad.
 
-**File: `src/components/CompetitionDetail.tsx`**
-
-1. **Add an Instagram Reel embed helper** near the top of the file -- a function `getInstagramEmbedUrl(url)` that:
-   - Takes a URL like `https://www.instagram.com/reel/ABC123/` or `https://www.instagram.com/p/ABC123/`
-   - Extracts the post/reel code
-   - Returns `https://www.instagram.com/reel/ABC123/embed/`
-   - Returns `null` if the URL isn't an Instagram link
-
-2. **Modify the content conditional** (around line 446): Add a check before the existing RAS/normal fallback:
-   - Look at `competition.videoLink` or `competition.livestreamLink`
-   - If it's a valid Instagram URL, render an embedded `<iframe>` pointing to the reel embed URL
-   - If not, fall through to existing behavior (RAS city/date fallback or normal lineup/judges view)
-
-3. **The iframe** will be styled with:
-   - Fixed aspect ratio suited for vertical Reels (roughly 9:16)
-   - Max width constrained so it looks good on the page
-   - Rounded corners, centered layout
-   - Instagram Reels auto-play and loop natively in their embed -- no extra parameters needed
-
-### Layout
-
-```text
-  +----------------------------+
-  |  Header (logo, name,       |
-  |  time, tickets)            |
-  +----------------------------+
-  |      +----------------+    |
-  |      |                |    |
-  |      |  Instagram     |    |
-  |      |  Reel Embed    |    |
-  |      |  (9:16 ratio)  |    |
-  |      |                |    |
-  |      +----------------+    |
-  +----------------------------+
+**2. Remove debug script from `index.html`**
+The `gptengineer.js` script loaded from `cdn.gpteng.co` must be removed for production builds. Apple reviews will flag external debug scripts. This line needs to go:
+```
+<script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
 ```
 
-### How to Use
+**3. Move `@capacitor/cli` to devDependencies**
+It's a build tool, not a runtime dependency. Moving it keeps the production bundle cleaner.
 
-Add the Instagram Reel URL to the `videolink` field in Directus for the competition (e.g., `https://www.instagram.com/reel/ABC123/`). The app will detect it's an Instagram link and embed it automatically.
+**4. Add App Transport Security exception for Directus API**
+Your app calls an external Directus API over HTTPS. This should work fine with ATS, but if your Directus instance ever uses a non-standard cert, you'd need an exception in `Info.plist`. For now, just confirm your Directus URL is HTTPS.
+
+**5. App icons and splash screens (manual step)**
+After exporting to GitHub and running `npx cap add ios`, you'll need to:
+- Add a 1024x1024 app icon to the Xcode asset catalog
+- Configure launch/splash screen in Xcode
+- Apple requires these for submission
+
+**6. Privacy policy**
+Apple requires a privacy policy URL when submitting. You'll need to:
+- Host a privacy policy page (could be a simple route in the app or an external URL)
+- Provide it during App Store Connect submission
+
+**7. Remove `console.error` in NotFound page**
+Minor cleanup -- the only remaining console statement. Production apps should not log to console.
 
 ### Files Modified
-- `src/components/CompetitionDetail.tsx` -- add Instagram URL parser + conditional reel embed
+- `index.html` -- remove the gptengineer.js script tag
+- `package.json` -- move `@capacitor/cli` to devDependencies, add `@capacitor/ios`
+- `src/pages/NotFound.tsx` -- remove console.error call
+- `capacitor.config.ts` -- no changes needed (already configured correctly)
+
+### Manual Steps (outside Lovable)
+- Export project to GitHub, clone locally
+- Run `npm install`, then `npx cap add ios`
+- Add app icons in Xcode (Assets.xcassets)
+- Configure splash screen in Xcode
+- Create and host a privacy policy
+- Submit via App Store Connect with your Apple Developer account ($99/year)
+
+For a detailed walkthrough of the Capacitor deployment process, check out the Lovable blog post on native mobile app deployment.
 
