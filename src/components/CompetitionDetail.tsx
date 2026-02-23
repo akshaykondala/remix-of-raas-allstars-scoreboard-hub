@@ -3,6 +3,13 @@ import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDo
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
+
+function getInstagramEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const match = url.match(/instagram\.com\/(?:reel|p)\/([\w-]+)/);
+  if (!match) return null;
+  return `https://www.instagram.com/reel/${match[1]}/embed/`;
+}
 interface CompetitionDetailProps {
   competition: Competition;
   onClose: () => void;
@@ -443,29 +450,51 @@ export function CompetitionDetail({
             </div>
           </div>
 
-          {competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0 ? (
-            /* RAS competition with no judges — show elegant city + date */
-            <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
-              <div className="flex items-center gap-4 text-amber-400/60">
-                <span className="text-lg tracking-[0.3em]">──</span>
-                <span className="text-xl font-semibold tracking-wide text-amber-400">{competition.city}</span>
-                <span className="text-lg tracking-[0.3em]">──</span>
-              </div>
-              <span className="text-base text-amber-400/40 font-medium tracking-wider">
-                {competition.date ? (() => {
-                  const [y, m, d] = competition.date.split('-').map(Number);
-                  const date = new Date(y, m - 1, d);
-                  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                })() : ''}
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Lineup Section */}
-              <div className="px-4 pb-4">
-                <h3 className="text-base font-bold text-white mb-3 flex items-center">
-                  <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
-                    <Users className="h-3.5 w-3.5 text-purple-400" />
+          {(() => {
+            const igUrl = getInstagramEmbedUrl(competition.videoLink) || getInstagramEmbedUrl(competition.livestreamLink);
+            if (igUrl) {
+              return (
+                <div className="flex justify-center px-4 pb-6">
+                  <div className="w-full max-w-[400px] rounded-2xl overflow-hidden border border-slate-600/40">
+                    <iframe
+                      src={igUrl}
+                      className="w-full border-0"
+                      style={{ aspectRatio: '9/16', minHeight: '600px' }}
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
+                      title="Instagram Reel"
+                    />
+                  </div>
+                </div>
+              );
+            }
+
+            if (competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
+                  <div className="flex items-center gap-4 text-amber-400/60">
+                    <span className="text-lg tracking-[0.3em]">──</span>
+                    <span className="text-xl font-semibold tracking-wide text-amber-400">{competition.city}</span>
+                    <span className="text-lg tracking-[0.3em]">──</span>
+                  </div>
+                  <span className="text-base text-amber-400/40 font-medium tracking-wider">
+                    {competition.date ? (() => {
+                      const [y, m, d] = competition.date.split('-').map(Number);
+                      const date = new Date(y, m - 1, d);
+                      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                    })() : ''}
+                  </span>
+                </div>
+              );
+            }
+
+            return (
+              <>
+                {/* Lineup Section */}
+                <div className="px-4 pb-4">
+                  <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                    <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
+                      <Users className="h-3.5 w-3.5 text-purple-400" />
                   </div>
                   Competition Lineup
                 </h3>
@@ -581,8 +610,9 @@ export function CompetitionDetail({
                     <ExternalLink className="h-3.5 w-3.5 text-pink-400/60" />
                   </a>
                 </div>}
-            </>
-          )}
+              </>
+            );
+          })()}
           
           {/* Bottom padding for safe area */}
           <div className="pb-20"></div>
