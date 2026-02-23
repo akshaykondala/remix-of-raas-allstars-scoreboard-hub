@@ -146,7 +146,22 @@ const Index = () => {
                   pointsEarned = 1;
                 }
                 
-                if (placement === 'N/A') return null;
+                if (placement === 'N/A') {
+                  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry: any) => {
+                    const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
+                    return String(entryTeamId) === teamId ||
+                           (entry?.teams_id?.name && entry.teams_id.name === teamName);
+                  });
+
+                  const inAttending = Array.isArray(team.competitions_attending) &&
+                    team.competitions_attending.some((compObj: any) => {
+                      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj?.id ?? compObj;
+                      return String(compId) === String(competition.id) || compId === competition.name;
+                    });
+
+                  if (!inLineup && !inAttending) return null;
+                  placement = 'Competed';
+                }
                 
                 return {
                   competitionId: competition.id,
