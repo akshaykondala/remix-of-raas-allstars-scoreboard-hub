@@ -196,7 +196,7 @@ export function CompetitionTimeline({
                     
                     {/* RAS micro-label or competition count dots */}
                     {isRASWeekend ? (
-                      <span className="mt-3 text-[10px] font-black tracking-widest bg-gradient-to-r from-amber-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                      <span className="mt-3 text-[10px] font-black tracking-widest text-amber-400">
                         RAS
                       </span>
                     ) : (
