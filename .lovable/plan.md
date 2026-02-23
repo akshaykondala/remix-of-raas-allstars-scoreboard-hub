@@ -1,57 +1,48 @@
 
 
-## Fix: Bid Points Missing Because Not All Competitions Are Checked
+## Add "Raas All Stars" (Nationals) Special Treatment
 
-### Root Cause
+### Overview
+Add a `ras` boolean field to competitions. When enabled, that competition is Nationals (Raas All Stars). The timeline dot and competition card will get a premium, standout visual treatment -- distinct from regular, bid, and live competitions.
 
-The placement matching (comparing team names/IDs against `firstplace`/`secondplace`/`thirdplace`) **works correctly** -- Texas Raas getting 8 points proves this.
+### Changes
 
-The real problem: the code only checks competitions listed in each team's `competitions_attending` junction table. If a team placed at a competition but isn't linked via that relationship, they get zero credit. UTD TaRaas likely competed at 3+ competitions earning 6 points, but only 1 of those competitions appears in its `competitions_attending` data.
+**1. Type Update (`src/lib/types.ts`)**
+- Add `ras?: boolean` to the `Competition` interface
 
-### The Fix
+**2. API Update (`src/lib/api.ts`)**
+- Map the `ras` field from Directus data onto the competition object
 
-Instead of building `competitionResults` from `team.competitions_attending`, build it from **ALL competitions** by checking every competition's `firstplace`/`secondplace`/`thirdplace` against the team.
+**3. Timeline Dot -- Nationals Treatment (`src/components/CompetitionTimeline.tsx`)**
 
-### Changes (2 files)
+When a weekend group contains a `ras: true` competition, the timeline dot gets a unique nationals style:
+- Diamond/star-shaped dot instead of a circle (rotated square with a crown/trophy icon)
+- Animated rainbow/holographic gradient glow ring (cycling through gold, cyan, magenta, purple)
+- "RAS" micro-label beneath the date
+- Larger dot size than regular weekends
+- Multi-layered animated pulse rings when active
 
-**File 1: `src/lib/api.ts`** -- In `fetchTeams()`, replace the `competitionResults` builder (lines 89-132):
+**4. Competition Card -- Nationals Treatment (`src/components/CompetitionTimeline.tsx`)**
 
-- Instead of iterating `team.competitions_attending`, iterate the full `competitionsData` array (already fetched on line 41)
-- For each competition, check if `firstplace`/`secondplace`/`thirdplace` matches this team (by id or name)
-- Only include competitions where the team actually placed (skip N/A entries)
-- Keep the same running-total logic for cumulative bid points
+The `TimelineCompetitionCard` will detect `competition.ras` and apply a premium card style:
+- Animated gradient border cycling through gold/purple/cyan (holographic shimmer effect)
+- Thicker top accent bar with a multi-color gradient
+- Larger background glow orbs with richer colors
+- A small "NATIONALS" badge/chip in the top-right corner
+- Enhanced shine sweep on hover
+- The card content layout stays the same (logo, name, city)
 
-**File 2: `src/pages/Index.tsx`** -- In the team mapping (lines 127-166):
+### Technical Details
 
-- Same change: iterate `mappedCompetitions` (all competitions) instead of `team.competitions_attending`
-- Check each competition's placings against the current team
-- Remove the early return on line 128-130 that returns pre-built (incomplete) results from `api.ts`
+- The `ras` check is a simple boolean: `const isRAS = competition.ras === true`
+- In the timeline dot section, check `group.competitions.some(c => c.ras)` to determine if a weekend is nationals
+- RAS styling takes highest priority: RAS > Live > Bid > Regular
+- CSS animations for the holographic border use inline `@keyframes` via style props or Tailwind's `animate-` utilities with custom keyframes added to `tailwind.config.ts`
+- A new `ras-glow` keyframe will be added to `tailwind.config.ts` for the cycling gradient animation
 
-### Why This Fixes It
-
-A team like UTD TaRaas may have placed 2nd at three different competitions (earning 2+2+2 = 6), but only one of those was linked in `competitions_attending`. By scanning all competitions, every placement is captured and the sums will match the official leaderboard.
-
-### Expected Result
-
-| Points | Team |
-|--------|------|
-| 8 | Texas Raas |
-| 6 | UTD TaRaas |
-| 6 | Northeastern NakhRAAS |
-| 6 | Purdue Raas |
-| 6 | GT Ramblin' Raas |
-| 5 | CMU Raasta |
-| 4 | UCF KnightRaas |
-| 3 | UConn ThundeRaas |
-| 3 | UVA HooRaas |
-| 2 | RU Raga |
-| 2 | TAMU Wreckin' Raas |
-| 2 | Cornell Big Red Raas |
-| 1 | UMD EntouRaas |
-| 1 | UF GatoRaas |
-| 1 | Michigan Wolveraas |
-
-### No other changes needed
-
-The tiebreaker sort, podium rendering, standings display, simulation overlay, and cumulative tracking all remain the same -- they just need correct input data.
+### Files Modified
+1. `src/lib/types.ts` -- add `ras` field
+2. `src/lib/api.ts` -- map `ras` from Directus
+3. `src/components/CompetitionTimeline.tsx` -- special dot + special card visuals
+4. `tailwind.config.ts` -- add `ras-glow` animation keyframe
 
