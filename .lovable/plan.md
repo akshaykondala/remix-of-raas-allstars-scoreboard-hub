@@ -1,38 +1,40 @@
 
-## What You Need to Do After This (Outside of Code)
 
-All code-side cleanup is complete. After pulling these changes, here is your checklist to actually submit to the App Store. These steps cannot be done in the editor — they require your own machine.
+# Fix: Competition Teams Undefined, Blank Future Comps, and Leaderboard Filtering
 
-**Step 1 — Export to GitHub**
-Use the "Export to GitHub" button in Lovable to push the code to your own repository, then `git pull` it to your machine.
+Three bugs were found, two of which were caused by the recent app-store cleanup.
 
-**Step 2 — Install and initialize native projects**
-Run these commands in the project folder on your machine:
-```bash
-npm install
-npx cap add ios
-npx cap add android
-npm run build
-npx cap sync
-```
+---
 
-**Step 3 — Create app icons**
-You need a single 1024×1024 PNG file (`icon.png`) with your app logo. You can then use the `@capacitor/assets` tool to auto-generate all required iOS and Android icon sizes:
-```bash
-npm install @capacitor/assets --save-dev
-npx capacitor-assets generate
-```
+## Issue 1 & 2: Teams show as "undefined" when opening a competition from the Comps tab
 
-**Step 4 — Open in Xcode / Android Studio**
-```bash
-npx cap open ios      # Opens Xcode for iOS submission
-npx cap open android  # Opens Android Studio for Google Play
-```
+**Root cause**: When you tap a competition card on the Comps tab, the `CompetitionsTab` component passes the raw competition object straight to `CompetitionDetail` without mapping the lineup through `mapCompetitionTeamsFull`. The raw Directus lineup entries look like `{teams_id: {id: '5', name: 'Texas Raas'}}` -- they do not have a top-level `.name` property, so `team.name` renders as `undefined`.
 
-**Step 5 — Write and host a Privacy Policy**
-Both Apple and Google require a publicly accessible privacy policy URL. This can be a simple page on any website (even a Google Doc published to the web). It must be linked in your App Store Connect and Google Play Console listings.
+When you reach the same competition through a team card on the Standings tab, it works because `Index.tsx` line 859 calls `mapCompetitionTeamsFull()` before opening the modal.
 
-**Step 6 — App Store Connect / Google Play Console**
-- Create an account at [appstoreconnect.apple.com](https://appstoreconnect.apple.com) (Apple Developer Program costs $99/year)
-- Create an account at [play.google.com/console](https://play.google.com/console) (Google Play one-time fee is $25)
-- Fill in your app name, description, screenshots, and privacy policy URL in each console before submitting
+This same issue causes future competitions to appear blank -- the lineup names are all undefined, and the simulation dropdowns show "Team [object Object]" or similar broken text.
+
+**Fix**: In `CompetitionsTab.tsx`, when a competition is selected from the timeline (around line 704), run `mapCompetitionTeamsFull(competition, teams)` before setting `selectedCompetition`. This maps the raw junction-table lineup entries into `{id, name}` objects that `CompetitionDetail` expects.
+
+**Files changed**: `src/components/CompetitionsTab.tsx`
+- Import `mapCompetitionTeamsFull` from `../lib/competitionMapping`
+- In the `onCompetitionClick` callback (line 704), call `mapCompetitionTeamsFull(competition, teams)` and use the result as the selected competition
+
+---
+
+## Issue 3: Teams with 0 bid points should not appear on the Standings tab
+
+**Root cause**: The standings leaderboard renders all teams from `sortedTeams` without filtering out teams that have zero bid points. Teams with 0 points should only appear on the Teams tab.
+
+**Fix**: In `Index.tsx`, filter teams with 0 bid points out of the standings lists. The podium (`topThreeTeams`), qualified section (`qualifiedOtherTeams`), and below-cutoff section (`notQualifiedTeams`) should all be derived from `sortedTeams.filter(t => t.bidPoints > 0)`.
+
+**Files changed**: `src/pages/Index.tsx`
+- Around line 829, add a filter: `const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0)`
+- Derive `topThreeTeams`, `qualifiedOtherTeams`, and `notQualifiedTeams` from `rankedTeams` instead of `sortedTeams`
+
+---
+
+## Also: Remove dead `fallbackTeams` constant from Index.tsx
+
+The large `fallbackTeams` array (lines 17-475) is no longer referenced anywhere after the previous cleanup but was left behind as dead code. It will be deleted to keep the file clean.
+
