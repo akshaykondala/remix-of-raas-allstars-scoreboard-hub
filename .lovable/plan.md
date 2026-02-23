@@ -1,43 +1,41 @@
 
 
-## Fix: Ticket Links Always Grayed Out
+## Calculate Bid Points from Placings Instead of Backend Field
 
-### Root Cause
+### What Changes
 
-The ticket links are being **double-mapped**, which wipes out the URLs:
+Currently, each team's `bidPoints` comes directly from the Directus `bidpoints` field. This will be replaced with a calculated value derived from actual competition placings: 1st = +4, 2nd = +2, 3rd = +1.
 
-1. When competitions are first fetched in `Index.tsx` (line 114), the raw Directus field `comp.showtickets` is correctly mapped to `showTicketsLink`
-2. Later, when you click a competition, `mapCompetitionTeamsFull()` is called on the **already-mapped** object
-3. That function reads `competition.showtickets` -- but that raw field name no longer exists (it was already renamed to `showTicketsLink` in step 1)
-4. So it evaluates to `undefined`, and `undefined || ''` produces an empty string, overwriting the real URL
+The tiebreaker logic is already implemented in `tiebreakerSort` (lines 275-380 of Index.tsx) and covers tiebreakers 1-4. Tiebreakers 5-7 (standardized scores, bonus points) remain as TODOs since that data isn't available yet.
 
-The same bug affects afterparty tickets and livestream links.
+---
 
-### Fix
+### File: `src/pages/Index.tsx`
 
-Update `src/lib/competitionMapping.ts` to check for **both** the raw Directus field name AND the already-mapped field name, so it works whether the competition has been pre-mapped or not:
+**1. Team mapping (line 139)**: After `competitionResults` is built (lines 162-202), sum the `bidPointsEarned` values to produce `bidPoints` instead of reading from the backend:
 
 ```ts
-showTicketsLink: competition.showtickets || competition.showTicketsLink || '',
-afterpartyTicketsLink: competition.aptickets || competition.afterpartyTicketsLink || '',
-livestreamLink: competition.livelink || competition.livestreamLink || '',
+// Replace line 139:
+bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
+
+// With: calculate after competitionResults is built
+bidPoints: 0, // placeholder, will be set below
 ```
 
-This is a one-line-each fix in a single file. No other files need to change.
+Then after the `competitionResults` IIFE completes, compute bidPoints as the sum of all `bidPointsEarned` from those results. This requires a small refactor: extract `competitionResults` into a variable before spreading it into the team object, then derive `bidPoints` from it.
 
-### Files Modified
+**2. `calculateBidPoints` function (lines 221-255)**: Change the base from `originalTeam.bidPoints` to recalculating from `competitionResults`. The simulation overlay logic stays the same:
 
-| File | Change |
-|---|---|
-| `src/lib/competitionMapping.ts` | Lines 47-49: add fallback to already-mapped field names |
+```ts
+// Base points = sum of competitionResults bidPointsEarned (not backend field)
+const basePoints = (team.competitionResults || [])
+  .reduce((sum, r) => sum + r.bidPointsEarned, 0);
+pointsMap[team.id] = basePoints;
+```
 
-### Also: Add `videoLink` mapping (from the previously approved plan)
+**3. Also recalculate `cumulativeBidPoints`** in the competitionResults (currently left at 0 on line 195). After building the results array, sort by date and compute running totals -- this is already done in `api.ts` but not in the `Index.tsx` mapping. Add the same running-total logic after the `.filter(Boolean).sort(...)` call.
 
-Since this file is being touched, the `videoLink` field mapping will also be added here, along with the "Watch Show" button in `CompetitionDetail.tsx` and the type update in `types.ts` -- completing the previously approved plan that was interrupted.
+### No other files change
 
-| File | Change |
-|---|---|
-| `src/lib/competitionMapping.ts` | Add `videoLink: competition.videolink || competition.videoLink || ''` |
-| `src/lib/types.ts` | Add `videoLink?: string` to Competition interface |
-| `src/components/CompetitionDetail.tsx` | Add "Watch Show" button for past competitions (green gradient, Play icon, full-width below ticket row) |
+The `TeamCard`, podium, and standings all read `team.bidPoints` which will now reflect the calculated value. The tiebreaker sort already uses `competitionResults` for its logic.
 
