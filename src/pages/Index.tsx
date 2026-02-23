@@ -123,56 +123,17 @@ const Index = () => {
         // Map teams data AFTER competitions are available
         if (teams) {
           const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-          const mappedTeams = teams.map((team: any) => ({
-            id: team.id,
-            name: team.name,
-            founded: team.founded || team.est || 0,
-            university: team.university,
-            city: team.city,
-            logo: team.logo
-              ? (typeof team.logo === 'string'
-                  ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
-                  : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
-              : '',
-            color: team.color || team.theme || 'bg-slate-600',
-            theme: team.theme || '',
-            bidPoints: Number(team.bidPoints || team.bid_points || team.bidpoints || 0),
-            qualified: team.qualified ?? false,
-            competitions_attending: Array.isArray(team.competitions_attending) 
-              ? team.competitions_attending.map((comp: any) => 
-                  typeof comp === 'string' ? comp : comp.name || comp.id || comp
-                )
-              : [],
-            achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
-            history: team.history || [],
-            instagramlink: team.instagramlink || '',
-            genderComposition: team.genderComposition || team.gender_comp,
-            contactInfo: {
-              email: team.contactInfo?.email || team.contact_info || team.email || '',
-              phone: team.contactInfo?.phone || team.phone || '',
-              website: team.contactInfo?.website || team.website || '',
-              captains: Array.isArray(team.contactInfo?.captains) ? team.contactInfo.captains : 
-                       Array.isArray(team.captains) ? team.captains : 
-                       (typeof (team.contactInfo?.captains || team.captains) === 'string' && 
-                        (team.contactInfo?.captains || team.captains).includes('[') && 
-                        (team.contactInfo?.captains || team.captains).includes(']')) 
-                          ? (team.contactInfo?.captains || team.captains).replace(/[\[\]]/g, '').split(',').map(c => c.trim())
-                          : (team.contactInfo?.captains || team.captains ? [team.contactInfo?.captains || team.captains] : [])
-            },
-            competitionResults: (() => {
+          const mappedTeams = teams.map((team: any) => {
+            const competitionResults: any[] = (() => {
               if (team.competitionResults && Array.isArray(team.competitionResults)) {
                 return team.competitionResults;
               }
               
-              // Generate competition results from competitions_attending using actual placings
               if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
-                let cumulativePoints = 0;
                 return team.competitions_attending.map((compId: any, index: number) => {
-                  // Find competition by ID from the mapped competitions array
                   const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
                   if (!competition) return null;
                   
-                  // Find team's placement in this competition
                   let placement = 'N/A';
                   let pointsEarned = 0;
                   
@@ -190,17 +151,66 @@ const Index = () => {
                   return {
                     competitionId: compId,
                     competitionName: competition.name,
-                    placement: placement,
+                    placement,
                     bidPointsEarned: pointsEarned,
-                    cumulativeBidPoints: 0, // Will be recalculated after sorting
+                    cumulativeBidPoints: 0,
                     date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
                   };
-                }).filter(Boolean).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
               }
               
               return [];
-            })()
-          }));
+            })();
+
+            // Calculate cumulative bid points
+            let runningTotal = 0;
+            competitionResults.forEach((result) => {
+              runningTotal += result.bidPointsEarned;
+              result.cumulativeBidPoints = runningTotal;
+            });
+
+            // Calculate bidPoints from competition placings
+            const calculatedBidPoints = competitionResults.reduce((sum: number, r: any) => sum + r.bidPointsEarned, 0);
+
+            return {
+              id: team.id,
+              name: team.name,
+              founded: team.founded || team.est || 0,
+              university: team.university,
+              city: team.city,
+              logo: team.logo
+                ? (typeof team.logo === 'string'
+                    ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
+                    : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
+                : '',
+              color: team.color || team.theme || 'bg-slate-600',
+              theme: team.theme || '',
+              bidPoints: calculatedBidPoints,
+              qualified: team.qualified ?? false,
+              competitions_attending: Array.isArray(team.competitions_attending) 
+                ? team.competitions_attending.map((comp: any) => 
+                    typeof comp === 'string' ? comp : comp.name || comp.id || comp
+                  )
+                : [],
+              achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
+              history: team.history || [],
+              instagramlink: team.instagramlink || '',
+              genderComposition: team.genderComposition || team.gender_comp,
+              contactInfo: {
+                email: team.contactInfo?.email || team.contact_info || team.email || '',
+                phone: team.contactInfo?.phone || team.phone || '',
+                website: team.contactInfo?.website || team.website || '',
+                captains: Array.isArray(team.contactInfo?.captains) ? team.contactInfo.captains : 
+                         Array.isArray(team.captains) ? team.captains : 
+                         (typeof (team.contactInfo?.captains || team.captains) === 'string' && 
+                          (team.contactInfo?.captains || team.captains).includes('[') && 
+                          (team.contactInfo?.captains || team.captains).includes(']')) 
+                            ? (team.contactInfo?.captains || team.captains).replace(/[\[\]]/g, '').split(',').map((c: string) => c.trim())
+                            : (team.contactInfo?.captains || team.captains ? [team.contactInfo?.captains || team.captains] : [])
+              },
+              competitionResults,
+            };
+          });
           setTeamsData(mappedTeams);
           setOriginalTeamsData(mappedTeams);
         }
@@ -221,11 +231,12 @@ const Index = () => {
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
     const pointsMap: { [teamId: string]: number } = {};
     
-    // Initialize all teams with their original bid points
+    // Initialize all teams with bid points calculated from competition results
     teams.forEach(team => {
-      // Find the original team data to get the base bid points
       const originalTeam = originalTeamsData.find(ot => ot.id === team.id);
-      pointsMap[team.id] = originalTeam ? originalTeam.bidPoints : (team.bidPoints || 0);
+      const basePoints = (originalTeam?.competitionResults || [])
+        .reduce((sum, r) => sum + r.bidPointsEarned, 0);
+      pointsMap[team.id] = basePoints;
     });
 
     // Add points from completed competitions (currently no placings data)
