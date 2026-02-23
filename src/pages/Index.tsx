@@ -115,6 +115,7 @@ const Index = () => {
             afterpartyTicketsLink: comp.aptickets || '',
             livestreamLink: comp.livelink || '',
             bid_status: comp.bid_status || false,
+            ras: comp.ras === true || comp.ras === 'true',
             media: { photos: [], videos: [] }
           }));
           setCompetitions(mappedCompetitions);
