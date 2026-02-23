@@ -1,36 +1,44 @@
 
-## Show Leaderboard Position in Competition Lineup
 
-When viewing a competition's lineup, teams that have bid points will now display their current leaderboard rank as a small badge next to their name.
+## Fix: Season Journey Empty for Non-Placing Teams
 
-### What Changes
+### Root Cause
 
-**File: `src/components/CompetitionDetail.tsx` (lines ~502-516)**
+The `competitionResults` builder in `src/lib/api.ts` has two checks:
+1. Did the team place 1st/2nd/3rd? (checks competition's `firstplace`/`secondplace`/`thirdplace` fields)
+2. Is the team in the competition's `lineup` array? (checks `competition.lineup` junction table)
 
-In the lineup grid where each team row is rendered:
+**The problem:** There's a third data source being ignored -- the team's own `competitions_attending` field. In Directus, `competitions_attending` is a separate M2M relationship on the team side. A team can be listed as attending a competition through `competitions_attending` without necessarily appearing in that competition's `lineup`. These two junction tables may not always be in sync.
 
-1. Before the lineup map, compute a sorted leaderboard from the `teams` prop:
-   - Filter to teams with `bidPoints > 0`
-   - Sort by `bidPoints` descending (using existing tiebreaker logic conventions)
-   - Create a rank map: `{ teamId -> rank number }`
+So for teams that didn't place AND aren't in the `lineup`, the code returns `null` and filters them out -- even though the team's own data says they attended.
 
-2. Inside each team row, after the team name `<span>`, check if the team has a rank in the map. If so, render a small pill/badge like:
-   - `#3` in a subtle purple/blue badge
-   - Positioned at the right side of the row
+### Fix
 
-This keeps the lineup clean while giving users a quick glance at where each team stands in the overall standings.
+**File: `src/lib/api.ts` (lines ~110-118)**
 
-### Visual Result
+Add a third fallback check inside the `if (placement === 'N/A')` block: after checking `competition.lineup`, also check whether the competition's ID appears in `team.competitions_attending` (the raw Directus junction data, before it's mapped to names).
 
-```text
-  Competition Lineup
-  +------------------------------------------+
-  |  [logo] Texas Raas                   #1  |
-  |  [logo] CMU Raasta                   #3  |
-  |  [logo] Some New Team                    |  <-- no badge (0 pts)
-  |  [logo] UF Gatoraas                  #2  |
-  +------------------------------------------+
+Updated logic:
+
+```
+if (placement === 'N/A') {
+  // Check 1: Is team in competition's lineup?
+  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some(...);
+  
+  // Check 2: Is competition in team's competitions_attending?
+  const inAttending = Array.isArray(team.competitions_attending) && 
+    team.competitions_attending.some((compObj) => {
+      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj;
+      return String(compId) === String(competition.id);
+    });
+    
+  if (!inLineup && !inAttending) return null;
+  placement = 'Competed';
+}
 ```
 
+This ensures that if either the competition knows about the team (lineup) OR the team knows about the competition (competitions_attending), the competition shows up in their Season Journey.
+
 ### Files Modified
-- `src/components/CompetitionDetail.tsx` -- add rank computation + badge in lineup rows
+- `src/lib/api.ts` -- add `competitions_attending` check as fallback in competitionResults builder
+
