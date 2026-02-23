@@ -1,51 +1,31 @@
 
 
-## App Store Compliance Checklist and Fixes
+## Fix: Show All Attended Competitions in Season Journey
 
-### Issues to Address
+### Problem
 
-**1. Install `@capacitor/ios`**
-Add the iOS platform package so you can build for iPhone/iPad.
+In `src/lib/api.ts` (line 110), the `competitionResults` builder only includes competitions where the team placed 1st, 2nd, or 3rd. If a team attended a competition but didn't place, it's filtered out with `if (placement === 'N/A') return null;`. This means the Season Journey section is incomplete.
 
-**2. Remove debug script from `index.html`**
-The `gptengineer.js` script loaded from `cdn.gpteng.co` must be removed for production builds. Apple reviews will flag external debug scripts. This line needs to go:
-```
-<script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-```
+### Root Cause
 
-**3. Move `@capacitor/cli` to devDependencies**
-It's a build tool, not a runtime dependency. Moving it keeps the production bundle cleaner.
+The logic scans all competitions and only keeps those where the team's name/ID matches the `firstplace`, `secondplace`, or `thirdplace` fields. It never checks if the team is in the competition's `lineup` (the attendance list).
 
-**4. Add App Transport Security exception for Directus API**
-Your app calls an external Directus API over HTTPS. This should work fine with ATS, but if your Directus instance ever uses a non-standard cert, you'd need an exception in `Info.plist`. For now, just confirm your Directus URL is HTTPS.
+### Solution
 
-**5. App icons and splash screens (manual step)**
-After exporting to GitHub and running `npx cap add ios`, you'll need to:
-- Add a 1024x1024 app icon to the Xcode asset catalog
-- Configure launch/splash screen in Xcode
-- Apple requires these for submission
+Update the `competitionResults` builder in `src/lib/api.ts` to also check if the team appears in the competition's `lineup` array. If the team attended but didn't place, include the competition with placement "Competed" and 0 bid points earned.
 
-**6. Privacy policy**
-Apple requires a privacy policy URL when submitting. You'll need to:
-- Host a privacy policy page (could be a simple route in the app or an external URL)
-- Provide it during App Store Connect submission
+### Changes
 
-**7. Remove `console.error` in NotFound page**
-Minor cleanup -- the only remaining console statement. Production apps should not log to console.
+**File: `src/lib/api.ts` (lines ~89-120)**
 
-### Files Modified
-- `index.html` -- remove the gptengineer.js script tag
-- `package.json` -- move `@capacitor/cli` to devDependencies, add `@capacitor/ios`
-- `src/pages/NotFound.tsx` -- remove console.error call
-- `capacitor.config.ts` -- no changes needed (already configured correctly)
+Update the competition mapping logic:
 
-### Manual Steps (outside Lovable)
-- Export project to GitHub, clone locally
-- Run `npm install`, then `npx cap add ios`
-- Add app icons in Xcode (Assets.xcassets)
-- Configure splash screen in Xcode
-- Create and host a privacy policy
-- Submit via App Store Connect with your Apple Developer account ($99/year)
+1. After checking placement fields (1st/2nd/3rd), add a lineup check: scan `competition.lineup` for an entry matching the team's ID or name (handling junction table structures like `{ teams_id: ... }`).
+2. If the team placed -- keep existing behavior (1st/2nd/3rd with points).
+3. If the team didn't place but IS in the lineup -- include it with placement "Competed" and 0 points.
+4. If the team is neither placed nor in the lineup -- skip (return null).
 
-For a detailed walkthrough of the Capacitor deployment process, check out the Lovable blog post on native mobile app deployment.
+This means the filter condition changes from "skip if no placement" to "skip if no placement AND not in lineup."
+
+The Season Journey UI in `TeamDetail.tsx` already handles `earnedPoints = false` styling gracefully (grey card instead of green), so no UI changes are needed.
 
