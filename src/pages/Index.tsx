@@ -125,44 +125,39 @@ const Index = () => {
           const API_URL = import.meta.env.VITE_DIRECTUS_URL;
           const mappedTeams = teams.map((team: any) => {
             const competitionResults: any[] = (() => {
-              if (team.competitionResults && Array.isArray(team.competitionResults)) {
-                return team.competitionResults;
-              }
+              if (mappedCompetitions.length === 0) return [];
               
-              if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
-                return team.competitions_attending.map((compId: any, index: number) => {
-                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId) || c.name === compId);
-                  if (!competition) return null;
-                  
-                  let placement = 'N/A';
-                  let pointsEarned = 0;
-                  
-                  const teamId = String(team.id);
-                  const teamName = team.name;
+              const results = mappedCompetitions.map((competition: any) => {
+                let placement = 'N/A';
+                let pointsEarned = 0;
+                
+                const teamId = String(team.id);
+                const teamName = team.name;
 
-                  if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
-                    placement = '1st';
-                    pointsEarned = 4;
-                  } else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
-                    placement = '2nd';
-                    pointsEarned = 2;
-                  } else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
-                    placement = '3rd';
-                    pointsEarned = 1;
-                  }
-                  
-                  return {
-                    competitionId: compId,
-                    competitionName: competition.name,
-                    placement,
-                    bidPointsEarned: pointsEarned,
-                    cumulativeBidPoints: 0,
-                    date: competition.date || new Date(2024, index, 15 + index * 10).toISOString().split('T')[0]
-                  };
-                }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-              }
+                if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
+                  placement = '1st';
+                  pointsEarned = 4;
+                } else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
+                  placement = '2nd';
+                  pointsEarned = 2;
+                } else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
+                  placement = '3rd';
+                  pointsEarned = 1;
+                }
+                
+                if (placement === 'N/A') return null;
+                
+                return {
+                  competitionId: competition.id,
+                  competitionName: competition.name,
+                  placement,
+                  bidPointsEarned: pointsEarned,
+                  cumulativeBidPoints: 0,
+                  date: competition.date || ''
+                };
+              }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
               
-              return [];
+              return results;
             })();
 
             // Calculate cumulative bid points
