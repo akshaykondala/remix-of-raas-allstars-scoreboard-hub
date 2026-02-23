@@ -1,50 +1,17 @@
 
 
-## Fix: Future Comps Showing "Competed" + Remove "+0" Points for Non-Placers
+## Change "Competitions This Season" to "Competitions Completed"
 
-Two issues to fix across three files (`src/pages/Index.tsx`, `src/lib/api.ts`, `src/components/TeamDetail.tsx`).
+### What Changes
 
-### Issue 1: Future competitions showing "Competed"
+**File: `src/components/TeamDetail.tsx` (lines 147 and 149)**
 
-Competitions with a date in the future should show as "Upcoming" (not "Competed"). The fix is simple: before assigning `placement = 'Competed'`, check if the competition date is in the future. If so, set `placement = 'Upcoming'` instead.
+1. **Label**: Change `"Competitions This Season"` to `"Competitions Completed"`
+2. **Count**: Instead of counting all entries in `competitionResults`, filter to only count past competitions (exclude those with placement `"Upcoming"`).
 
-**Files: `src/pages/Index.tsx` (line ~163) and `src/lib/api.ts` (line ~126)**
-
-In both files, replace:
+Updated count logic:
 ```
-placement = 'Competed';
-```
-with:
-```
-const compDate = new Date(competition.date);
-const now = new Date();
-now.setHours(0, 0, 0, 0);
-placement = compDate >= now ? 'Upcoming' : 'Competed';
+{team.competitionResults?.filter(r => r.placement !== 'Upcoming').length || 0}
 ```
 
-### Issue 2: "+0" points shown for teams that didn't place
-
-In the Season Journey UI, teams that competed but didn't place still see "Points: +0" and "Total: 0 pts", which looks bad. Hide the points row entirely when a team didn't earn any points at that competition.
-
-**File: `src/components/TeamDetail.tsx` (lines ~292-304)**
-
-Wrap the points breakdown in a conditional so it only renders when `earnedPoints` is true:
-
-```
-{earnedPoints && (
-  <div className="flex items-center gap-3 text-xs">
-    ...points and total...
-  </div>
-)}
-```
-
-Also update the styling for "Upcoming" competitions to use a distinct blue/purple look (rather than the grey "Competed" style) so users can visually distinguish future events.
-
-### Summary of Changes
-
-| File | Change |
-|------|--------|
-| `src/pages/Index.tsx` (~line 163) | Check date before assigning "Competed" vs "Upcoming" |
-| `src/lib/api.ts` (~line 126) | Same date check |
-| `src/components/TeamDetail.tsx` (~lines 282-304) | Hide points row when 0 points; add "Upcoming" badge style |
-
+This ensures only completed competitions are counted -- upcoming ones won't inflate the number.
