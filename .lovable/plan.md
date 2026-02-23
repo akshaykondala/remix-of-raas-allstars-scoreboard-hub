@@ -1,54 +1,50 @@
 
 
-## Fix: Duplicate Competition Results Logic in Index.tsx Missing the Fix
+## Fix: Future Comps Showing "Competed" + Remove "+0" Points for Non-Placers
 
-### Root Cause
+Two issues to fix across three files (`src/pages/Index.tsx`, `src/lib/api.ts`, `src/components/TeamDetail.tsx`).
 
-The previous fixes were applied to `src/lib/api.ts`, but `src/pages/Index.tsx` has its **own separate, duplicate** competition results builder (lines 128-162) that was never updated. This is the code path that runs when you view teams from the main page.
+### Issue 1: Future competitions showing "Competed"
 
-Specifically, **line 149 of Index.tsx** still has:
+Competitions with a date in the future should show as "Upcoming" (not "Competed"). The fix is simple: before assigning `placement = 'Competed'`, check if the competition date is in the future. If so, set `placement = 'Upcoming'` instead.
+
+**Files: `src/pages/Index.tsx` (line ~163) and `src/lib/api.ts` (line ~126)**
+
+In both files, replace:
 ```
-if (placement === 'N/A') return null;
+placement = 'Competed';
 ```
-
-...with NO lineup or `competitions_attending` check. So any team that didn't place 1st/2nd/3rd gets all their competitions filtered out, resulting in 0 competitions and an empty Season Journey.
-
-### Fix
-
-**File: `src/pages/Index.tsx` (lines ~148-149)**
-
-Replace the simple `return null` with the same dual-check logic that exists in `api.ts`:
-
+with:
 ```
-if (placement === 'N/A') {
-  // Check 1: Is team in the competition's lineup?
-  const teamId = String(team.id);
-  const teamName = team.name;
-  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry) => {
-    const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
-    return String(entryTeamId) === teamId ||
-           (entry?.teams_id?.name && entry.teams_id.name === teamName);
-  });
-
-  // Check 2: Is competition in team's competitions_attending?
-  const inAttending = Array.isArray(team.competitions_attending) &&
-    team.competitions_attending.some((compObj) => {
-      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj?.id ?? compObj;
-      return String(compId) === String(competition.id);
-    });
-
-  if (!inLineup && !inAttending) return null;
-  placement = 'Competed';
-}
+const compDate = new Date(competition.date);
+const now = new Date();
+now.setHours(0, 0, 0, 0);
+placement = compDate >= now ? 'Upcoming' : 'Competed';
 ```
 
-Note: In Index.tsx, `team` at this point is the already-fetched team from `fetchTeams()`, so `team.competitions_attending` contains mapped name strings. The `inAttending` check needs to also handle comparing competition names (not just IDs). We'll add a name comparison fallback:
+### Issue 2: "+0" points shown for teams that didn't place
+
+In the Season Journey UI, teams that competed but didn't place still see "Points: +0" and "Total: 0 pts", which looks bad. Hide the points row entirely when a team didn't earn any points at that competition.
+
+**File: `src/components/TeamDetail.tsx` (lines ~292-304)**
+
+Wrap the points breakdown in a conditional so it only renders when `earnedPoints` is true:
+
 ```
-return String(compId) === String(competition.id) || compId === competition.name;
+{earnedPoints && (
+  <div className="flex items-center gap-3 text-xs">
+    ...points and total...
+  </div>
+)}
 ```
 
-And `competition.lineup` here uses the raw lineup from Directus (line 99: `lineup: comp.lineup || []`), so the junction-table-style check will work correctly.
+Also update the styling for "Upcoming" competitions to use a distinct blue/purple look (rather than the grey "Competed" style) so users can visually distinguish future events.
 
-### Files Modified
-- `src/pages/Index.tsx` -- apply the same lineup + attending check that was already applied to `api.ts`
+### Summary of Changes
+
+| File | Change |
+|------|--------|
+| `src/pages/Index.tsx` (~line 163) | Check date before assigning "Competed" vs "Upcoming" |
+| `src/lib/api.ts` (~line 126) | Same date check |
+| `src/components/TeamDetail.tsx` (~lines 282-304) | Hide points row when 0 points; add "Upcoming" badge style |
 
