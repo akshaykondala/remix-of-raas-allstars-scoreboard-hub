@@ -443,143 +443,146 @@ export function CompetitionDetail({
             </div>
           </div>
 
-          {/* Lineup Section */}
-          <div className="px-4 pb-4">
-            <h3 className="text-base font-bold text-white mb-3 flex items-center">
-              <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
-                <Users className="h-3.5 w-3.5 text-purple-400" />
+          {competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0 ? (
+            /* RAS competition with no judges — show elegant city + date */
+            <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
+              <div className="flex items-center gap-4 text-amber-400/60">
+                <span className="text-lg tracking-[0.3em]">──</span>
+                <span className="text-xl font-semibold tracking-wide text-amber-400">{competition.city}</span>
+                <span className="text-lg tracking-[0.3em]">──</span>
               </div>
-              Competition Lineup
-            </h3>
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
-              <div className="grid gap-1.5">
-                {(competition.lineup || []).map((team, index) => {
-                const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                const fullTeam = teams.find(t => t.id === teamIdStr);
-                return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                      {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
-                          <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
-                        </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
-                          {(team.name || 'T').charAt(0)}
-                        </div>}
-                      <span className="font-medium text-sm truncate">
-                        {team.name || `Team ${team.id}`}
-                      </span>
-                    </div>;
-              })}
-              </div>
+              <span className="text-base text-amber-400/40 font-medium tracking-wider">
+                {competition.date ? (() => {
+                  const [y, m, d] = competition.date.split('-').map(Number);
+                  const date = new Date(y, m - 1, d);
+                  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                })() : ''}
+              </span>
             </div>
-          </div>
-
-          {/* Placings Section */}
-          <div className="px-4 pb-4">
-            <h3 className="text-base font-bold text-white mb-3 flex items-center">
-              <div className="bg-yellow-500/20 rounded-full p-1.5 mr-2">
-                <Trophy className="h-3.5 w-3.5 text-yellow-400" />
-              </div>
-              Top 3 Placings
-            </h3>
-            
-            {isFutureCompetition ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
-                <p className="text-slate-400 text-xs mb-2 text-center">Select teams for predictions:</p>
-                <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
-                <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
-                <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />
-                
-                {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
-                    {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
-                  </button>}
-              </div> : <div className="space-y-2">
-                {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
-                    {firstPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
-                        <img src={firstPlaceTeam.logo} alt={firstPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div> : <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
-                        {firstPlaceTeam.name.charAt(0)}
-                      </div>}
-                    <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
-                    <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
-                      <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
-                    </div>
-                  </div>}
-                {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
-                    {secondPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
-                        <img src={secondPlaceTeam.logo} alt={secondPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div> : <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
-                        {secondPlaceTeam.name.charAt(0)}
-                      </div>}
-                    <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
-                    <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
-                      <span className="text-slate-300 text-xs font-bold">+2 pts</span>
-                    </div>
-                  </div>}
-                {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
-                    <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
-                    {thirdPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
-                        <img src={thirdPlaceTeam.logo} alt={thirdPlaceTeam.name} className="w-full h-full object-cover" />
-                      </div> : <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
-                        {thirdPlaceTeam.name.charAt(0)}
-                      </div>}
-                    <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
-                    <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
-                      <span className="text-orange-300 text-xs font-bold">+1 pt</span>
-                    </div>
-                  </div>}
-                {!firstPlaceTeam && !secondPlaceTeam && !thirdPlaceTeam && <div className="text-slate-400 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-600/30">
-                    No results available yet
-                  </div>}
-              </div>}
-          </div>
-
-          {/* Judges Section */}
-          <div className="px-4 pb-4">
-            <h3 className="text-base font-bold text-white mb-3 flex items-center">
-              <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
-                <Eye className="h-3.5 w-3.5 text-purple-400" />
-              </div>
-              Judging Panel
-            </h3>
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
-              {competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-6 gap-2">
-                  <div className="flex items-center gap-3 text-amber-400/70">
-                    <span className="text-sm tracking-widest">──</span>
-                    <span className="text-base font-semibold tracking-wide text-amber-400">{competition.city}</span>
-                    <span className="text-sm tracking-widest">──</span>
+          ) : (
+            <>
+              {/* Lineup Section */}
+              <div className="px-4 pb-4">
+                <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                  <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
+                    <Users className="h-3.5 w-3.5 text-purple-400" />
                   </div>
-                  <span className="text-sm text-amber-400/50 font-medium tracking-wide">
-                    {competition.date ? (() => {
-                      const [y, m, d] = competition.date.split('-').map(Number);
-                      const date = new Date(y, m - 1, d);
-                      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                    })() : ''}
-                  </span>
+                  Competition Lineup
+                </h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
+                  <div className="grid gap-1.5">
+                    {(competition.lineup || []).map((team, index) => {
+                    const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                    const fullTeam = teams.find(t => t.id === teamIdStr);
+                    return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                          {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
+                              <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                            </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+                              {(team.name || 'T').charAt(0)}
+                            </div>}
+                          <span className="font-medium text-sm truncate">
+                            {team.name || `Team ${team.id}`}
+                          </span>
+                        </div>;
+                  })}
+                  </div>
                 </div>
-              ) : (
-                <div className="grid gap-2">
-                  {(competition.judges || []).filter(j => j && j.name).sort((a, b) => (a.category || '').localeCompare(b.category || '')).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
-                      <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
-                        <Eye className="h-3.5 w-3.5 text-purple-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-slate-200 text-sm font-medium truncate">{judge.name}</div>
-                        <div className="text-slate-400 text-xs truncate">{judge.category}</div>
-                      </div>
-                    </div>)}
-                </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          {/* Enhanced Instagram Link */}
-          {competition.instagramlink && <div className="px-4 pb-6">
-              <a href={competition.instagramlink} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500/15 to-purple-500/10 border border-pink-400/30 rounded-xl p-3 hover:from-pink-500/20 hover:to-purple-500/15 transition-all duration-300 active:scale-[0.98]">
-                <Instagram className="h-4 w-4 text-pink-400" />
-                <span className="text-pink-400 font-semibold text-sm">Follow on Instagram</span>
-                <ExternalLink className="h-3.5 w-3.5 text-pink-400/60" />
-              </a>
-            </div>}
+              {/* Placings Section */}
+              <div className="px-4 pb-4">
+                <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                  <div className="bg-yellow-500/20 rounded-full p-1.5 mr-2">
+                    <Trophy className="h-3.5 w-3.5 text-yellow-400" />
+                  </div>
+                  Top 3 Placings
+                </h3>
+                
+                {isFutureCompetition ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
+                    <p className="text-slate-400 text-xs mb-2 text-center">Select teams for predictions:</p>
+                    <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
+                    <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
+                    <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />
+                    
+                    {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
+                        {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
+                      </button>}
+                  </div> : <div className="space-y-2">
+                    {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
+                        <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
+                        {firstPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
+                            <img src={firstPlaceTeam.logo} alt={firstPlaceTeam.name} className="w-full h-full object-cover" />
+                          </div> : <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
+                            {firstPlaceTeam.name.charAt(0)}
+                          </div>}
+                        <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
+                        <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
+                          <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
+                        </div>
+                      </div>}
+                    {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
+                        <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
+                        {secondPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
+                            <img src={secondPlaceTeam.logo} alt={secondPlaceTeam.name} className="w-full h-full object-cover" />
+                          </div> : <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
+                            {secondPlaceTeam.name.charAt(0)}
+                          </div>}
+                        <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
+                        <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
+                          <span className="text-slate-300 text-xs font-bold">+2 pts</span>
+                        </div>
+                      </div>}
+                    {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
+                        <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
+                        {thirdPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
+                            <img src={thirdPlaceTeam.logo} alt={thirdPlaceTeam.name} className="w-full h-full object-cover" />
+                          </div> : <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
+                            {thirdPlaceTeam.name.charAt(0)}
+                          </div>}
+                        <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
+                        <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
+                          <span className="text-orange-300 text-xs font-bold">+1 pt</span>
+                        </div>
+                      </div>}
+                    {!firstPlaceTeam && !secondPlaceTeam && !thirdPlaceTeam && <div className="text-slate-400 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-600/30">
+                        No results available yet
+                      </div>}
+                  </div>}
+              </div>
+
+              {/* Judges Section */}
+              <div className="px-4 pb-4">
+                <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                  <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
+                    <Eye className="h-3.5 w-3.5 text-purple-400" />
+                  </div>
+                  Judging Panel
+                </h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
+                  <div className="grid gap-2">
+                    {(competition.judges || []).filter(j => j && j.name).sort((a, b) => (a.category || '').localeCompare(b.category || '')).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
+                        <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
+                          <Eye className="h-3.5 w-3.5 text-purple-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-slate-200 text-sm font-medium truncate">{judge.name}</div>
+                          <div className="text-slate-400 text-xs truncate">{judge.category}</div>
+                        </div>
+                      </div>)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Instagram Link */}
+              {competition.instagramlink && <div className="px-4 pb-6">
+                  <a href={competition.instagramlink} target="_blank" rel="noopener noreferrer" className="group flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500/15 to-purple-500/10 border border-pink-400/30 rounded-xl p-3 hover:from-pink-500/20 hover:to-purple-500/15 transition-all duration-300 active:scale-[0.98]">
+                    <Instagram className="h-4 w-4 text-pink-400" />
+                    <span className="text-pink-400 font-semibold text-sm">Follow on Instagram</span>
+                    <ExternalLink className="h-3.5 w-3.5 text-pink-400/60" />
+                  </a>
+                </div>}
+            </>
+          )}
           
           {/* Bottom padding for safe area */}
           <div className="pb-20"></div>
