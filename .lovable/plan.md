@@ -1,40 +1,29 @@
 
 
-# Fix: Competition Teams Undefined, Blank Future Comps, and Leaderboard Filtering
+## Add "Watch Show" Video Link for Past Competitions
 
-Three bugs were found, two of which were caused by the recent app-store cleanup.
+### What Changes
 
----
+**1. `src/lib/competitionMapping.ts`** -- Pass through the `videolink` field from Directus:
+- Add `videoLink: competition.videolink || ''` to the returned object (line 49, alongside the existing `livestreamLink`, `showTicketsLink`, etc.)
 
-## Issue 1 & 2: Teams show as "undefined" when opening a competition from the Comps tab
+**2. `src/lib/types.ts`** -- Add `videoLink` to the `Competition` interface:
+- Add `videoLink?: string;` to the interface
 
-**Root cause**: When you tap a competition card on the Comps tab, the `CompetitionsTab` component passes the raw competition object straight to `CompetitionDetail` without mapping the lineup through `mapCompetitionTeamsFull`. The raw Directus lineup entries look like `{teams_id: {id: '5', name: 'Texas Raas'}}` -- they do not have a top-level `.name` property, so `team.name` renders as `undefined`.
+**3. `src/components/CompetitionDetail.tsx`** -- Add a "Watch Show" button for past competitions:
+- Import the `Play` (or `Video`) icon from `lucide-react`
+- After the ticket links grid (around line 382), add a conditional block: only render when `!isFutureCompetition && !isLive` (i.e., past/completed competitions)
+- The button follows the same visual pattern as the ticket links -- a styled `<a>` tag with gradient background, icon, label "Watch Show", and external link arrow
+- When `videoLink` is empty, the button appears grayed out and disabled (same pattern as the ticket buttons when their links are missing)
+- Color scheme: green gradient (`from-green-500/20`) to differentiate from the blue (tickets) and pink (afterparty) buttons
 
-When you reach the same competition through a team card on the Standings tab, it works because `Index.tsx` line 859 calls `mapCompetitionTeamsFull()` before opening the modal.
+### Visual Layout
 
-This same issue causes future competitions to appear blank -- the lineup names are all undefined, and the simulation dropdowns show "Team [object Object]" or similar broken text.
+The video link will appear as a full-width button below the ticket links row, only visible on past competitions:
 
-**Fix**: In `CompetitionsTab.tsx`, when a competition is selected from the timeline (around line 704), run `mapCompetitionTeamsFull(competition, teams)` before setting `selectedCompetition`. This maps the raw junction-table lineup entries into `{id, name}` objects that `CompetitionDetail` expects.
+```text
+[ Show Tickets ]  [ AP Tickets ]     <-- existing, 2-col grid
+[ Watch Show                    ]     <-- new, full-width, only for past comps
+```
 
-**Files changed**: `src/components/CompetitionsTab.tsx`
-- Import `mapCompetitionTeamsFull` from `../lib/competitionMapping`
-- In the `onCompetitionClick` callback (line 704), call `mapCompetitionTeamsFull(competition, teams)` and use the result as the selected competition
-
----
-
-## Issue 3: Teams with 0 bid points should not appear on the Standings tab
-
-**Root cause**: The standings leaderboard renders all teams from `sortedTeams` without filtering out teams that have zero bid points. Teams with 0 points should only appear on the Teams tab.
-
-**Fix**: In `Index.tsx`, filter teams with 0 bid points out of the standings lists. The podium (`topThreeTeams`), qualified section (`qualifiedOtherTeams`), and below-cutoff section (`notQualifiedTeams`) should all be derived from `sortedTeams.filter(t => t.bidPoints > 0)`.
-
-**Files changed**: `src/pages/Index.tsx`
-- Around line 829, add a filter: `const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0)`
-- Derive `topThreeTeams`, `qualifiedOtherTeams`, and `notQualifiedTeams` from `rankedTeams` instead of `sortedTeams`
-
----
-
-## Also: Remove dead `fallbackTeams` constant from Index.tsx
-
-The large `fallbackTeams` array (lines 17-475) is no longer referenced anywhere after the previous cleanup but was left behind as dead code. It will be deleted to keep the file clean.
-
+### No other files change. The Comps tab and Standings tab competition modals will both pick this up automatically since they both go through `mapCompetitionTeamsFull` and render `CompetitionDetail`.
