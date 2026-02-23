@@ -131,7 +131,7 @@ const Index = () => {
               
               if (Array.isArray(team.competitions_attending) && team.competitions_attending.length > 0) {
                 return team.competitions_attending.map((compId: any, index: number) => {
-                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId));
+                  const competition = mappedCompetitions.find((c: any) => String(c.id) === String(compId) || c.name === compId);
                   if (!competition) return null;
                   
                   let placement = 'N/A';
