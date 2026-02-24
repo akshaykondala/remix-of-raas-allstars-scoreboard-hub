@@ -30,18 +30,33 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
     snapScrollTop();
   };
 
-  const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      setOpen(false);
-      setTimeout(onClose, 300);
-    }
-  };
+const handleOpenChange = (isOpen: boolean) => {
+  if (!isOpen) {
+    setOpen(false);
+    setTimeout(onClose, 300);
+  }
+};
 
-  const handleCompetitionClick = (competitionId: string | number) => {
-    if (onCompetitionClick) {
-      onCompetitionClick(competitionId);
-    }
-  };
+const handleCompetitionClick = (competitionId: string | number) => {
+  if (onCompetitionClick) {
+    onCompetitionClick(competitionId);
+  }
+};
+
+const formatCompetitionDate = (dateStr?: string) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) {
+    return dateStr;
+  }
+  const [year, month, day] = parts;
+  const date = new Date(year, month - 1, day); // local date, avoids UTC shift
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
 
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -272,9 +287,13 @@ export const TeamDetail = ({ team, onClose, onCompetitionClick, competitions = [
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between mb-1.5">
                             <div>
-                              <h4 className="text-white font-semibold text-sm mb-0.5 hover:text-blue-300 transition-colors duration-200">{result.competitionName}</h4>
+                              <h4 className="text-white font-semibold text-sm mb-0.5 hover:text-blue-300 transition-colors duration-200">
+                                {result.competitionName}
+                              </h4>
                               {result.date && (
-                                <p className="text-slate-400 text-xs">{new Date(result.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                <p className="text-slate-400 text-xs">
+                                  {formatCompetitionDate(result.date)}
+                                </p>
                               )}
                             </div>
                             
