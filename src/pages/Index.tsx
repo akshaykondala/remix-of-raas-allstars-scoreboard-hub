@@ -669,6 +669,10 @@ const Index = () => {
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/5 to-blue-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     
                     <div className="relative flex items-center gap-4">
+                      {/* Rank Badge */}
+                      <div className="w-8 h-8 bg-blue-500/20 border border-blue-400/30 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-300 font-bold text-sm">{rank}</span>
+                      </div>
                       {/* Team Logo with glow */}
                       <div className="relative">
                         <div className="absolute inset-0 bg-white/10 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
