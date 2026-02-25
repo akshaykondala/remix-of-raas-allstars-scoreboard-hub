@@ -168,7 +168,7 @@ const Index = () => {
                   competitionId: competition.id,
                   competitionName: competition.name,
                   placement,
-                  bidPointsEarned: pointsEarned,
+                  bidPointsEarned: competition.bid_status === true ? pointsEarned : 0,
                   cumulativeBidPoints: 0,
                   date: competition.date || '',
                   isBidCompetition: competition.bid_status === true
@@ -260,8 +260,10 @@ const Index = () => {
     //   // Points will be added from simulation data instead
     // });
 
-    // Add simulation points if active
+    // Add simulation points if active (only for bid competitions)
     Object.values(simulationData).forEach(simulation => {
+      const comp = competitions.find(c => c.id === simulation.competitionId);
+      if (!comp?.bid_status) return;
       // simulation.predictions contains team IDs, not names
       if (simulation.predictions.first) {
         pointsMap[simulation.predictions.first] = (pointsMap[simulation.predictions.first] || 0) + 4;
@@ -270,8 +272,7 @@ const Index = () => {
         pointsMap[simulation.predictions.second] = (pointsMap[simulation.predictions.second] || 0) + 2;
       }
       if (simulation.predictions.third) {
-        const comp = competitions.find(c => c.id === simulation.competitionId);
-        const lineupSize = comp ? (Array.isArray(comp.lineup) ? comp.lineup.length : 0) : 0;
+        const lineupSize = Array.isArray(comp.lineup) ? comp.lineup.length : 0;
         if (lineupSize > 6) {
           pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
         }

@@ -577,9 +577,11 @@ export function CompetitionDetail({
                             {firstPlaceTeam.name.charAt(0)}
                           </div>}
                         <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
-                        <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
-                          <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
-                        </div>
+                        {competition.bid_status && (
+                          <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
+                            <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
+                          </div>
+                        )}
                       </div>}
                     {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
                         <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
@@ -589,9 +591,11 @@ export function CompetitionDetail({
                             {secondPlaceTeam.name.charAt(0)}
                           </div>}
                         <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
-                        <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
-                          <span className="text-slate-300 text-xs font-bold">+2 pts</span>
-                        </div>
+                        {competition.bid_status && (
+                          <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
+                            <span className="text-slate-300 text-xs font-bold">+2 pts</span>
+                          </div>
+                        )}
                       </div>}
                     {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
                         <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
@@ -601,9 +605,11 @@ export function CompetitionDetail({
                             {thirdPlaceTeam.name.charAt(0)}
                           </div>}
                         <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
-                        <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
-                          <span className="text-orange-300 text-xs font-bold">+1 pt</span>
-                        </div>
+                        {competition.bid_status && (
+                          <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
+                            <span className="text-orange-300 text-xs font-bold">+1 pt</span>
+                          </div>
+                        )}
                       </div>}
                     {!firstPlaceTeam && !secondPlaceTeam && !thirdPlaceTeam && <div className="text-slate-400 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-600/30">
                         No results available yet

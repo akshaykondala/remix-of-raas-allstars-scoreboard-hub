@@ -52,42 +52,9 @@ export async function fetchTeams() {
       });
     }
     
-    return teamsData.map((team: any) => ({
-      id: String(team.id),
-      name: team.name,
-      genderComposition: team.gender_comp,
-      university: team.university,
-      bidPoints: team.bidpoints || 0,
-      qualified: team.rasqual === true || team.rasqual === 'true',
-      locked: false,
-      color: team.theme || 'bg-slate-600',
-      theme: team.theme || '',
-      city: team.city || '',
-      instagramlink: team.instagramlink || '',
-      competitions_attending: Array.isArray(team.competitions_attending) 
-        ? team.competitions_attending.map((compObj: any) => 
-            compObj.competitions_id?.name || compObj.competitions_id?.id || compObj
-          )
-        : [],
-      history: team.history || [],
-      achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
-      founded: team.est || 0,
-      logo: team.logo
-        ? (typeof team.logo === 'string'
-            ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
-            : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
-        : '',
-      contactInfo: {
-        email: team.contact_info || team.email || '',
-        phone: team.phone || '',
-        website: team.website || '',
-        captains: Array.isArray(team.captains) ? team.captains : 
-                 (typeof team.captains === 'string' && team.captains.includes('[') && team.captains.includes(']')) 
-                   ? team.captains.replace(/[\[\]]/g, '').split(',').map(c => c.trim())
-                   : (team.captains ? [team.captains] : [])
-      },
-      competitionResults: (() => {
-        if (!competitionsData || !Array.isArray(competitionsData)) return [];
+    return teamsData.map((team: any) => {
+      const teamResult = (() => {
+        if (!competitionsData || !Array.isArray(competitionsData)) return { results: [] as any[], bidPointsFromResults: 0 };
         
         const results = competitionsData.map((competition: any) => {
           let placement = 'N/A';
@@ -129,7 +96,7 @@ export async function fetchTeams() {
             competitionId: competition.id,
             competitionName: competition.name,
             placement,
-            bidPointsEarned: pointsEarned,
+            bidPointsEarned: competition.bid_status === true ? pointsEarned : 0,
             cumulativeBidPoints: 0,
             date: competition.date || '',
             isBidCompetition: competition.bid_status === true
@@ -141,9 +108,46 @@ export async function fetchTeams() {
           runningTotal += result.bidPointsEarned;
           result.cumulativeBidPoints = runningTotal;
         });
-        return results;
-      })()
-    }));
+        const bidPointsFromResults = results.reduce((sum: number, r: any) => sum + r.bidPointsEarned, 0);
+        return { results, bidPointsFromResults };
+      })();
+      return {
+        id: String(team.id),
+        name: team.name,
+        genderComposition: team.gender_comp,
+        university: team.university,
+        bidPoints: teamResult.bidPointsFromResults,
+        qualified: team.rasqual === true || team.rasqual === 'true',
+        locked: false,
+        color: team.theme || 'bg-slate-600',
+        theme: team.theme || '',
+        city: team.city || '',
+        instagramlink: team.instagramlink || '',
+        competitions_attending: Array.isArray(team.competitions_attending)
+          ? team.competitions_attending.map((compObj: any) =>
+              compObj.competitions_id?.name || compObj.competitions_id?.id || compObj
+            )
+          : [],
+        history: team.history || [],
+        achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
+        founded: team.est || 0,
+        logo: team.logo
+          ? (typeof team.logo === 'string'
+              ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
+              : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
+          : '',
+        contactInfo: {
+          email: team.contact_info || team.email || '',
+          phone: team.phone || '',
+          website: team.website || '',
+          captains: Array.isArray(team.captains) ? team.captains :
+                   (typeof team.captains === 'string' && team.captains.includes('[') && team.captains.includes(']'))
+                     ? team.captains.replace(/[\[\]]/g, '').split(',').map((c: string) => c.trim())
+                     : (team.captains ? [team.captains] : [])
+        },
+        competitionResults: teamResult.results
+      };
+    });
   } catch (err) {
     return [];
   }
