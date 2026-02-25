@@ -52,6 +52,7 @@ export function CompetitionTimeline({
   });
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const touchMoved = useRef(false);
   const mouseStartX = useRef(0);
   const isDragging = useRef(false);
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -73,13 +74,17 @@ export function CompetitionTimeline({
   const weekendGroups = useMemo(() => groupByWeekend(competitions), [competitions]);
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+    touchMoved.current = false;
   };
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+    touchMoved.current = true;
   };
   const handleTouchEnd = () => {
+    if (!touchMoved.current) return;
     const diff = touchStartX.current - touchEndX.current;
-    const threshold = 50;
+    const threshold = 80;
     if (Math.abs(diff) > threshold) {
       if (diff > 0 && activeWeekIndex < weekendGroups.length - 1) {
         setActiveWeekIndex(prev => prev + 1);
