@@ -1,60 +1,40 @@
 
 
-## Hide 3rd Place in Simulation Mode for Small Competitions
+## Fix: Accidental Week Swiping When Tapping a Competition Card
 
-The simulation/prediction mode in both `CompetitionsTab.tsx` and `CompetitionDetail.tsx` currently always shows a 3rd place dropdown. This needs to respect the same rule: competitions with 6 or fewer teams should not show 3rd place.
+### Root Cause
 
-### Changes
+The `CompetitionTimeline` component wraps everything (timeline dots AND competition cards) in a single `div` with `onTouchStart`, `onTouchMove`, and `onTouchEnd` handlers. When you tap a competition card on mobile:
 
-**File: `src/components/CompetitionsTab.tsx`**
+1. `touchStart` fires, recording `touchStartX`
+2. `touchMove` may not fire at all (it's a tap, not a swipe), so `touchEndX` retains its stale value from a **previous** interaction
+3. `touchEnd` fires, computes `diff = touchStartX - touchEndX(stale)`, which can easily exceed the 50px threshold
+4. The week index changes while the competition detail page opens
 
-1. **Simulation modal text** (line 677): Change "top 3" to dynamically say "top 2" or "top 3" based on lineup size.
-2. **3rd place dropdown** (line 682): Conditionally render only if lineup > 6.
-3. **Save validation** (line 632): Allow saving without 3rd if lineup <= 6.
-4. **canSaveSimulation** (line 650): Same -- don't require 3rd for small comps.
+### Fix (in `src/components/CompetitionTimeline.tsx`)
 
-**File: `src/components/CompetitionDetail.tsx`**
+Three changes to the touch handling logic:
 
-1. **3rd place dropdown** (line 563): Conditionally render only if lineup > 6.
-2. **Save validation** (line 188): Allow saving without 3rd if lineup <= 6.
-3. **canSaveSimulation** (line 203): Don't require 3rd for small comps.
-4. **Section header** (line 556): "Top 3 Placings" becomes dynamic.
+1. **Reset `touchEndX` to match `touchStartX` on every new touch** -- so if no move occurs, diff is 0 (a tap)
+2. **Track whether a touchMove actually happened** via a `touchMoved` ref -- only process swipe if the user actually dragged their finger
+3. **Increase the swipe threshold from 50px to 80px** -- reduces false positives from minor finger wobble during taps
 
-**File: `src/pages/Index.tsx`**
+```text
+Before (lines 74-90):
+  handleTouchStart -> records touchStartX only
+  handleTouchMove  -> records touchEndX
+  handleTouchEnd   -> computes diff, threshold=50
 
-1. **Simulation points** (lines 272-274): Only add 3rd place simulation point if the competition has > 6 teams. This requires looking up the competition from the `competitions` array using `simulation.competitionId`.
-
-### Logic Pattern (same in both UI files)
-
-```typescript
-const lineupSize = Array.isArray(comp.lineup) ? comp.lineup.length : 0;
-const hasThirdPlace = lineupSize > 6;
-
-// canSaveSimulation: require 3rd only if hasThirdPlace
-const canSaveSimulation = predictions.first && predictions.second
-  && (hasThirdPlace ? predictions.third : true)
-  && predictions.first !== predictions.second
-  && (!hasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
-
-// Conditionally render 3rd dropdown
-{hasThirdPlace && <SimulationDropdown ... position="third" />}
+After:
+  handleTouchStart -> records touchStartX, resets touchEndX to same value, sets touchMoved=false
+  handleTouchMove  -> records touchEndX, sets touchMoved=true
+  handleTouchEnd   -> if !touchMoved, return early (it was a tap); threshold raised to 80
 ```
 
-For `Index.tsx` simulation points:
-```typescript
-if (simulation.predictions.third) {
-  const comp = competitions.find(c => c.id === simulation.competitionId);
-  const lineupSize = comp ? (Array.isArray(comp.lineup) ? comp.lineup.length : 0) : 0;
-  if (lineupSize > 6) {
-    pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
-  }
-}
-```
+### What stays the same
 
-### Summary
+- Initial week selection logic (finds current/nearest upcoming weekend) -- untouched
+- Timeline dot clicks, arrow navigation -- untouched
+- Mouse drag handling (desktop) -- untouched
+- The `activeWeekIndex` state and card rendering -- untouched
 
-| File | Change |
-|------|--------|
-| `src/components/CompetitionsTab.tsx` | Hide 3rd place dropdown and adjust validation for comps with 6 or fewer teams |
-| `src/components/CompetitionDetail.tsx` | Same changes for the detail modal simulation UI |
-| `src/pages/Index.tsx` | Skip 3rd place simulation points for small competitions |
