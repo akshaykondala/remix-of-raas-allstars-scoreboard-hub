@@ -1,33 +1,26 @@
 
 
-## Fix: Easier Drawer Dismissal + Prevent Handle Covering Logos
+## Add Rank Numbers (4-9) on Leaderboard
 
-### Problem 1: Hard to swipe down to dismiss
-The vaul drawer library uses a `closeThreshold` prop (default 0.25 -- user must drag 25% of drawer height). We'll lower this significantly and also increase the drag handle's touch target so there's more area to grab.
+### What Changes
 
-### Problem 2: Drag handle overlaps logos
-The sticky drag handle container sits on top of the scrollable content. The current handle area is ~30px tall (`mt-4` + `my-[14px]` + `h-2`), but header padding is only `pt-[28px]`. Because the handle is `sticky top-0 z-10`, it overlaps the top of the content beneath it.
+**File: `src/pages/Index.tsx` (lines ~671-682)**
 
-**Fix**: Increase the handle's touch target height and increase header top padding to guarantee no overlap.
+Add a rank number badge to each team card in the 4-9 qualified section, matching the style used for teams 10+ but with a blue/purple tint to indicate they're above the cutoff.
 
-### Changes
+Insert a rank badge between the team logo and info, similar to how ranks 10+ show their number. The badge will sit to the left of the team logo:
 
-**File: `src/components/ui/drawer.tsx`**
-1. Pass `closeThreshold={0.15}` to the vaul Root -- user only needs to drag 15% to dismiss (was 25%)
-2. Increase the drag handle touch target: taller padding area (e.g., `py-4` instead of `my-[14px]`) for easier grabbing. Total handle container height becomes ~40px.
+```
+<div className="w-8 h-8 bg-blue-500/20 border border-blue-400/30 rounded-xl flex items-center justify-center flex-shrink-0">
+  <span className="text-blue-300 font-bold text-sm">{rank}</span>
+</div>
+```
 
-**File: `src/components/TeamDetail.tsx`**
-1. Change header `pt-[28px]` to `pt-[44px]` to ensure the logo clears the sticky drag handle on all devices.
+This gets inserted inside the `flex items-center gap-4` div, before the team logo div.
 
-**File: `src/components/CompetitionDetail.tsx`**
-1. Same change: header `pt-[28px]` to `pt-[44px]`.
+### Summary
 
-### Technical Detail
-
-| File | Line(s) | Change |
-|------|---------|--------|
-| `src/components/ui/drawer.tsx` | ~4-7 | Add `closeThreshold={0.15}` to DrawerPrimitive.Root |
-| `src/components/ui/drawer.tsx` | ~24-26 | Increase handle touch area: `py-5` padding, wider handle bar |
-| `src/components/TeamDetail.tsx` | ~66 | `pt-[28px]` -> `pt-[44px]` |
-| `src/components/CompetitionDetail.tsx` | ~247 | `pt-[28px]` -> `pt-[44px]` |
+| File | Change |
+|------|--------|
+| `src/pages/Index.tsx` (~line 671) | Add rank number badge (4-9) before team logo in qualified teams section |
 
