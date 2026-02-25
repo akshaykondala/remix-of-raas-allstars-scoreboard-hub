@@ -244,7 +244,7 @@ export function CompetitionDetail({
         
         <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
-          <DrawerHeader className={`relative p-6 pb-4 pt-[28px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
+          <DrawerHeader className={`relative p-6 pb-4 pt-[44px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
             <div className="flex flex-col items-center text-center space-y-4">
               {/* Large Competition Logo with entrance animation */}
