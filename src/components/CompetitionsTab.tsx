@@ -628,8 +628,11 @@ export function CompetitionsTab({
       [position]: team
     }));
   };
+  const simulatingLineupSize = simulatingCompetition ? (Array.isArray(simulatingCompetition.lineup) ? simulatingCompetition.lineup.length : 0) : 0;
+  const simulatingHasThirdPlace = simulatingLineupSize > 6;
+
   const handleSaveSimulation = () => {
-    if (simulatingCompetition && predictions.first && predictions.second && predictions.third && onSimulationSet) {
+    if (simulatingCompetition && predictions.first && predictions.second && (simulatingHasThirdPlace ? predictions.third : true) && onSimulationSet) {
       onSimulationSet(simulatingCompetition.name, simulatingCompetition.id, predictions);
       setShowSuccessMessage(true);
       setTimeout(() => {
@@ -647,7 +650,7 @@ export function CompetitionsTab({
     });
     setShowSuccessMessage(false);
   };
-  const canSaveSimulation = predictions.first && predictions.second && predictions.third && predictions.first !== predictions.second && predictions.first !== predictions.third && predictions.second !== predictions.third;
+  const canSaveSimulation = predictions.first && predictions.second && (simulatingHasThirdPlace ? predictions.third : true) && predictions.first !== predictions.second && (!simulatingHasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
   const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
     if (!simulatingCompetition) return [];
 
@@ -674,12 +677,12 @@ export function CompetitionsTab({
           <div className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-bold text-foreground mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
-              <p className="text-muted-foreground text-sm mb-6 text-center">Predict the top 3 teams for this competition</p>
+              <p className="text-muted-foreground text-sm mb-6 text-center">Predict the top {simulatingHasThirdPlace ? '3' : '2'} teams for this competition</p>
               
               <div className="space-y-4 mb-6">
                 <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
                 <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
-                <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />
+                {simulatingHasThirdPlace && <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />}
               </div>
               
               <div className="flex gap-3">
