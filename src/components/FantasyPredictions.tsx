@@ -61,14 +61,17 @@ export function FantasyPredictions({ competitions, onClose }: FantasyPredictions
   };
 
   const calculatePoints = (competition: Competition, prediction: Prediction) => {
-    if (!competition.firstplace || !competition.secondplace || !competition.thirdplace) {
+    const lineupSize = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
+    const hasThird = lineupSize > 6;
+    
+    if (!competition.firstplace || !competition.secondplace || (!competition.thirdplace && hasThird)) {
       return null; // Results not available yet
     }
 
     let points = 0;
     if (prediction.first === competition.firstplace) points += 5;
     if (prediction.second === competition.secondplace) points += 3;
-    if (prediction.third === competition.thirdplace) points += 2;
+    if (hasThird && prediction.third === competition.thirdplace) points += 2;
     
     return points;
   };
@@ -126,6 +129,8 @@ export function FantasyPredictions({ competitions, onClose }: FantasyPredictions
             const savedPrediction = savedPredictions[comp.id];
             const points = savedPrediction ? calculatePoints(comp, savedPrediction) : null;
             const hasResults = !!(comp.firstplace && comp.secondplace && comp.thirdplace);
+            const lineupSize = Array.isArray(comp.lineup) ? comp.lineup.length : 0;
+            const hasThirdPlace = lineupSize > 6;
 
             return (
               <div key={comp.id} className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
@@ -142,7 +147,9 @@ export function FantasyPredictions({ competitions, onClose }: FantasyPredictions
                 </div>
 
                 <div className="space-y-3">
-                  {['first', 'second', 'third'].map((position) => {
+                  {(['first', 'second', 'third'] as const)
+                    .filter((position) => position !== 'third' || hasThirdPlace)
+                    .map((position) => {
                     const label = position === 'first' ? '1st' : position === 'second' ? '2nd' : '3rd';
                     const pointValue = position === 'first' ? 5 : position === 'second' ? 3 : 2;
                     const selectedTeamId = prediction?.[position as keyof Prediction];
