@@ -153,13 +153,7 @@ const Index = () => {
                            (entry?.teams_id?.name && entry.teams_id.name === teamName);
                   });
 
-                  const inAttending = Array.isArray(team.competitions_attending) &&
-                    team.competitions_attending.some((compObj: any) => {
-                      const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj?.id ?? compObj;
-                      return String(compId) === String(competition.id) || compId === competition.name;
-                    });
-
-                  if (!inLineup && !inAttending) return null;
+                  if (!inLineup) return null;
                   const [y, m, d] = (competition.date || '').split('-').map(Number);
                   const compDate = new Date(y, m - 1, d);
                   const now = new Date();
@@ -173,7 +167,8 @@ const Index = () => {
                   placement,
                   bidPointsEarned: pointsEarned,
                   cumulativeBidPoints: 0,
-                  date: competition.date || ''
+                  date: competition.date || '',
+                  isBidCompetition: competition.bid_status === true
                 };
               }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
               
@@ -307,70 +302,35 @@ const Index = () => {
       return b.bidPoints - a.bidPoints;
     }
 
-    // TIEBREAKER 1: Ratio of number of placings to number of attended Bid Competitions
-    // A "placing" means 1st, 2nd, or 3rd place finish
-    const aCompetitionResults = a.competitionResults || [];
-    const bCompetitionResults = b.competitionResults || [];
-    
-    // Count number of bid competitions attended (using competitionResults as proxy)
-    // If competitions_attending exists and has more entries, use that for total count
-    const aBidCompetitionsCount = Math.max(
-      aCompetitionResults.length,
-      (a.competitions_attending || []).length
+    // Filter to COMPLETED BID COMPETITIONS only for all tiebreakers
+    const aBidResults = (a.competitionResults || []).filter(
+      r => r.isBidCompetition && r.placement !== 'Upcoming'
     );
-    const bBidCompetitionsCount = Math.max(
-      bCompetitionResults.length,
-      (b.competitions_attending || []).length
+    const bBidResults = (b.competitionResults || []).filter(
+      r => r.isBidCompetition && r.placement !== 'Upcoming'
     );
-    
-    // Count placings (1st, 2nd, or 3rd)
-    const aPlacingsCount = aCompetitionResults.filter(
-      result => result.placement === '1st' || result.placement === '2nd' || result.placement === '3rd'
-    ).length;
-    const bPlacingsCount = bCompetitionResults.filter(
-      result => result.placement === '1st' || result.placement === '2nd' || result.placement === '3rd'
-    ).length;
-    
-    // Calculate ratio (placings / bid competitions)
-    const aPlacingRatio = aBidCompetitionsCount > 0 ? aPlacingsCount / aBidCompetitionsCount : 0;
-    const bPlacingRatio = bBidCompetitionsCount > 0 ? bPlacingsCount / bBidCompetitionsCount : 0;
-    
-    if (Math.abs(bPlacingRatio - aPlacingRatio) > 0.0001) { // Avoid floating point precision issues
-      return bPlacingRatio - aPlacingRatio; // Higher ratio is better
-    }
+
+    // TIEBREAKER 1: Ratio of placings to attended Bid Competitions
+    const aPlacings = aBidResults.filter(r => ['1st','2nd','3rd'].includes(r.placement!)).length;
+    const bPlacings = bBidResults.filter(r => ['1st','2nd','3rd'].includes(r.placement!)).length;
+    const aRatio = aBidResults.length > 0 ? aPlacings / aBidResults.length : 0;
+    const bRatio = bBidResults.length > 0 ? bPlacings / bBidResults.length : 0;
+    if (Math.abs(bRatio - aRatio) > 0.0001) return bRatio - aRatio;
 
     // TIEBREAKER 2: Number of first places
-    const aFirstPlaces = aCompetitionResults.filter(
-      result => result.placement === '1st'
-    ).length;
-    const bFirstPlaces = bCompetitionResults.filter(
-      result => result.placement === '1st'
-    ).length;
-    if (bFirstPlaces !== aFirstPlaces) {
-      return bFirstPlaces - aFirstPlaces;
-    }
+    const aFirsts = aBidResults.filter(r => r.placement === '1st').length;
+    const bFirsts = bBidResults.filter(r => r.placement === '1st').length;
+    if (bFirsts !== aFirsts) return bFirsts - aFirsts;
 
     // TIEBREAKER 3: Number of second places
-    const aSecondPlaces = aCompetitionResults.filter(
-      result => result.placement === '2nd'
-    ).length;
-    const bSecondPlaces = bCompetitionResults.filter(
-      result => result.placement === '2nd'
-    ).length;
-    if (bSecondPlaces !== aSecondPlaces) {
-      return bSecondPlaces - aSecondPlaces;
-    }
+    const aSeconds = aBidResults.filter(r => r.placement === '2nd').length;
+    const bSeconds = bBidResults.filter(r => r.placement === '2nd').length;
+    if (bSeconds !== aSeconds) return bSeconds - aSeconds;
 
     // TIEBREAKER 4: Number of third places
-    const aThirdPlaces = aCompetitionResults.filter(
-      result => result.placement === '3rd'
-    ).length;
-    const bThirdPlaces = bCompetitionResults.filter(
-      result => result.placement === '3rd'
-    ).length;
-    if (bThirdPlaces !== aThirdPlaces) {
-      return bThirdPlaces - aThirdPlaces;
-    }
+    const aThirds = aBidResults.filter(r => r.placement === '3rd').length;
+    const bThirds = bBidResults.filter(r => r.placement === '3rd').length;
+    if (bThirds !== aThirds) return bThirds - aThirds;
 
     // TIEBREAKER 5: Average of standardized scores across all attended Bid Competitions and the respective judges
     // NOTE: Standardized scores refer to normalized, scaled scores prior to bonus point determination

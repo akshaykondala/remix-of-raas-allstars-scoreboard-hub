@@ -31,6 +31,7 @@ export interface Team {
     bidPointsEarned: number;
     cumulativeBidPoints: number;
     date?: string;
+    isBidCompetition?: boolean;
   }>;
 }
 
