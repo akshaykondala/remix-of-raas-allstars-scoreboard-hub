@@ -184,8 +184,11 @@ export function CompetitionDetail({
       [position]: team
     }));
   };
+  const detailLineupSize = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
+  const detailHasThirdPlace = detailLineupSize > 6;
+
   const handleSaveSimulation = () => {
-    if (predictions.first && predictions.second && predictions.third && onSimulationSet) {
+    if (predictions.first && predictions.second && (detailHasThirdPlace ? predictions.third : true) && onSimulationSet) {
       onSimulationSet(competition.name, competition.id, predictions);
       setShowSuccessMessage(true);
       setTimeout(() => {
@@ -200,7 +203,7 @@ export function CompetitionDetail({
       onTeamClick(team);
     }
   };
-  const canSaveSimulation = predictions.first && predictions.second && predictions.third && predictions.first !== predictions.second && predictions.first !== predictions.third && predictions.second !== predictions.third;
+  const canSaveSimulation = predictions.first && predictions.second && (detailHasThirdPlace ? predictions.third : true) && predictions.first !== predictions.second && (!detailHasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
   const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
     switch (position) {
       case 'first':
@@ -553,14 +556,14 @@ export function CompetitionDetail({
                   <div className="bg-yellow-500/20 rounded-full p-1.5 mr-2">
                     <Trophy className="h-3.5 w-3.5 text-yellow-400" />
                   </div>
-                  Top 3 Placings
+                  Top {detailHasThirdPlace ? '3' : '2'} Placings
                 </h3>
                 
                 {isFutureCompetition ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
                     <p className="text-slate-400 text-xs mb-2 text-center">Select teams for predictions:</p>
                     <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
                     <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
-                    <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />
+                    {detailHasThirdPlace && <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />}
                     
                     {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
                         {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}

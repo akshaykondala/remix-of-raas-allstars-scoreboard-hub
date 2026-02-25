@@ -270,7 +270,11 @@ const Index = () => {
         pointsMap[simulation.predictions.second] = (pointsMap[simulation.predictions.second] || 0) + 2;
       }
       if (simulation.predictions.third) {
-        pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
+        const comp = competitions.find(c => c.id === simulation.competitionId);
+        const lineupSize = comp ? (Array.isArray(comp.lineup) ? comp.lineup.length : 0) : 0;
+        if (lineupSize > 6) {
+          pointsMap[simulation.predictions.third] = (pointsMap[simulation.predictions.third] || 0) + 1;
+        }
       }
     });
 
