@@ -103,8 +103,11 @@ export async function fetchTeams() {
             placement = '2nd';
             pointsEarned = 2;
           } else if (String(competition.thirdplace) === teamIdStr || competition.thirdplace === teamName) {
-            placement = '3rd';
-            pointsEarned = 1;
+            const lineupSize = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
+            if (lineupSize > 6) {
+              placement = '3rd';
+              pointsEarned = 1;
+            }
           }
           
           if (placement === 'N/A') {
