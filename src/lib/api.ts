@@ -108,21 +108,13 @@ export async function fetchTeams() {
           }
           
           if (placement === 'N/A') {
-            // Check 1: Is team in the competition's lineup?
             const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry: any) => {
               const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
               return String(entryTeamId) === teamIdStr || 
                      (entry?.teams_id?.name && entry.teams_id.name === teamName);
             });
             
-            // Check 2: Is competition in team's competitions_attending?
-            const inAttending = Array.isArray(team.competitions_attending) && 
-              team.competitions_attending.some((compObj: any) => {
-                const compId = compObj?.competitions_id?.id ?? compObj?.competitions_id ?? compObj;
-                return String(compId) === String(competition.id);
-              });
-            
-            if (!inLineup && !inAttending) return null;
+            if (!inLineup) return null;
             const [y, m, d] = (competition.date || '').split('-').map(Number);
             const compDate = new Date(y, m - 1, d);
             const now = new Date();
@@ -136,7 +128,8 @@ export async function fetchTeams() {
             placement,
             bidPointsEarned: pointsEarned,
             cumulativeBidPoints: 0,
-            date: competition.date || ''
+            date: competition.date || '',
+            isBidCompetition: competition.bid_status === true
           };
         }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
