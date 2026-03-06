@@ -1,35 +1,55 @@
 
+Goal: Make tie ordering match the spreadsheet exactly by using the spreadsheet’s displayed order (top-to-bottom in the provided tab) as the only tie-break source.
 
-## Fix: Tiebreaker Ranking Not Matching Spreadsheet
+What I found:
+- Current fetch uses `.../gviz/tq?tqx=out:csv` without `gid`, so it does not explicitly lock to your tab (`gid=1418394758`).
+- Current ranking uses CSV row index (`i`) instead of the sheet’s Position value and can silently fall back to alphabetical when any name misses.
+- Any missed match makes tie groups look “wrong/opposite” because fallback kicks in.
 
-### Problem Identified
+Implementation plan:
+1) Lock fetch to your exact tab
+- In `src/lib/fetchTiebreakerRanking.ts`, switch URL to:
+  `https://docs.google.com/spreadsheets/d/<SHEET_ID>/export?format=csv&gid=1418394758`
+- This guarantees we read the exact sheet tab you linked.
 
-The Google Sheet CSV fetch works correctly and returns the right data. However, the tiebreaker is likely failing because **team names from Directus don't exactly match team names in the spreadsheet**. When a name doesn't match, the team gets rank 9999, and all tied teams fall back to alphabetical order -- which produces an order opposite to the spreadsheet.
+2) Build ranking from sheet data, not loop index
+- Parse each row and read:
+  - Column A = `Position` (numeric rank)
+  - Column B = `Team`
+- Store `team -> position` from column A (ignore blank/non-numeric rows).
+- Do not depend on `i` row number.
 
-For example, the spreadsheet has `"UConn ThundeRaas "` (trailing space inside quotes), and Directus may store the name slightly differently (e.g., `"UConn ThundeRaas"` without trailing space, or with different capitalization/punctuation).
+3) Make matching deterministic and forgiving
+- Replace normalization with a stricter canonical key on both sides (sheet + Directus team names):
+  - lowercase
+  - unicode normalize
+  - remove all non-alphanumeric chars (spaces, apostrophes, hyphens, punctuation)
+- Keep one canonical map only; no ambiguous dual-logic.
 
-### Changes
+4) Enforce tie logic exactly as requested
+- In `src/pages/Index.tsx` comparator:
+  - Primary: `bidPoints` descending
+  - If tied: compare `sheetPosition` ascending (smaller position = higher)
+  - If both missing from sheet: alphabetical fallback only as last resort
+- Add one concise warning listing unmatched team names (once), so misses are obvious.
 
-**1. `src/lib/fetchTiebreakerRanking.ts`**
-- Add debug logging: log each parsed team name and the final map so we can verify matches
-- Normalize team names more aggressively: lowercase, trim, and also strip extra internal whitespace
-- Also store a normalized version that removes common punctuation differences (apostrophes, hyphens) as a fallback key
+5) Remove noisy debug spam, keep focused diagnostics
+- Remove per-row `console.log` spam.
+- Keep a single summary log in dev for:
+  - count of mapped teams
+  - unmatched app teams (if any)
 
-**2. `src/pages/Index.tsx`**
-- In `tiebreakerSort`, normalize the team name the same way before looking up in the map
-- Add a `console.log` showing the final sorted order with ranks for debugging
-- After the ranking map loads, log which teams matched and which didn't so any name mismatches are immediately visible
+Acceptance criteria (must pass):
+- Tie groups are ordered exactly by sheet position:
+  - 7-point tie: Northeastern Nakhraas above Purdue Raas
+  - 5-point tie: UConn ThundeRaas above UF GatoRaas
+  - 2-point tie: RU Raga, TAMU Wreckin’ Raas, Cornell Big Red Raas, UC Berkeley Raas Ramzat
+  - 1-point tie: Michigan Wolveraas, UMD EntouRaas, Illini Raas
+- No alphabetical fallback occurs for teams present in the sheet tab.
 
-### Normalization Strategy
-
-Both the spreadsheet names and Directus names will be normalized using:
-```
-name.toLowerCase().trim().replace(/\s+/g, ' ')
-```
-
-This handles trailing spaces, double spaces, and case differences. If needed, a second-pass match could strip punctuation (`'`, `'`, `-`) for fuzzy matching.
-
-### Outcome
-
-Teams with equal bid points will be ordered exactly as they appear in the spreadsheet. Any unmatched names will be logged to the console for easy diagnosis.
-
+Technical details:
+- Files to update:
+  - `src/lib/fetchTiebreakerRanking.ts` (URL, parsing by Position+Team, canonicalization, concise diagnostics)
+  - `src/pages/Index.tsx` (tie comparator uses canonical lookup only)
+- Optional hardening:
+  - Use env vars `VITE_TIEBREAKER_SHEET_ID` and `VITE_TIEBREAKER_GID` after immediate fix to avoid hardcoding.
