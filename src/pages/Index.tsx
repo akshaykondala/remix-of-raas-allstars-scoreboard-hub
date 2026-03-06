@@ -313,16 +313,9 @@ const Index = () => {
       return b.bidPoints - a.bidPoints;
     }
 
-    // Tiebreaker: Use Google Sheet ranking order (normalized names)
-    const aNorm = normalizeName(a.name);
-    const bNorm = normalizeName(b.name);
-    const aRank = tiebreakerRankingMap.get(aNorm) ?? 9999;
-    const bRank = tiebreakerRankingMap.get(bNorm) ?? 9999;
-    
-    if (aRank === 9999 && aRank === bRank) {
-      console.warn(`[Tiebreaker] Neither team found in sheet: "${a.name}" (${aNorm}), "${b.name}" (${bNorm})`);
-    }
-    
+    // Tiebreaker: Use Google Sheet Position (ascending = higher rank)
+    const aRank = tiebreakerRankingMap.get(normalizeName(a.name)) ?? 9999;
+    const bRank = tiebreakerRankingMap.get(normalizeName(b.name)) ?? 9999;
     if (aRank !== bRank) return aRank - bRank;
 
     // Final fallback: Alphabetical

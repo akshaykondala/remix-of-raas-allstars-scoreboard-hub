@@ -1,24 +1,21 @@
 const SHEET_ID = '1ZwhzO49wsBv_a8T_gyF_dihhH9FmjDQdGXknS6_-Uqw';
+const GID = '1418394758';
 
-/** Normalize a team name for matching: lowercase, trim, collapse whitespace, strip punctuation */
+/** Strip to lowercase alphanumeric only for robust matching */
 export function normalizeName(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/['''\-]/g, '');
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
 /**
- * Fetches the tiebreaker ranking from a public Google Sheet.
- * Returns a Map of normalized team name → rank position (1-based).
+ * Fetches the tiebreaker ranking from a public Google Sheet (specific tab).
+ * Returns a Map of normalized team name → Position value from Column A.
  * On failure, returns an empty map (ties fall back to alphabetical).
  */
 export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
   const rankingMap = new Map<string, number>();
 
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
     const response = await fetch(url);
     if (!response.ok) return rankingMap;
 
@@ -28,17 +25,17 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
     // Skip header row (line 0), parse remaining rows
     for (let i = 1; i < lines.length; i++) {
       const fields = parseCSVLine(lines[i]);
-      // Column B (index 1) is the Team name
+      // Column A (index 0) = Position, Column B (index 1) = Team
+      const posStr = fields[0]?.replace(/^"|"$/g, '').trim();
       const rawName = fields[1]?.replace(/^"|"$/g, '').trim();
-      if (rawName) {
-        const normalized = normalizeName(rawName);
-        rankingMap.set(normalized, i);
-        console.log(`[Tiebreaker] Sheet row ${i}: "${rawName}" → normalized: "${normalized}"`);
+      const position = parseInt(posStr, 10);
+      if (rawName && !isNaN(position)) {
+        rankingMap.set(normalizeName(rawName), position);
       }
     }
-    console.log('[Tiebreaker] Final ranking map:', Object.fromEntries(rankingMap));
+    console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet`);
   } catch (error) {
-    console.warn('Failed to fetch tiebreaker ranking from Google Sheet:', error);
+    console.warn('Failed to fetch tiebreaker ranking:', error);
   }
 
   return rankingMap;
