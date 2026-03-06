@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
 import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
-import { fetchTiebreakerRanking } from '@/lib/fetchTiebreakerRanking';
+import { fetchTiebreakerRanking, normalizeName } from '@/lib/fetchTiebreakerRanking';
 
 
 
@@ -313,9 +313,16 @@ const Index = () => {
       return b.bidPoints - a.bidPoints;
     }
 
-    // Tiebreaker: Use Google Sheet ranking order
-    const aRank = tiebreakerRankingMap.get(a.name.toLowerCase().trim()) ?? 9999;
-    const bRank = tiebreakerRankingMap.get(b.name.toLowerCase().trim()) ?? 9999;
+    // Tiebreaker: Use Google Sheet ranking order (normalized names)
+    const aNorm = normalizeName(a.name);
+    const bNorm = normalizeName(b.name);
+    const aRank = tiebreakerRankingMap.get(aNorm) ?? 9999;
+    const bRank = tiebreakerRankingMap.get(bNorm) ?? 9999;
+    
+    if (aRank === 9999 && aRank === bRank) {
+      console.warn(`[Tiebreaker] Neither team found in sheet: "${a.name}" (${aNorm}), "${b.name}" (${bNorm})`);
+    }
+    
     if (aRank !== bRank) return aRank - bRank;
 
     // Final fallback: Alphabetical
