@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
 import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
+import { fetchTiebreakerRanking } from '@/lib/fetchTiebreakerRanking';
 
 
 
@@ -40,6 +41,7 @@ const Index = () => {
   const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]);
   const [loading, setLoading] = useState(false);
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
+  const [tiebreakerRankingMap, setTiebreakerRankingMap] = useState<Map<string, number>>(new Map());
 
   const handleLoadingComplete = useCallback(() => setAnimationReady(true), []);
 
@@ -77,10 +79,12 @@ const Index = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [teams, competitionsData] = await Promise.all([
+        const [teams, competitionsData, rankingMap] = await Promise.all([
           fetchTeams(),
-          fetchFromDirectus('competitions')
+          fetchFromDirectus('competitions'),
+          fetchTiebreakerRanking()
         ]);
+        setTiebreakerRankingMap(rankingMap);
         
         // Map competitions data FIRST
         let mappedCompetitions: any[] = [];
@@ -302,77 +306,19 @@ const Index = () => {
     }
   }, [simulationData, originalTeamsData]);
 
-  // Official Tiebreaker function for teams with equal bid points
-  // Rules as specified for determining top nine qualifying teams
+  // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
   const tiebreakerSort = (a: Team, b: Team): number => {
     // Primary sort: Bid points (descending)
     if (b.bidPoints !== a.bidPoints) {
       return b.bidPoints - a.bidPoints;
     }
 
-    // Filter to COMPLETED BID COMPETITIONS only for all tiebreakers
-    const aBidResults = (a.competitionResults || []).filter(
-      r => r.isBidCompetition && r.placement !== 'Upcoming'
-    );
-    const bBidResults = (b.competitionResults || []).filter(
-      r => r.isBidCompetition && r.placement !== 'Upcoming'
-    );
+    // Tiebreaker: Use Google Sheet ranking order
+    const aRank = tiebreakerRankingMap.get(a.name.toLowerCase().trim()) ?? 9999;
+    const bRank = tiebreakerRankingMap.get(b.name.toLowerCase().trim()) ?? 9999;
+    if (aRank !== bRank) return aRank - bRank;
 
-    // TIEBREAKER 1: Ratio of placings to attended Bid Competitions
-    const aPlacings = aBidResults.filter(r => ['1st','2nd','3rd'].includes(r.placement!)).length;
-    const bPlacings = bBidResults.filter(r => ['1st','2nd','3rd'].includes(r.placement!)).length;
-    const aRatio = aBidResults.length > 0 ? aPlacings / aBidResults.length : 0;
-    const bRatio = bBidResults.length > 0 ? bPlacings / bBidResults.length : 0;
-    if (Math.abs(bRatio - aRatio) > 0.0001) return bRatio - aRatio;
-
-    // TIEBREAKER 2: Number of first places
-    const aFirsts = aBidResults.filter(r => r.placement === '1st').length;
-    const bFirsts = bBidResults.filter(r => r.placement === '1st').length;
-    if (bFirsts !== aFirsts) return bFirsts - aFirsts;
-
-    // TIEBREAKER 3: Number of second places
-    const aSeconds = aBidResults.filter(r => r.placement === '2nd').length;
-    const bSeconds = bBidResults.filter(r => r.placement === '2nd').length;
-    if (bSeconds !== aSeconds) return bSeconds - aSeconds;
-
-    // TIEBREAKER 4: Number of third places
-    const aThirds = aBidResults.filter(r => r.placement === '3rd').length;
-    const bThirds = bBidResults.filter(r => r.placement === '3rd').length;
-    if (bThirds !== aThirds) return bThirds - aThirds;
-
-    // TIEBREAKER 5: Average of standardized scores across all attended Bid Competitions and the respective judges
-    // NOTE: Standardized scores refer to normalized, scaled scores prior to bonus point determination
-    // TODO: Add standardizedScores field to competitionResults when available in data structure
-    // For now, if this data doesn't exist, we'll skip to next tiebreaker
-    // This would be calculated as: average of (standardizedScore) across all competitionResults
-    // const aAvgStandardizedScore = calculateAverageStandardizedScore(aCompetitionResults);
-    // const bAvgStandardizedScore = calculateAverageStandardizedScore(bCompetitionResults);
-    // if (aAvgStandardizedScore !== null && bAvgStandardizedScore !== null && 
-    //     Math.abs(bAvgStandardizedScore - aAvgStandardizedScore) > 0.0001) {
-    //   return bAvgStandardizedScore - aAvgStandardizedScore;
-    // }
-
-    // TIEBREAKER 6: Average of first place bonus points across all attended Bid Competitions and the respective judges
-    // TODO: Add firstPlaceBonusPoints field to competitionResults when available in data structure
-    // For now, if this data doesn't exist, we'll skip to next tiebreaker
-    // const aAvgFirstPlaceBonus = calculateAverageFirstPlaceBonus(aCompetitionResults);
-    // const bAvgFirstPlaceBonus = calculateAverageFirstPlaceBonus(bCompetitionResults);
-    // if (aAvgFirstPlaceBonus !== null && bAvgFirstPlaceBonus !== null && 
-    //     Math.abs(bAvgFirstPlaceBonus - aAvgFirstPlaceBonus) > 0.0001) {
-    //   return bAvgFirstPlaceBonus - aAvgFirstPlaceBonus;
-    // }
-
-    // TIEBREAKER 7: Average of second place bonus points across all attended Bid Competitions and the respective judges
-    // TODO: Add secondPlaceBonusPoints field to competitionResults when available in data structure
-    // For now, if this data doesn't exist, we'll skip to next tiebreaker
-    // const aAvgSecondPlaceBonus = calculateAverageSecondPlaceBonus(aCompetitionResults);
-    // const bAvgSecondPlaceBonus = calculateAverageSecondPlaceBonus(bCompetitionResults);
-    // if (aAvgSecondPlaceBonus !== null && bAvgSecondPlaceBonus !== null && 
-    //     Math.abs(bAvgSecondPlaceBonus - aAvgSecondPlaceBonus) > 0.0001) {
-    //   return bAvgSecondPlaceBonus - aAvgSecondPlaceBonus;
-    // }
-
-    // Final tiebreaker: Alphabetical by name (for deterministic ordering when all else is equal)
+    // Final fallback: Alphabetical
     return a.name.localeCompare(b.name);
   };
 
