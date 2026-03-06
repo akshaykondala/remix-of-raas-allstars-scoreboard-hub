@@ -3,6 +3,8 @@ import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDo
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
+import { buildRankMap } from '@/lib/sorting';
+import { fetchTiebreakerRanking } from '@/lib/fetchTiebreakerRanking';
 
 function getInstagramEmbedUrl(url?: string): string | null {
   if (!url) return null;
@@ -106,6 +108,10 @@ export function CompetitionDetail({
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [open, setOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [sheetRankMap, setSheetRankMap] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    fetchTiebreakerRanking().then(m => setSheetRankMap(m));
+  }, []);
 
   const snapScrollTop = () => {
     const el = scrollRef.current;
@@ -504,26 +510,7 @@ export function CompetitionDetail({
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
                 <div className="grid gap-1.5">
                     {(() => {
-                      // Compute leaderboard rank map
-                      const ranked = teams
-                        .filter(t => t.bidPoints > 0)
-                        .sort((a, b) => {
-                          if (b.bidPoints !== a.bidPoints) return b.bidPoints - a.bidPoints;
-                          const aResults = a.competitionResults || [];
-                          const bResults = b.competitionResults || [];
-                          const aAttended = aResults.length || 1;
-                          const bAttended = bResults.length || 1;
-                          const aRatio = aResults.filter(r => r.placement && r.placement !== 'Competed' && r.placement !== 'N/A').length / aAttended;
-                          const bRatio = bResults.filter(r => r.placement && r.placement !== 'Competed' && r.placement !== 'N/A').length / bAttended;
-                          if (bRatio !== aRatio) return bRatio - aRatio;
-                          const aFirsts = aResults.filter(r => r.placement === '1st').length;
-                          const bFirsts = bResults.filter(r => r.placement === '1st').length;
-                          if (bFirsts !== aFirsts) return bFirsts - aFirsts;
-                          const aSeconds = aResults.filter(r => r.placement === '2nd').length;
-                          const bSeconds = bResults.filter(r => r.placement === '2nd').length;
-                          return bSeconds - aSeconds;
-                        });
-                      const rankMap = new Map(ranked.map((t, i) => [t.id, i + 1]));
+                      const rankMap = buildRankMap(teams, sheetRankMap);
 
                       return (competition.lineup || []).map((team, index) => {
                         const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
