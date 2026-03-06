@@ -1,8 +1,17 @@
 const SHEET_ID = '1ZwhzO49wsBv_a8T_gyF_dihhH9FmjDQdGXknS6_-Uqw';
 
+/** Normalize a team name for matching: lowercase, trim, collapse whitespace, strip punctuation */
+export function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/['''\-]/g, '');
+}
+
 /**
  * Fetches the tiebreaker ranking from a public Google Sheet.
- * Returns a Map of lowercase-trimmed team name → rank position (1-based).
+ * Returns a Map of normalized team name → rank position (1-based).
  * On failure, returns an empty map (ties fall back to alphabetical).
  */
 export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
@@ -18,14 +27,16 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
 
     // Skip header row (line 0), parse remaining rows
     for (let i = 1; i < lines.length; i++) {
-      // Simple CSV parse: split by comma, handle quoted fields
       const fields = parseCSVLine(lines[i]);
       // Column B (index 1) is the Team name
-      const teamName = fields[1]?.replace(/^"|"$/g, '').trim();
-      if (teamName) {
-        rankingMap.set(teamName.toLowerCase(), i);
+      const rawName = fields[1]?.replace(/^"|"$/g, '').trim();
+      if (rawName) {
+        const normalized = normalizeName(rawName);
+        rankingMap.set(normalized, i);
+        console.log(`[Tiebreaker] Sheet row ${i}: "${rawName}" → normalized: "${normalized}"`);
       }
     }
+    console.log('[Tiebreaker] Final ranking map:', Object.fromEntries(rankingMap));
   } catch (error) {
     console.warn('Failed to fetch tiebreaker ranking from Google Sheet:', error);
   }
