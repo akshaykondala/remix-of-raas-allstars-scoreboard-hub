@@ -13,7 +13,7 @@ import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
 import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 import { fetchTiebreakerRanking, normalizeName } from '@/lib/fetchTiebreakerRanking';
-import { createTeamComparator } from '@/lib/sorting';
+import { createTeamComparator, logTiebreakerDiagnostics } from '@/lib/sorting';
 
 
 
@@ -309,6 +309,13 @@ const Index = () => {
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
   const tiebreakerSort = createTeamComparator(tiebreakerRankingMap);
+
+  // Log diagnostics once when data is ready
+  useEffect(() => {
+    if (teamsData.length > 0 && tiebreakerRankingMap.size > 0) {
+      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap);
+    }
+  }, [teamsData, tiebreakerRankingMap]);
 
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
   const sortedTeams = [...teamsData].sort(tiebreakerSort);
@@ -784,6 +791,7 @@ const Index = () => {
               teams={teamsData}
               onTeamClick={handleTeamClick}
               zIndex={modal.zIndex}
+              rankingMap={tiebreakerRankingMap}
             />
           );
         }

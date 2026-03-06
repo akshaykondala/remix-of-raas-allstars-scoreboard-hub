@@ -8,7 +8,7 @@ export function normalizeName(name: string): string {
 
 /**
  * Fetches the tiebreaker ranking from a public Google Sheet (specific tab).
- * Returns a Map of normalized team name → Position value from Column A.
+ * Returns a Map of normalized team name → numeric Position from Column A.
  * On failure, returns an empty map (ties fall back to alphabetical).
  */
 export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
@@ -22,17 +22,23 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
     const csv = await response.text();
     const lines = csv.split('\n').filter(line => line.trim().length > 0);
 
-    // Skip header row (line 0), use row order as rank
-    let rank = 1;
+    // Skip header row (line 0)
     for (let i = 1; i < lines.length; i++) {
       const fields = parseCSVLine(lines[i]);
+      const positionStr = fields[0]?.replace(/^"|"$/g, '').trim();
       const rawName = fields[1]?.replace(/^"|"$/g, '').trim();
-      if (rawName) {
-        rankingMap.set(normalizeName(rawName), rank);
-        rank++;
+      const position = parseInt(positionStr, 10);
+
+      if (rawName && !isNaN(position)) {
+        const normalized = normalizeName(rawName);
+        rankingMap.set(normalized, position);
       }
     }
-    console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet`);
+    // Log all entries for debugging
+    console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet:`);
+    rankingMap.forEach((pos, name) => {
+      console.log(`  [Sheet] "${name}" → position ${pos}`);
+    });
   } catch (error) {
     console.warn('Failed to fetch tiebreaker ranking:', error);
   }
