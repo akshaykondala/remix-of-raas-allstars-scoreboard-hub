@@ -7,6 +7,49 @@ export function normalizeName(name: string): string {
 }
 
 /**
+ * Simple Levenshtein distance for fuzzy matching.
+ */
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * Look up a normalized name in the ranking map.
+ * Tries exact match first, then fuzzy match (Levenshtein distance ≤ 3).
+ */
+export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>): number | undefined {
+  // Exact match
+  const exact = rankingMap.get(normalizedName);
+  if (exact !== undefined) return exact;
+
+  // Fuzzy match: find closest sheet name within distance 3
+  let bestDist = Infinity;
+  let bestPos: number | undefined;
+  for (const [sheetName, pos] of rankingMap.entries()) {
+    const dist = levenshtein(normalizedName, sheetName);
+    if (dist < bestDist && dist <= 3) {
+      bestDist = dist;
+      bestPos = pos;
+    }
+  }
+  if (bestPos !== undefined) {
+    console.log(`[Tiebreaker] Fuzzy matched "${normalizedName}" → sheet entry (distance ${bestDist}), position ${bestPos}`);
+  }
+  return bestPos;
+}
+
+/**
  * Fetches the tiebreaker ranking from a public Google Sheet (specific tab).
  * Returns a Map of normalized team name → numeric Position from Column A.
  * On failure, returns an empty map (ties fall back to alphabetical).

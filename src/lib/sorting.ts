@@ -1,33 +1,31 @@
 import { Team } from './types';
-import { normalizeName } from './fetchTiebreakerRanking';
+import { normalizeName, fuzzyLookup } from './fetchTiebreakerRanking';
 
 /**
  * Creates a comparator that sorts teams by:
  * 1. bidPoints descending
  * 2. Google Sheet position ascending (lower position number = higher rank = listed first)
- * 3. Teams found in sheet always beat unmatched teams in a tie
- * 4. Alphabetical fallback
+ *    Uses fuzzy matching to handle minor name differences
+ * 3. Alphabetical fallback (no more "unmatched auto-loses")
  */
 export function createTeamComparator(rankingMap: Map<string, number>) {
   return (a: Team, b: Team): number => {
     // Primary: higher bid points first
     if (b.bidPoints !== a.bidPoints) return b.bidPoints - a.bidPoints;
 
-    // Tiebreaker: use sheet position (lower number = better)
+    // Tiebreaker: use sheet position with fuzzy matching
     const aKey = normalizeName(a.name);
     const bKey = normalizeName(b.name);
-    const aRank = rankingMap.get(aKey);
-    const bRank = rankingMap.get(bKey);
+    const aRank = fuzzyLookup(aKey, rankingMap);
+    const bRank = fuzzyLookup(bKey, rankingMap);
 
     // If both found in sheet, compare positions
     if (aRank !== undefined && bRank !== undefined) {
       return aRank - bRank; // lower position wins
     }
-    // If only one found, that one wins
-    if (aRank !== undefined && bRank === undefined) return -1;
-    if (aRank === undefined && bRank !== undefined) return 1;
 
-    // Neither found: alphabetical
+    // If only one or neither found, fall back to alphabetical
+    // (no more "matched beats unmatched" rule that caused inversions)
     return a.name.localeCompare(b.name);
   };
 }
@@ -46,18 +44,27 @@ export function buildRankMap(teams: Team[], rankingMap: Map<string, number>): Ma
  * Logs diagnostic info about tie groups and name matching.
  */
 export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, number>) {
-  // Check for unmatched names
-  const appNames = teams.filter(t => t.bidPoints > 0).map(t => ({
-    original: t.name,
-    normalized: normalizeName(t.name),
-    matched: rankingMap.has(normalizeName(t.name)),
-    sheetRank: rankingMap.get(normalizeName(t.name)),
-  }));
+  // Log every team with bid points: name, normalized, match status, position
+  const appNames = teams.filter(t => t.bidPoints > 0).map(t => {
+    const normalized = normalizeName(t.name);
+    const rank = fuzzyLookup(normalized, rankingMap);
+    return {
+      original: t.name,
+      normalized,
+      matched: rank !== undefined,
+      sheetRank: rank,
+    };
+  });
+
+  console.log(`[Tiebreaker] Diagnostic: ${appNames.length} teams with bid points:`);
+  appNames.forEach(n => {
+    const status = n.matched ? `✅ position ${n.sheetRank}` : '❌ UNMATCHED';
+    console.log(`  "${n.original}" → "${n.normalized}" → ${status}`);
+  });
 
   const unmatched = appNames.filter(n => !n.matched);
   if (unmatched.length > 0) {
-    console.warn(`[Tiebreaker] ⚠️ ${unmatched.length} app team(s) NOT found in sheet:`);
-    unmatched.forEach(n => console.warn(`  App name: "${n.original}" → normalized: "${n.normalized}"`));
+    console.warn(`[Tiebreaker] ⚠️ ${unmatched.length} team(s) still unmatched after fuzzy matching`);
   }
 
   // Log tie groups
@@ -66,11 +73,13 @@ export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, 
   sorted.forEach(t => {
     const pts = t.bidPoints;
     if (!groups.has(pts)) groups.set(pts, []);
+    const normalized = normalizeName(t.name);
+    const rank = fuzzyLookup(normalized, rankingMap);
     groups.get(pts)!.push({
       original: t.name,
-      normalized: normalizeName(t.name),
-      matched: rankingMap.has(normalizeName(t.name)),
-      sheetRank: rankingMap.get(normalizeName(t.name)),
+      normalized,
+      matched: rank !== undefined,
+      sheetRank: rank,
     });
   });
 
