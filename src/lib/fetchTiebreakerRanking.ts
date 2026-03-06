@@ -22,15 +22,14 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
     const csv = await response.text();
     const lines = csv.split('\n').filter(line => line.trim().length > 0);
 
-    // Skip header row (line 0), parse remaining rows
+    // Skip header row (line 0), use row order as rank
+    let rank = 1;
     for (let i = 1; i < lines.length; i++) {
       const fields = parseCSVLine(lines[i]);
-      // Column A (index 0) = Position, Column B (index 1) = Team
-      const posStr = fields[0]?.replace(/^"|"$/g, '').trim();
       const rawName = fields[1]?.replace(/^"|"$/g, '').trim();
-      const position = parseInt(posStr, 10);
-      if (rawName && !isNaN(position)) {
-        rankingMap.set(normalizeName(rawName), position);
+      if (rawName) {
+        rankingMap.set(normalizeName(rawName), rank);
+        rank++;
       }
     }
     console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet`);
