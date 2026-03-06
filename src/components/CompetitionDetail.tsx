@@ -4,7 +4,6 @@ import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
 import { buildRankMap } from '@/lib/sorting';
-import { fetchTiebreakerRanking } from '@/lib/fetchTiebreakerRanking';
 
 function getInstagramEmbedUrl(url?: string): string | null {
   if (!url) return null;
@@ -24,6 +23,7 @@ interface CompetitionDetailProps {
   teams?: Team[];
   onTeamClick?: (team: Team) => void;
   zIndex?: number;
+  rankingMap?: Map<string, number>;
 }
 interface SimulationDropdownProps {
   teams: Array<{
@@ -94,7 +94,8 @@ export function CompetitionDetail({
   onSimulationSet,
   simulationData,
   teams = [],
-  onTeamClick
+  onTeamClick,
+  rankingMap = new Map()
 }: CompetitionDetailProps) {
   const [predictions, setPredictions] = useState<{
     first: string;
@@ -108,10 +109,8 @@ export function CompetitionDetail({
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [open, setOpen] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [sheetRankMap, setSheetRankMap] = useState<Map<string, number>>(new Map());
-  useEffect(() => {
-    fetchTiebreakerRanking().then(m => setSheetRankMap(m));
-  }, []);
+
+  // Use rankingMap passed from parent (single source of truth)
 
   const snapScrollTop = () => {
     const el = scrollRef.current;
@@ -510,7 +509,7 @@ export function CompetitionDetail({
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
                 <div className="grid gap-1.5">
                     {(() => {
-                      const rankMap = buildRankMap(teams, sheetRankMap);
+                      const rankMap = buildRankMap(teams, rankingMap);
 
                       return (competition.lineup || []).map((team, index) => {
                         const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
