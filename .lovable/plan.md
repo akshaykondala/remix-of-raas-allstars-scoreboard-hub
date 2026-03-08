@@ -1,43 +1,39 @@
 
 
-## Root Cause
+## Problem
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+The LoadingScreen animation runs on a fixed timer (~1.5s total) and is **completely independent of data readiness**. The phase progression is:
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+1. Progress bar fills (~1.5s) → `'fading'` (blobs fade out, 400ms) → `'traveling'` (logo flies to header, 700ms) → `'done'` → calls `onComplete`
 
-## Plan
+During `'traveling'`, the background overlay opacity is already 0, so the user sees the empty app behind it. The `onComplete` callback fires at the end, setting `animationReady = true`. If `dbReady` is already true by then, `showLoading` flips to false — but the user already saw the empty content during the travel phase.
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+If the API is slow, the animation finishes, the loading screen visually disappears (opacity 0 during traveling), and then the component returns `null` at `'done'` — all before data arrives.
 
-This will immediately reveal which names are mismatched.
+**The `animationReady && dbReady` gate in Index.tsx only controls unmounting, not the visual fade.** The visual fade happens inside LoadingScreen independently.
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+## Fix
+
+Pass `dbReady` as a prop to `LoadingScreen` and **gate the phase transition** so it won't leave the `'loading'` phase until data is ready.
+
+### File: `src/components/LoadingScreen.tsx`
+
+1. Add `dataReady?: boolean` to `LoadingScreenProps`
+2. Change the progress→fading transition to require **both** `progress >= 100` **and** `dataReady === true`:
+   ```
+   if (progress >= 100 && dataReady && phase === 'loading') {
+     setTimeout(() => setPhase('fading'), 300);
+   }
+   ```
+3. When progress hits 100 but data isn't ready, the dots keep animating — the user sees a seamless wait. Once data arrives, the fade/travel animation plays over already-loaded content.
+
+### File: `src/pages/Index.tsx`
+
+Pass `dbReady` to LoadingScreen:
 ```
-"uconnthunderraas" → same position as "uconnthunderaas"
+<LoadingScreen onComplete={handleLoadingComplete} headerLogoRef={headerLogoRef} dataReady={dbReady} />
 ```
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+### Result
+The loading screen now stays fully visible until the API returns, then plays the exit animation over content that's already rendered underneath — no flash of empty UI.
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
-
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
-
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
