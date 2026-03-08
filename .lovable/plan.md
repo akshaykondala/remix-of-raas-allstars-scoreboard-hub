@@ -1,43 +1,32 @@
 
 
-## Root Cause
+## Problem
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+App name: **"UCB Raas Ramzat"** → normalized: `"ucbraasramzat"` → tokenized: `["ucbraasramzat"]` (1 token)  
+Sheet name: **"UC Berkeley Raas Ramzat"** → normalized: `"ucberkeleyraasramzat"` → tokenized: `["ucberkeleyraasramzat"]` (1 token)
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+The `normalizeName()` strips all spaces/punctuation first, then `tokenize()` tries to split — but there's nothing to split on. So token overlap is always 0 for teams without numbers in their name, making strategy #3 useless.
 
-## Plan
+Substring also fails: `"ucbraasramzat"` is not contained in `"ucberkeleyraasramzat"` (the "b" directly before "raas" breaks containment).
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+## Fix
 
-This will immediately reveal which names are mismatched.
+Change the approach: **tokenize the original name first** (split on spaces/punctuation), then normalize each token individually. This preserves word boundaries.
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
+### File: `src/lib/fetchTiebreakerRanking.ts`
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+1. Add a new `tokenizeOriginal(name: string)` function that:
+   - Lowercases the name
+   - Splits on non-alphanumeric characters (spaces, hyphens, apostrophes)
+   - Strips empty tokens
+   - Returns array like `["ucb", "raas", "ramzat"]`
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+2. Update `fuzzyLookup` to use `tokenizeOriginal` with the **original (un-normalized) name** for the token-overlap strategy. This means `fuzzyLookup` needs to accept the original name as a parameter (or we change the tokenize approach).
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
+Simplest approach: replace the `tokenize` helper to work on raw lowercased input instead of normalized input, and pass the original name into the token strategy section.
 
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+**Result**: `["ucb", "raas", "ramzat"]` vs `["uc", "berkeley", "raas", "ramzat"]` → 2 shared tokens ("raas", "ramzat") → match found.
 
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
+### Downstream change
+- `src/lib/sorting.ts` — pass original team name to `fuzzyLookup` (currently only passes normalized name)
+
