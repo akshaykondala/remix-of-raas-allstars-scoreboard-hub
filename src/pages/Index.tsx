@@ -312,12 +312,7 @@ const Index = () => {
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
   const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
 
-  // Log diagnostics once when data is ready
-  useEffect(() => {
-    if (teamsData.length > 0 && tiebreakerRankingMap.size > 0) {
-      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap, sheetOriginalNames);
-    }
-  }, [teamsData, tiebreakerRankingMap]);
+
 
   const qualifiedTeams = teamsData.filter(team => team.qualified).length;
   const sortedTeams = [...teamsData].sort(tiebreakerSort);
