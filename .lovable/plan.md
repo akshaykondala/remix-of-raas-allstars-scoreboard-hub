@@ -1,44 +1,28 @@
 
 
-## What's Actually Happening
+## Problem
 
-The code IS correctly reading the Google Sheet and applying it. The problem is that **the sheet's ranking contradicts your expected tie order**.
+The 2-point tie group (TAMU Wreckin' Raas, UC Berkeley Raas Ramzat, Cornell Big Red Raas) is in the wrong order. The sheet positions are 12, 13, 14 respectively, and the code correctly does `aRank - bRank`, so this should work. The issue is that **one or more of these teams' Directus names don't match the sheet names**, even with Levenshtein distance ≤ 3.
 
-Here's what the sheet (GID `1418394758`) actually contains:
+For example, if Directus stores "Cornell Raas" but the sheet says "Cornell Big Red Raas", that's a normalized distance of ~6 characters ("bigged" difference) — far beyond the fuzzy threshold of 3. The unmatched teams fall back to alphabetical, which produces wrong order.
 
-```text
-Position | Team                    | Bid Points (in sheet)
----------|-------------------------|---------------------
-   2     | Purdue Raas             | 11
-   6     | Northeastern Nakhraas   | 7
-   7     | UConn ThundeRaas        | 7
-   9     | UF GatoRaas             | 5
-```
+## Root Cause
 
-The sheet ranks Purdue at **position 2** and Northeastern at **position 6**. So when both have 7 bid points in the app, the current code correctly places Purdue first (lower position number wins). Same for UConn (pos 7) vs UF (pos 9): UConn wins, which is actually correct per the sheet.
+The Levenshtein distance threshold of 3 is too conservative for team names that differ significantly between Directus and the Google Sheet (e.g., abbreviated vs full names). This causes some teams to be "unmatched" and sorted alphabetically instead of by sheet position.
 
-But you want:
-- 7pts: **Northeastern > Purdue** (sheet says Purdue wins)
-- 5pts: **UConn > UF** (sheet agrees here -- UConn pos 7 < UF pos 9)
+## Plan
 
-**The sheet positions are based on TOTAL season bid points (Purdue has 11 overall, Northeastern has 7), not a head-to-head tiebreaker.** So using the sheet's global position to break ties between teams that currently have the same points in the app doesn't give you what you want -- it's biased by future results.
+### Enhance fuzzy matching with substring/token-based matching
 
-## The Real Question
+In `src/lib/fetchTiebreakerRanking.ts`, upgrade `fuzzyLookup` to try multiple strategies in order:
 
-For the 7-point tie specifically: What criteria should make Northeastern rank above Purdue? Some options:
+1. **Exact match** (current)
+2. **Substring containment** — if the app name contains a sheet name or vice versa, it's a match
+3. **Token overlap** — split both names into word-like tokens, if they share 2+ tokens, it's a match (handles "Cornell Raas" vs "Cornell Big Red Raas")
+4. **Levenshtein ≤ 3** (current fallback)
 
-1. **A different tiebreaker sheet/tab** that specifically ranks teams within the same point tier
-2. **Head-to-head results** or **placement quality** (e.g., Northeastern's ratio of 1sts/2nds/3rds vs Purdue's at the same point total)
-3. **Number of competitions attended** (fewer comps = more efficient = higher rank?)
-4. **Simply reverse the sheet order** so higher position numbers win ties
+This handles abbreviated names, extra words, and minor spelling differences — all without needing manual aliases.
 
-## Proposed Fix
-
-Once you tell me the correct tiebreaker rule, I'll implement it in one shot. The code architecture is solid -- `sorting.ts` comparator, `fetchTiebreakerRanking.ts` data source, `Index.tsx` consumption. Only the **tiebreaker signal** needs to change.
-
-If you have a different Google Sheet tab or a different column that encodes the correct within-tier ranking, just point me to it and I'll wire it up.
-
-### Files that would change
-- `src/lib/fetchTiebreakerRanking.ts` -- adjust what data we pull from the sheet
-- `src/lib/sorting.ts` -- adjust comparator to use the correct tiebreaker signal
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` — enhance `fuzzyLookup` with substring and token-based matching strategies
 
