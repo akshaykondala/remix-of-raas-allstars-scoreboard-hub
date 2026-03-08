@@ -24,9 +24,9 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
-/** Split normalized name into alpha-numeric tokens */
-function tokenize(normalized: string): string[] {
-  return normalized.match(/[a-z]+|[0-9]+/g) || [];
+/** Split original name into lowercase tokens (preserves word boundaries) */
+function tokenizeOriginal(name: string): string[] {
+  return name.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 0);
 }
 
 /**
