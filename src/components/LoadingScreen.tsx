@@ -148,10 +148,10 @@ const LoadingScreenWrapper = ({ onComplete, headerLogoRef, dataReady = false }: 
   }, []);
 
   useEffect(() => {
-    if (progress >= 100 && phase === 'loading') {
+    if (progress >= 100 && dataReady && phase === 'loading') {
       setTimeout(() => setPhase('fading'), 300);
     }
-  }, [progress, phase]);
+  }, [progress, phase, dataReady]);
 
   useEffect(() => {
     if (phase === 'fading') {
