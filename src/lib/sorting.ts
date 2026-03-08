@@ -42,11 +42,10 @@ export function buildRankMap(teams: Team[], rankingMap: Map<string, number>, she
 /**
  * Logs diagnostic info about tie groups and name matching.
  */
-export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, number>) {
-  // Log every team with bid points: name, normalized, match status, position
+export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, number>, sheetOriginalNames?: Map<string, string>) {
   const appNames = teams.filter(t => t.bidPoints > 0).map(t => {
     const normalized = normalizeName(t.name);
-    const rank = fuzzyLookup(normalized, rankingMap);
+    const rank = fuzzyLookup(normalized, rankingMap, t.name, sheetOriginalNames);
     return {
       original: t.name,
       normalized,
