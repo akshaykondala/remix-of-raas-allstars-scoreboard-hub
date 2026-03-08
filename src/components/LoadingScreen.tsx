@@ -129,7 +129,7 @@ const LoadingScreen = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
 // We need to restructure to render the logo separately
 // Let's use a wrapper approach
 
-const LoadingScreenWrapper = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
+const LoadingScreenWrapper = ({ onComplete, headerLogoRef, dataReady = false }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<'loading' | 'fading' | 'traveling' | 'done'>('loading');
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
