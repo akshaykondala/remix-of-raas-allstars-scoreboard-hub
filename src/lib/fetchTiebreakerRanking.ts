@@ -24,16 +24,53 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
+/** Split normalized name into alpha-numeric tokens */
+function tokenize(normalized: string): string[] {
+  return normalized.match(/[a-z]+|[0-9]+/g) || [];
+}
+
 /**
  * Look up a normalized name in the ranking map.
- * Tries exact match first, then fuzzy match (Levenshtein distance ≤ 3).
+ * Strategies in order: exact → substring containment → token overlap → Levenshtein ≤ 3.
  */
 export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>): number | undefined {
-  // Exact match
+  // 1. Exact match
   const exact = rankingMap.get(normalizedName);
   if (exact !== undefined) return exact;
 
-  // Fuzzy match: find closest sheet name within distance 3
+  // 2. Substring containment (best = shortest containing match)
+  let substringBest: { pos: number; len: number } | undefined;
+  for (const [sheetName, pos] of rankingMap.entries()) {
+    if (normalizedName.includes(sheetName) || sheetName.includes(normalizedName)) {
+      if (!substringBest || sheetName.length < substringBest.len) {
+        substringBest = { pos, len: sheetName.length };
+      }
+    }
+  }
+  if (substringBest) {
+    console.log(`[Tiebreaker] Substring matched "${normalizedName}" → position ${substringBest.pos}`);
+    return substringBest.pos;
+  }
+
+  // 3. Token overlap (≥2 shared tokens, pick best overlap ratio)
+  const appTokens = tokenize(normalizedName);
+  let tokenBest: { pos: number; overlap: number } | undefined;
+  for (const [sheetName, pos] of rankingMap.entries()) {
+    const sheetTokens = tokenize(sheetName);
+    const shared = appTokens.filter(t => sheetTokens.includes(t)).length;
+    if (shared >= 2) {
+      const ratio = shared / Math.max(appTokens.length, sheetTokens.length);
+      if (!tokenBest || ratio > tokenBest.overlap) {
+        tokenBest = { pos, overlap: ratio };
+      }
+    }
+  }
+  if (tokenBest) {
+    console.log(`[Tiebreaker] Token matched "${normalizedName}" → position ${tokenBest.pos}`);
+    return tokenBest.pos;
+  }
+
+  // 4. Levenshtein ≤ 3
   let bestDist = Infinity;
   let bestPos: number | undefined;
   for (const [sheetName, pos] of rankingMap.entries()) {
@@ -44,7 +81,7 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
     }
   }
   if (bestPos !== undefined) {
-    console.log(`[Tiebreaker] Fuzzy matched "${normalizedName}" → sheet entry (distance ${bestDist}), position ${bestPos}`);
+    console.log(`[Tiebreaker] Levenshtein matched "${normalizedName}" → position ${bestPos} (dist ${bestDist})`);
   }
   return bestPos;
 }
