@@ -43,6 +43,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
   const [tiebreakerRankingMap, setTiebreakerRankingMap] = useState<Map<string, number>>(new Map());
+  const [sheetOriginalNames, setSheetOriginalNames] = useState<Map<string, string>>(new Map());
 
   const handleLoadingComplete = useCallback(() => setAnimationReady(true), []);
 
@@ -80,12 +81,13 @@ const Index = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [teams, competitionsData, rankingMap] = await Promise.all([
+        const [teams, competitionsData, sheetResult] = await Promise.all([
           fetchTeams(),
           fetchFromDirectus('competitions'),
           fetchTiebreakerRanking()
         ]);
-        setTiebreakerRankingMap(rankingMap);
+        setTiebreakerRankingMap(sheetResult.rankingMap);
+        setSheetOriginalNames(sheetResult.originalNames);
         
         // Map competitions data FIRST
         let mappedCompetitions: any[] = [];
@@ -308,12 +310,12 @@ const Index = () => {
   }, [simulationData, originalTeamsData]);
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
-  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap);
+  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
 
   // Log diagnostics once when data is ready
   useEffect(() => {
     if (teamsData.length > 0 && tiebreakerRankingMap.size > 0) {
-      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap);
+      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap, sheetOriginalNames);
     }
   }, [teamsData, tiebreakerRankingMap]);
 

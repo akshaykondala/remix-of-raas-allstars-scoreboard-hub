@@ -24,16 +24,21 @@ function levenshtein(a: string, b: string): number {
   return dp[m][n];
 }
 
-/** Split normalized name into alpha-numeric tokens */
-function tokenize(normalized: string): string[] {
-  return normalized.match(/[a-z]+|[0-9]+/g) || [];
+/** Split original name into lowercase tokens (preserves word boundaries) */
+function tokenizeOriginal(name: string): string[] {
+  return name.toLowerCase().split(/[^a-z0-9]+/).filter(t => t.length > 0);
 }
 
 /**
  * Look up a normalized name in the ranking map.
  * Strategies in order: exact → substring containment → token overlap → Levenshtein ≤ 3.
  */
-export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>): number | undefined {
+export function fuzzyLookup(
+  normalizedName: string,
+  rankingMap: Map<string, number>,
+  originalName?: string,
+  sheetOriginalNames?: Map<string, string>
+): number | undefined {
   // 1. Exact match
   const exact = rankingMap.get(normalizedName);
   if (exact !== undefined) return exact;
@@ -52,11 +57,12 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
     return substringBest.pos;
   }
 
-  // 3. Token overlap (≥2 shared tokens, pick best overlap ratio)
-  const appTokens = tokenize(normalizedName);
+  // 3. Token overlap using original names (preserves word boundaries)
+  const appTokens = tokenizeOriginal(originalName || normalizedName);
   let tokenBest: { pos: number; overlap: number } | undefined;
-  for (const [sheetName, pos] of rankingMap.entries()) {
-    const sheetTokens = tokenize(sheetName);
+  for (const [sheetNorm, pos] of rankingMap.entries()) {
+    const sheetOrig = sheetOriginalNames?.get(sheetNorm) || sheetNorm;
+    const sheetTokens = tokenizeOriginal(sheetOrig);
     const shared = appTokens.filter(t => sheetTokens.includes(t)).length;
     if (shared >= 2) {
       const ratio = shared / Math.max(appTokens.length, sheetTokens.length);
@@ -66,7 +72,7 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
     }
   }
   if (tokenBest) {
-    console.log(`[Tiebreaker] Token matched "${normalizedName}" → position ${tokenBest.pos}`);
+    console.log(`[Tiebreaker] Token matched "${originalName || normalizedName}" → position ${tokenBest.pos}`);
     return tokenBest.pos;
   }
 
@@ -91,18 +97,18 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
  * Returns a Map of normalized team name → numeric Position from Column A.
  * On failure, returns an empty map (ties fall back to alphabetical).
  */
-export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
+export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string, number>; originalNames: Map<string, string> }> {
   const rankingMap = new Map<string, number>();
+  const originalNames = new Map<string, string>(); // normalized → original sheet name
 
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
     const response = await fetch(url);
-    if (!response.ok) return rankingMap;
+    if (!response.ok) return { rankingMap, originalNames };
 
     const csv = await response.text();
     const lines = csv.split('\n').filter(line => line.trim().length > 0);
 
-    // Skip header row (line 0)
     for (let i = 1; i < lines.length; i++) {
       const fields = parseCSVLine(lines[i]);
       const positionStr = fields[0]?.replace(/^"|"$/g, '').trim();
@@ -112,9 +118,9 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
       if (rawName && !isNaN(position)) {
         const normalized = normalizeName(rawName);
         rankingMap.set(normalized, position);
+        originalNames.set(normalized, rawName);
       }
     }
-    // Log all entries for debugging
     console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet:`);
     rankingMap.forEach((pos, name) => {
       console.log(`  [Sheet] "${name}" → position ${pos}`);
@@ -123,7 +129,7 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
     console.warn('Failed to fetch tiebreaker ranking:', error);
   }
 
-  return rankingMap;
+  return { rankingMap, originalNames };
 }
 
 function parseCSVLine(line: string): string[] {
