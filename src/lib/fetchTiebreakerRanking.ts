@@ -33,7 +33,12 @@ function tokenizeOriginal(name: string): string[] {
  * Look up a normalized name in the ranking map.
  * Strategies in order: exact → substring containment → token overlap → Levenshtein ≤ 3.
  */
-export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>, originalName?: string): number | undefined {
+export function fuzzyLookup(
+  normalizedName: string,
+  rankingMap: Map<string, number>,
+  originalName?: string,
+  sheetOriginalNames?: Map<string, string>
+): number | undefined {
   // 1. Exact match
   const exact = rankingMap.get(normalizedName);
   if (exact !== undefined) return exact;
@@ -52,18 +57,17 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
     return substringBest.pos;
   }
 
-  // 3. Token overlap using original name (preserves word boundaries)
+  // 3. Token overlap using original names (preserves word boundaries)
   const appTokens = tokenizeOriginal(originalName || normalizedName);
-  let tokenBest: { pos: number; overlap: number; sheetName: string } | undefined;
+  let tokenBest: { pos: number; overlap: number } | undefined;
   for (const [sheetNorm, pos] of rankingMap.entries()) {
-    // We need original sheet names for tokenization — recover by splitting normalized
-    // But we only have normalized keys. Use the normalized key split as fallback.
-    const sheetTokens = sheetNorm.match(/[a-z]+|[0-9]+/g) || [];
+    const sheetOrig = sheetOriginalNames?.get(sheetNorm) || sheetNorm;
+    const sheetTokens = tokenizeOriginal(sheetOrig);
     const shared = appTokens.filter(t => sheetTokens.includes(t)).length;
     if (shared >= 2) {
       const ratio = shared / Math.max(appTokens.length, sheetTokens.length);
       if (!tokenBest || ratio > tokenBest.overlap) {
-        tokenBest = { pos, overlap: ratio, sheetName: sheetNorm };
+        tokenBest = { pos, overlap: ratio };
       }
     }
   }

@@ -81,12 +81,13 @@ const Index = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [teams, competitionsData, rankingMap] = await Promise.all([
+        const [teams, competitionsData, sheetResult] = await Promise.all([
           fetchTeams(),
           fetchFromDirectus('competitions'),
           fetchTiebreakerRanking()
         ]);
-        setTiebreakerRankingMap(rankingMap);
+        setTiebreakerRankingMap(sheetResult.rankingMap);
+        setSheetOriginalNames(sheetResult.originalNames);
         
         // Map competitions data FIRST
         let mappedCompetitions: any[] = [];
