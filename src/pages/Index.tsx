@@ -13,7 +13,7 @@ import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
 import { mapCompetitionTeamsFull } from '../lib/competitionMapping';
 import { fetchTiebreakerRanking, normalizeName } from '@/lib/fetchTiebreakerRanking';
-import { createTeamComparator, logTiebreakerDiagnostics } from '@/lib/sorting';
+import { createTeamComparator } from '@/lib/sorting';
 
 
 
