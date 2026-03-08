@@ -66,7 +66,7 @@ export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, 
   }
 
   // Log tie groups
-  const sorted = [...teams].filter(t => t.bidPoints > 0).sort(createTeamComparator(rankingMap));
+  const sorted = [...teams].filter(t => t.bidPoints > 0).sort(createTeamComparator(rankingMap, sheetOriginalNames));
   const groups = new Map<number, typeof appNames>();
   sorted.forEach(t => {
     const pts = t.bidPoints;
