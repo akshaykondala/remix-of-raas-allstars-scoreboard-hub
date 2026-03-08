@@ -1,43 +1,20 @@
 
 
-## Root Cause
+## Replace Favicon with RAS Logo
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+### File: `index.html`
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+Replace the existing `<link rel="icon" href="/favicon.ico">` (or add one if missing) with:
 
-## Plan
-
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
-
-This will immediately reveal which names are mismatched.
-
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
+```html
+<link rel="icon" type="image/png" href="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" />
 ```
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+Also add an Apple touch icon for iOS home screen:
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+```html
+<link rel="apple-touch-icon" href="/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b3c7.png" />
+```
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
+Single file change, immediate effect.
 
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
