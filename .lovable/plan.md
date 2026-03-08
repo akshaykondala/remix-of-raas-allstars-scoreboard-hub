@@ -1,43 +1,44 @@
 
 
-## Root Cause
+## What's Actually Happening
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+The code IS correctly reading the Google Sheet and applying it. The problem is that **the sheet's ranking contradicts your expected tie order**.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+Here's what the sheet (GID `1418394758`) actually contains:
 
-## Plan
-
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
-
-This will immediately reveal which names are mismatched.
-
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
+```text
+Position | Team                    | Bid Points (in sheet)
+---------|-------------------------|---------------------
+   2     | Purdue Raas             | 11
+   6     | Northeastern Nakhraas   | 7
+   7     | UConn ThundeRaas        | 7
+   9     | UF GatoRaas             | 5
 ```
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+The sheet ranks Purdue at **position 2** and Northeastern at **position 6**. So when both have 7 bid points in the app, the current code correctly places Purdue first (lower position number wins). Same for UConn (pos 7) vs UF (pos 9): UConn wins, which is actually correct per the sheet.
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+But you want:
+- 7pts: **Northeastern > Purdue** (sheet says Purdue wins)
+- 5pts: **UConn > UF** (sheet agrees here -- UConn pos 7 < UF pos 9)
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
+**The sheet positions are based on TOTAL season bid points (Purdue has 11 overall, Northeastern has 7), not a head-to-head tiebreaker.** So using the sheet's global position to break ties between teams that currently have the same points in the app doesn't give you what you want -- it's biased by future results.
 
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+## The Real Question
 
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
+For the 7-point tie specifically: What criteria should make Northeastern rank above Purdue? Some options:
+
+1. **A different tiebreaker sheet/tab** that specifically ranks teams within the same point tier
+2. **Head-to-head results** or **placement quality** (e.g., Northeastern's ratio of 1sts/2nds/3rds vs Purdue's at the same point total)
+3. **Number of competitions attended** (fewer comps = more efficient = higher rank?)
+4. **Simply reverse the sheet order** so higher position numbers win ties
+
+## Proposed Fix
+
+Once you tell me the correct tiebreaker rule, I'll implement it in one shot. The code architecture is solid -- `sorting.ts` comparator, `fetchTiebreakerRanking.ts` data source, `Index.tsx` consumption. Only the **tiebreaker signal** needs to change.
+
+If you have a different Google Sheet tab or a different column that encodes the correct within-tier ranking, just point me to it and I'll wire it up.
+
+### Files that would change
+- `src/lib/fetchTiebreakerRanking.ts` -- adjust what data we pull from the sheet
+- `src/lib/sorting.ts` -- adjust comparator to use the correct tiebreaker signal
+
