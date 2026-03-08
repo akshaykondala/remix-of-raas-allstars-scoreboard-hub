@@ -93,18 +93,18 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
  * Returns a Map of normalized team name → numeric Position from Column A.
  * On failure, returns an empty map (ties fall back to alphabetical).
  */
-export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
+export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string, number>; originalNames: Map<string, string> }> {
   const rankingMap = new Map<string, number>();
+  const originalNames = new Map<string, string>(); // normalized → original sheet name
 
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
     const response = await fetch(url);
-    if (!response.ok) return rankingMap;
+    if (!response.ok) return { rankingMap, originalNames };
 
     const csv = await response.text();
     const lines = csv.split('\n').filter(line => line.trim().length > 0);
 
-    // Skip header row (line 0)
     for (let i = 1; i < lines.length; i++) {
       const fields = parseCSVLine(lines[i]);
       const positionStr = fields[0]?.replace(/^"|"$/g, '').trim();
@@ -114,9 +114,9 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
       if (rawName && !isNaN(position)) {
         const normalized = normalizeName(rawName);
         rankingMap.set(normalized, position);
+        originalNames.set(normalized, rawName);
       }
     }
-    // Log all entries for debugging
     console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet:`);
     rankingMap.forEach((pos, name) => {
       console.log(`  [Sheet] "${name}" → position ${pos}`);
@@ -125,7 +125,7 @@ export async function fetchTiebreakerRanking(): Promise<Map<string, number>> {
     console.warn('Failed to fetch tiebreaker ranking:', error);
   }
 
-  return rankingMap;
+  return { rankingMap, originalNames };
 }
 
 function parseCSVLine(line: string): string[] {
