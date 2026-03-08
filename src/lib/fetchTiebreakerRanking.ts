@@ -118,7 +118,7 @@ export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string
     }
     // Sheet loaded successfully
   } catch (error) {
-    console.warn('Failed to fetch tiebreaker ranking:', error);
+    // Tiebreaker fetch failed; ties fall back to alphabetical
   }
 
   return { rankingMap, originalNames };
