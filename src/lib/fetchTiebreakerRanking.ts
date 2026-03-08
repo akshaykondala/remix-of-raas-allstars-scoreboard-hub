@@ -71,7 +71,6 @@ export function fuzzyLookup(
     }
   }
   if (tokenBest) {
-    console.log(`[Tiebreaker] Token matched "${originalName || normalizedName}" → position ${tokenBest.pos}`);
     return tokenBest.pos;
   }
 
