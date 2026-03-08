@@ -4,6 +4,7 @@ import logo from '../../public/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b
 interface LoadingScreenProps {
   onComplete: () => void;
   headerLogoRef?: React.RefObject<HTMLImageElement>;
+  dataReady?: boolean;
 }
 
 const LoadingScreen = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
