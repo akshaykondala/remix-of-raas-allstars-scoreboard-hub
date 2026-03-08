@@ -384,7 +384,7 @@ const Index = () => {
 
   return (
     <>
-    {showLoading && <LoadingScreen onComplete={handleLoadingComplete} headerLogoRef={headerLogoRef} />}
+    {showLoading && <LoadingScreen onComplete={handleLoadingComplete} headerLogoRef={headerLogoRef} dataReady={dbReady} />}
     <div className="min-h-screen max-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-black overflow-hidden relative">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

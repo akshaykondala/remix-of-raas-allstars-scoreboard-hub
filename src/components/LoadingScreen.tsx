@@ -4,6 +4,7 @@ import logo from '../../public/lovable-uploads/fac2918d-a107-444b-8ce2-b83e59b5b
 interface LoadingScreenProps {
   onComplete: () => void;
   headerLogoRef?: React.RefObject<HTMLImageElement>;
+  dataReady?: boolean;
 }
 
 const LoadingScreen = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
@@ -128,7 +129,7 @@ const LoadingScreen = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
 // We need to restructure to render the logo separately
 // Let's use a wrapper approach
 
-const LoadingScreenWrapper = ({ onComplete, headerLogoRef }: LoadingScreenProps) => {
+const LoadingScreenWrapper = ({ onComplete, headerLogoRef, dataReady = false }: LoadingScreenProps) => {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<'loading' | 'fading' | 'traveling' | 'done'>('loading');
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -147,10 +148,10 @@ const LoadingScreenWrapper = ({ onComplete, headerLogoRef }: LoadingScreenProps)
   }, []);
 
   useEffect(() => {
-    if (progress >= 100 && phase === 'loading') {
+    if (progress >= 100 && dataReady && phase === 'loading') {
       setTimeout(() => setPhase('fading'), 300);
     }
-  }, [progress, phase]);
+  }, [progress, phase, dataReady]);
 
   useEffect(() => {
     if (phase === 'fading') {
