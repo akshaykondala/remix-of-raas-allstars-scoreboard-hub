@@ -32,10 +32,10 @@ export function createTeamComparator(rankingMap: Map<string, number>, sheetOrigi
 /**
  * Builds a rank map (teamId → 1-based rank) from sorted teams with bid points.
  */
-export function buildRankMap(teams: Team[], rankingMap: Map<string, number>): Map<string, number> {
+export function buildRankMap(teams: Team[], rankingMap: Map<string, number>, sheetOriginalNames?: Map<string, string>): Map<string, number> {
   const sorted = teams
     .filter(t => t.bidPoints > 0)
-    .sort(createTeamComparator(rankingMap));
+    .sort(createTeamComparator(rankingMap, sheetOriginalNames));
   return new Map(sorted.map((t, i) => [t.id, i + 1]));
 }
 
