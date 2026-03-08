@@ -33,7 +33,7 @@ function tokenizeOriginal(name: string): string[] {
  * Look up a normalized name in the ranking map.
  * Strategies in order: exact → substring containment → token overlap → Levenshtein ≤ 3.
  */
-export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>): number | undefined {
+export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, number>, originalName?: string): number | undefined {
   // 1. Exact match
   const exact = rankingMap.get(normalizedName);
   if (exact !== undefined) return exact;
@@ -52,21 +52,23 @@ export function fuzzyLookup(normalizedName: string, rankingMap: Map<string, numb
     return substringBest.pos;
   }
 
-  // 3. Token overlap (≥2 shared tokens, pick best overlap ratio)
-  const appTokens = tokenize(normalizedName);
-  let tokenBest: { pos: number; overlap: number } | undefined;
-  for (const [sheetName, pos] of rankingMap.entries()) {
-    const sheetTokens = tokenize(sheetName);
+  // 3. Token overlap using original name (preserves word boundaries)
+  const appTokens = tokenizeOriginal(originalName || normalizedName);
+  let tokenBest: { pos: number; overlap: number; sheetName: string } | undefined;
+  for (const [sheetNorm, pos] of rankingMap.entries()) {
+    // We need original sheet names for tokenization — recover by splitting normalized
+    // But we only have normalized keys. Use the normalized key split as fallback.
+    const sheetTokens = sheetNorm.match(/[a-z]+|[0-9]+/g) || [];
     const shared = appTokens.filter(t => sheetTokens.includes(t)).length;
     if (shared >= 2) {
       const ratio = shared / Math.max(appTokens.length, sheetTokens.length);
       if (!tokenBest || ratio > tokenBest.overlap) {
-        tokenBest = { pos, overlap: ratio };
+        tokenBest = { pos, overlap: ratio, sheetName: sheetNorm };
       }
     }
   }
   if (tokenBest) {
-    console.log(`[Tiebreaker] Token matched "${normalizedName}" → position ${tokenBest.pos}`);
+    console.log(`[Tiebreaker] Token matched "${originalName || normalizedName}" → position ${tokenBest.pos}`);
     return tokenBest.pos;
   }
 
