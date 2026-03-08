@@ -43,6 +43,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const [teamSearchQuery, setTeamSearchQuery] = useState('');
   const [tiebreakerRankingMap, setTiebreakerRankingMap] = useState<Map<string, number>>(new Map());
+  const [sheetOriginalNames, setSheetOriginalNames] = useState<Map<string, string>>(new Map());
 
   const handleLoadingComplete = useCallback(() => setAnimationReady(true), []);
 
