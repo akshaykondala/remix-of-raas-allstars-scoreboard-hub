@@ -84,9 +84,6 @@ export function fuzzyLookup(
       bestPos = pos;
     }
   }
-  if (bestPos !== undefined) {
-    console.log(`[Tiebreaker] Levenshtein matched "${normalizedName}" → position ${bestPos} (dist ${bestDist})`);
-  }
   return bestPos;
 }
 
