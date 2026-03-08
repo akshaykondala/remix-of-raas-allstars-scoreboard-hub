@@ -53,7 +53,6 @@ export function fuzzyLookup(
     }
   }
   if (substringBest) {
-    console.log(`[Tiebreaker] Substring matched "${normalizedName}" → position ${substringBest.pos}`);
     return substringBest.pos;
   }
 
