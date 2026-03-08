@@ -72,7 +72,7 @@ export function logTiebreakerDiagnostics(teams: Team[], rankingMap: Map<string, 
     const pts = t.bidPoints;
     if (!groups.has(pts)) groups.set(pts, []);
     const normalized = normalizeName(t.name);
-    const rank = fuzzyLookup(normalized, rankingMap);
+    const rank = fuzzyLookup(normalized, rankingMap, t.name, sheetOriginalNames);
     groups.get(pts)!.push({
       original: t.name,
       normalized,

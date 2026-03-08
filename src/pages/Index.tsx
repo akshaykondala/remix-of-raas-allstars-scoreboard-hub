@@ -315,7 +315,7 @@ const Index = () => {
   // Log diagnostics once when data is ready
   useEffect(() => {
     if (teamsData.length > 0 && tiebreakerRankingMap.size > 0) {
-      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap);
+      logTiebreakerDiagnostics(teamsData, tiebreakerRankingMap, sheetOriginalNames);
     }
   }, [teamsData, tiebreakerRankingMap]);
 
