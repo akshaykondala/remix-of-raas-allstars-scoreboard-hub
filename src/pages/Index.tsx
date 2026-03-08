@@ -310,7 +310,7 @@ const Index = () => {
   }, [simulationData, originalTeamsData]);
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
-  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap);
+  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
 
   // Log diagnostics once when data is ready
   useEffect(() => {
