@@ -53,7 +53,6 @@ export function fuzzyLookup(
     }
   }
   if (substringBest) {
-    console.log(`[Tiebreaker] Substring matched "${normalizedName}" → position ${substringBest.pos}`);
     return substringBest.pos;
   }
 
@@ -72,7 +71,6 @@ export function fuzzyLookup(
     }
   }
   if (tokenBest) {
-    console.log(`[Tiebreaker] Token matched "${originalName || normalizedName}" → position ${tokenBest.pos}`);
     return tokenBest.pos;
   }
 
@@ -85,9 +83,6 @@ export function fuzzyLookup(
       bestDist = dist;
       bestPos = pos;
     }
-  }
-  if (bestPos !== undefined) {
-    console.log(`[Tiebreaker] Levenshtein matched "${normalizedName}" → position ${bestPos} (dist ${bestDist})`);
   }
   return bestPos;
 }
@@ -121,12 +116,9 @@ export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string
         originalNames.set(normalized, rawName);
       }
     }
-    console.log(`[Tiebreaker] Loaded ${rankingMap.size} teams from sheet:`);
-    rankingMap.forEach((pos, name) => {
-      console.log(`  [Sheet] "${name}" → position ${pos}`);
-    });
+    // Sheet loaded successfully
   } catch (error) {
-    console.warn('Failed to fetch tiebreaker ranking:', error);
+    // Tiebreaker fetch failed; ties fall back to alphabetical
   }
 
   return { rankingMap, originalNames };
