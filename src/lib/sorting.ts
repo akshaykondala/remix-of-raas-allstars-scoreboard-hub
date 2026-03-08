@@ -8,7 +8,7 @@ import { normalizeName, fuzzyLookup } from './fetchTiebreakerRanking';
  *    Uses fuzzy matching to handle minor name differences
  * 3. Alphabetical fallback (no more "unmatched auto-loses")
  */
-export function createTeamComparator(rankingMap: Map<string, number>) {
+export function createTeamComparator(rankingMap: Map<string, number>, sheetOriginalNames?: Map<string, string>) {
   return (a: Team, b: Team): number => {
     // Primary: higher bid points first
     if (b.bidPoints !== a.bidPoints) return b.bidPoints - a.bidPoints;
@@ -16,8 +16,8 @@ export function createTeamComparator(rankingMap: Map<string, number>) {
     // Tiebreaker: use sheet position with fuzzy matching
     const aKey = normalizeName(a.name);
     const bKey = normalizeName(b.name);
-    const aRank = fuzzyLookup(aKey, rankingMap);
-    const bRank = fuzzyLookup(bKey, rankingMap);
+    const aRank = fuzzyLookup(aKey, rankingMap, a.name, sheetOriginalNames);
+    const bRank = fuzzyLookup(bKey, rankingMap, b.name, sheetOriginalNames);
 
     // If both found in sheet, compare positions
     if (aRank !== undefined && bRank !== undefined) {
@@ -25,7 +25,6 @@ export function createTeamComparator(rankingMap: Map<string, number>) {
     }
 
     // If only one or neither found, fall back to alphabetical
-    // (no more "matched beats unmatched" rule that caused inversions)
     return a.name.localeCompare(b.name);
   };
 }
