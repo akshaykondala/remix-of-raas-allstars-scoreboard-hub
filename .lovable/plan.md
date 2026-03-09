@@ -1,28 +1,43 @@
 
-I’ll make the drawer reliably sit lower than the notch by changing the positioning logic (not just tweaking the handle padding).
 
-What’s actually wrong:
-- The drawer body is forced to `h-[98vh]` in detail screens.
-- In that setup, `marginTop` on the drawer container is not a reliable cap on iOS, so the top/handle can still end up under the notch.
+## Root Cause
 
-Implementation plan:
+The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
 
-1) Update `src/components/ui/drawer.tsx` (core fix)
-- Replace the current `marginTop` style with a hard max-height cap based on safe area:
-  - from: `marginTop: calc(env(safe-area-inset-top) + 6rem)`
-  - to: `maxHeight: calc(100dvh - env(safe-area-inset-top, 0px) - 7rem)`
-- Keep bottom anchoring so the sheet still opens from the bottom.
-- Preserve existing handle visuals (`pt-5 pb-4`, slim pill), since the issue is vertical placement, not handle styling.
+Evidence:
+- 1pt tie works (all 3 names match) 
+- 7pt and 5pt ties are wrong (one or both names don't match)
+- The "unmatched team loses" rule in the comparator flips the intended order
 
-2) Keep current drawer consumers unchanged unless needed
-- `CompetitionDetail.tsx` and `TeamDetail.tsx` currently use `h-[98vh] max-h-[98vh]`.
-- With the new inline `maxHeight` cap in `drawer.tsx`, the notch-safe limit will override and force the drawer lower.
-- If needed after this pass, I’ll do a second tiny cleanup to remove `max-h-[98vh]` in those two components so only the shared drawer controls height rules.
+## Plan
 
-3) Verify behavior target
-- Fully expanded drawer top should always render below Dynamic Island/notch.
-- Handle remains easy to drag and visually clean.
-- No regression on non-notched devices (safe-area resolves to 0).
+### 1. Add critical diagnostic logging (immediate)
+In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
+- Original Directus name
+- Normalized form
+- Whether it matched the sheet
+- Sheet position (if matched)
 
-Pixel intent:
-- New top clearance = `safe-area-inset-top + 7rem` (about 112px + notch inset), which is intentionally lower than before and consistent across iPhones.
+This will immediately reveal which names are mismatched.
+
+### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
+Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+```
+"uconnthunderraas" → same position as "uconnthunderaas"
+```
+
+### 3. Fallback: use fuzzy matching
+If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+
+### 4. Change unmatched behavior
+Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
+- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
+- `src/pages/Index.tsx` - Add per-team diagnostic logging
+
+### What I need from you
+After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+
+Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
