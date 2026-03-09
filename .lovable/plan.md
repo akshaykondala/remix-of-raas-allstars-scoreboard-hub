@@ -1,43 +1,28 @@
 
 
-## Root Cause
+## Fix Drawer Handle — Draggable but Clean
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+### Problem
+The drawer handle's touch target (`py-3` = 12px top/bottom) is too small to reliably grab and drag down. Previously it was made larger but looked ugly with too much visible backdrop.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Solution
+Enlarge the **touch target** without enlarging the **visible backdrop**. Use transparent padding to create a generous drag zone while keeping the visual handle area compact.
 
-## Plan
+### Changes
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+**`src/components/ui/drawer.tsx` (line 24–26)** — Replace the drag handle div:
 
-This will immediately reveal which names are mismatched.
+- Change `py-3` to `pt-5 pb-4` for a bigger touch target (total ~36px)
+- Keep the handle bar itself small (`h-1.5 w-[40px]`) for a sleek, modern look
+- Add `touch-action: none` on the handle area to prevent scroll interference and ensure drag-down works reliably
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
+The handle bar styling: thinner (`h-1.5` instead of `h-2`), narrower (`w-[40px]` instead of `w-[100px]`), with slightly translucent muted color — this is the standard iOS-style pill indicator that looks native and clean.
+
+```tsx
+<div className="sticky top-0 z-10 flex justify-center bg-inherit rounded-t-[10px] pt-5 pb-4" style={{ touchAction: 'none' }}>
+  <div className="h-1.5 w-[40px] rounded-full bg-muted/60" />
+</div>
 ```
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+This gives a large drag zone (~36px) while the visual indicator stays subtle and native-looking.
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
-
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
-
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
