@@ -397,7 +397,7 @@ const Index = () => {
 
         <TabsContent value="standings" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           {/* Header with Centered Logo */}
-          <div className="relative pt-10 pb-8">
+          <div className="relative pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 2.5rem)' }}>
             <div className="flex justify-center">
               <img 
                 ref={headerLogoRef}
