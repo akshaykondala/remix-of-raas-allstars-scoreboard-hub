@@ -21,7 +21,7 @@ const DrawerContent = React.forwardRef<React.ElementRef<typeof DrawerPrimitive.C
 }, ref) => <DrawerPortal>
     <DrawerOverlay />
     <DrawerPrimitive.Content ref={ref} className={cn("fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background", className)} {...props}>
-      <div className="sticky top-0 z-10 flex justify-center bg-inherit rounded-t-[10px] py-5" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.25rem)' }}>
+      <div className="sticky top-0 z-10 flex justify-center bg-inherit rounded-t-[10px] py-3">
         <div className="h-2 w-[100px] rounded-full bg-muted" />
       </div>
       {children}
