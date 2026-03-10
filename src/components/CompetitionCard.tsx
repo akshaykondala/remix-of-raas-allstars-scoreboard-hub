@@ -43,6 +43,15 @@ export function CompetitionCard({ competition, onClick }: CompetitionCardProps) 
           <h3 className="text-sm font-semibold text-foreground truncate">
             {competition.name}
           </h3>
+          {isLive && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/30">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wide">Live</span>
+            </div>
+          )}
           {competition.bid_status && (
             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-yellow-500/10 border border-amber-400/30">
               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
