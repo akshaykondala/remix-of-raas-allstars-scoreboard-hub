@@ -13,9 +13,10 @@ interface Prediction {
 interface FantasyPredictionsProps {
   competitions: Competition[];
   onClose: () => void;
+  onPredictionSave?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
 }
 
-export function FantasyPredictions({ competitions, onClose }: FantasyPredictionsProps) {
+export function FantasyPredictions({ competitions, onClose, onPredictionSave }: FantasyPredictionsProps) {
   const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
   const [savedPredictions, setSavedPredictions] = useState<Record<string, Prediction>>({});
 
@@ -58,6 +59,20 @@ export function FantasyPredictions({ competitions, onClose }: FantasyPredictions
   const savePredictions = () => {
     localStorage.setItem('fantasyPredictions', JSON.stringify(predictions));
     setSavedPredictions(predictions);
+    
+    // Notify parent to update standings for each prediction
+    if (onPredictionSave) {
+      Object.values(predictions).forEach(prediction => {
+        const comp = competitions.find(c => c.id === prediction.competitionId);
+        if (comp) {
+          onPredictionSave(comp.name, comp.id, {
+            first: prediction.first,
+            second: prediction.second,
+            third: prediction.third,
+          });
+        }
+      });
+    }
   };
 
   const calculatePoints = (competition: Competition, prediction: Prediction) => {

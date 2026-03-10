@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { FantasyPredictions } from '@/components/FantasyPredictions';
 import { useNavigate } from 'react-router-dom';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -37,6 +38,7 @@ const Index = () => {
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
+  const [showPredictions, setShowPredictions] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>([]);
   const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]);
@@ -314,8 +316,11 @@ const Index = () => {
 
 
 
-  const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = [...teamsData].sort(tiebreakerSort);
+  // When simulation/prediction data is active, use simple sort (skip tiebreaker)
+  const hasSimulations = Object.keys(simulationData).length > 0;
+  const sortedTeams = hasSimulations
+    ? [...teamsData].sort((a, b) => b.bidPoints !== a.bidPoints ? b.bidPoints - a.bidPoints : a.name.localeCompare(b.name))
+    : [...teamsData].sort(tiebreakerSort);
   const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0);
   const topThreeTeams = rankedTeams.slice(0, 3);
   const topNineTeams = rankedTeams.slice(0, 9);
@@ -415,6 +420,19 @@ const Index = () => {
             </div>
           ) : (
             <>
+              {/* Predict Button */}
+              {simulationCount === 0 && (
+                <div className="mx-4 mb-4 flex justify-center">
+                  <button
+                    onClick={() => setShowPredictions(true)}
+                    className="bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-500 hover:to-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all duration-300 border border-blue-400/30"
+                  >
+                    <Target className="h-4 w-4" />
+                    Predict Outcomes
+                  </button>
+                </div>
+              )}
+
               {/* Simulation Alert */}
               {simulationCount > 0 && (
             <div className="mx-4 mb-6">
@@ -434,7 +452,7 @@ const Index = () => {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={goToSimulation}
+                      onClick={() => setShowPredictions(true)}
                       className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-6 py-4 rounded-lg text-xs transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
                     >
                       Edit
@@ -808,6 +826,14 @@ const Index = () => {
         
         return null;
       })}
+    {/* Fantasy Predictions Modal */}
+    {showPredictions && (
+      <FantasyPredictions
+        competitions={competitions.map(comp => mapCompetitionTeamsFull(comp, teamsData))}
+        onClose={() => setShowPredictions(false)}
+        onPredictionSave={handleSimulationSet}
+      />
+    )}
     </div>
     </>
   );
