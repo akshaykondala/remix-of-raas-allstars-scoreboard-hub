@@ -420,6 +420,19 @@ const Index = () => {
             </div>
           ) : (
             <>
+              {/* Predict Button */}
+              {simulationCount === 0 && (
+                <div className="mx-4 mb-4 flex justify-center">
+                  <button
+                    onClick={() => setShowPredictions(true)}
+                    className="bg-gradient-to-r from-blue-500/80 to-purple-500/80 hover:from-blue-500 hover:to-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all duration-300 border border-blue-400/30"
+                  >
+                    <Target className="h-4 w-4" />
+                    Predict Outcomes
+                  </button>
+                </div>
+              )}
+
               {/* Simulation Alert */}
               {simulationCount > 0 && (
             <div className="mx-4 mb-6">
@@ -439,7 +452,7 @@ const Index = () => {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={goToSimulation}
+                      onClick={() => setShowPredictions(true)}
                       className="bg-blue-600/70 hover:bg-blue-600/90 text-white px-6 py-4 rounded-lg text-xs transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
                     >
                       Edit
