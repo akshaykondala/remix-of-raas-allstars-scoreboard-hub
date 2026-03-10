@@ -1,5 +1,6 @@
 import { MapPin, Star } from 'lucide-react';
 import { Competition } from '@/lib/types';
+import { isCurrentlyLive } from '@/lib/utils';
 
 interface CompetitionCardProps {
   competition: Competition;
@@ -7,10 +8,16 @@ interface CompetitionCardProps {
 }
 
 export function CompetitionCard({ competition, onClick }: CompetitionCardProps) {
+  const isLive = isCurrentlyLive(competition.date, competition.time);
+
   return (
     <div
       onClick={onClick}
-      className="flex items-center gap-3 p-3 rounded-xl bg-card/50 border border-border/30 cursor-pointer transition-all duration-200 hover:bg-card hover:border-primary/30 active:scale-[0.98] touch-manipulation"
+      className={`flex items-center gap-3 p-3 rounded-xl bg-card/50 border cursor-pointer transition-all duration-200 hover:bg-card active:scale-[0.98] touch-manipulation ${
+        isLive
+          ? 'border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:border-red-500/80'
+          : 'border-border/30 hover:border-primary/30'
+      }`}
     >
       {/* Logo */}
       {competition.logo ? (
