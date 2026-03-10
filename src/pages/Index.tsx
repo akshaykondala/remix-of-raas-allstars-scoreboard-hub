@@ -38,6 +38,7 @@ const Index = () => {
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [simulationData, setSimulationData] = useState<SimulationData>({});
+  const [showPredictions, setShowPredictions] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('standings');
   const [teamsData, setTeamsData] = useState<Team[]>([]);
   const [originalTeamsData, setOriginalTeamsData] = useState<Team[]>([]);
