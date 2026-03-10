@@ -16,7 +16,7 @@ interface FantasyPredictionsProps {
   onPredictionSave?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
 }
 
-export function FantasyPredictions({ competitions, onClose }: FantasyPredictionsProps) {
+export function FantasyPredictions({ competitions, onClose, onPredictionSave }: FantasyPredictionsProps) {
   const [predictions, setPredictions] = useState<Record<string, Prediction>>({});
   const [savedPredictions, setSavedPredictions] = useState<Record<string, Prediction>>({});
 
