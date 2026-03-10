@@ -303,11 +303,11 @@ const Index = () => {
         isInitialLoad.current = false;
       } else {
         // Simulation data changed - recalculate bid points
-        const updatedTeams = calculateBidPoints(teamsData, []);
+        const updatedTeams = calculateBidPoints(teamsData, competitions);
         setTeamsData(updatedTeams);
       }
     }
-  }, [simulationData, originalTeamsData]);
+  }, [simulationData, originalTeamsData, competitions]);
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
   const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
