@@ -13,6 +13,7 @@ interface Prediction {
 interface FantasyPredictionsProps {
   competitions: Competition[];
   onClose: () => void;
+  onPredictionSave?: (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => void;
 }
 
 export function FantasyPredictions({ competitions, onClose }: FantasyPredictionsProps) {
