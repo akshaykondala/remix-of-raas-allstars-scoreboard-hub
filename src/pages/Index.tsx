@@ -826,6 +826,14 @@ const Index = () => {
         
         return null;
       })}
+    {/* Fantasy Predictions Modal */}
+    {showPredictions && (
+      <FantasyPredictions
+        competitions={competitions.map(comp => mapCompetitionTeamsFull(comp, teamsData))}
+        onClose={() => setShowPredictions(false)}
+        onPredictionSave={handleSimulationSet}
+      />
+    )}
     </div>
     </>
   );
