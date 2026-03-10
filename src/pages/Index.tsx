@@ -316,8 +316,11 @@ const Index = () => {
 
 
 
-  const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = [...teamsData].sort(tiebreakerSort);
+  // When simulation/prediction data is active, use simple sort (skip tiebreaker)
+  const hasSimulations = Object.keys(simulationData).length > 0;
+  const sortedTeams = hasSimulations
+    ? [...teamsData].sort((a, b) => b.bidPoints !== a.bidPoints ? b.bidPoints - a.bidPoints : a.name.localeCompare(b.name))
+    : [...teamsData].sort(tiebreakerSort);
   const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0);
   const topThreeTeams = rankedTeams.slice(0, 3);
   const topNineTeams = rankedTeams.slice(0, 9);
