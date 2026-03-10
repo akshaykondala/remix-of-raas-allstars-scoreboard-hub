@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { FantasyPredictions } from '@/components/FantasyPredictions';
 import { useNavigate } from 'react-router-dom';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
