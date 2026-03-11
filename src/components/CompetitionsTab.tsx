@@ -168,9 +168,6 @@ export function CompetitionsTab({
     return availableTeams;
   };
   return <div className="py-4 w-full overflow-hidden">
-      <div className="mb-6 text-center px-4">
-        <h2 className="text-xl font-bold text-foreground mb-2">Competitions</h2>
-      </div>
 
 
       {/* Simulation Modal */}
