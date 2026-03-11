@@ -167,7 +167,7 @@ export function CompetitionsTab({
     }));
     return availableTeams;
   };
-  return <div className="pb-4 w-full overflow-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
+  return <div className="pb-4 w-full overflow-hidden min-h-screen flex flex-col" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
 
 
       {/* Simulation Modal */}
