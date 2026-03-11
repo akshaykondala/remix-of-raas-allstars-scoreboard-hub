@@ -310,27 +310,22 @@ const Index = () => {
   }, [simulationData, originalTeamsData, competitions]);
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
-  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
+  const tiebreakerSort = useMemo(() => createTeamComparator(tiebreakerRankingMap, sheetOriginalNames), [tiebreakerRankingMap, sheetOriginalNames]);
 
+  const sortedTeams = useMemo(() => [...teamsData].sort(tiebreakerSort), [teamsData, tiebreakerSort]);
+  const rankedTeams = useMemo(() => sortedTeams.filter(t => t.bidPoints > 0), [sortedTeams]);
+  const topThreeTeams = useMemo(() => rankedTeams.slice(0, 3), [rankedTeams]);
+  const topNineTeams = useMemo(() => rankedTeams.slice(0, 9), [rankedTeams]);
+  const qualifiedOtherTeams = useMemo(() => rankedTeams.slice(3, 9), [rankedTeams]);
+  const notQualifiedTeams = useMemo(() => rankedTeams.slice(9), [rankedTeams]);
 
-
-  const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = [...teamsData].sort(tiebreakerSort);
-  const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0);
-  const topThreeTeams = rankedTeams.slice(0, 3);
-  const topNineTeams = rankedTeams.slice(0, 9);
-  const qualifiedOtherTeams = rankedTeams.slice(3, 9);
-  const notQualifiedTeams = rankedTeams.slice(9);
-
-
-
-  const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
+  const handleSimulationSet = useCallback((competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData(prev => ({
       ...prev,
       [competitionId]: { competitionName, competitionId, predictions }
     }));
     setActiveTab('standings');
-  };
+  }, []);
 
   const handleCompetitionClick = (competitionData: any) => {
     let competitionId = '';
