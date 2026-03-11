@@ -686,7 +686,7 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
-          <div className="px-4 py-6">
+          <div className="px-4 pb-6" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
             {loading ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
