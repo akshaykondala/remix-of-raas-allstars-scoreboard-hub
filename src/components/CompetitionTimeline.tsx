@@ -127,7 +127,7 @@ export function CompetitionTimeline({
     setActiveWeekIndex(prev => Math.min(prev + 1, weekendGroups.length - 1));
   }, [weekendGroups.length]);
   if (weekendGroups.length === 0) return null;
-  return <div className="w-full select-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+  return <div className="w-full select-none flex-1 flex flex-col" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* Competition Weekend Timeline with Navigation */}
       <div className="relative px-[4px] py-0">
         {/* Left Arrow */}

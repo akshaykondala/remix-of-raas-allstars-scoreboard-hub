@@ -167,7 +167,7 @@ export function CompetitionsTab({
     }));
     return availableTeams;
   };
-  return <div className="pb-4 w-full overflow-hidden" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
+  return <div className="pb-4 w-full overflow-hidden min-h-screen flex flex-col" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
 
 
       {/* Simulation Modal */}
@@ -195,7 +195,7 @@ export function CompetitionsTab({
           </div>
         </div>}
 
-      <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full flex-1">
           <CompetitionTimeline
             competitions={[...competitions].sort((a, b) => {
               if (!a.date && !b.date) return 0;
