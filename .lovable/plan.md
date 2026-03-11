@@ -1,43 +1,20 @@
 
 
-## Root Cause
+## Extend Swipe Area Below Competition Cards
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+The swipe handlers (`onTouchStart`, `onTouchMove`, `onTouchEnd`) currently live on the outermost `div` inside `CompetitionTimeline`, which only covers the timeline dots and the card area. Empty space below the cards is part of `CompetitionsTab`, not the timeline.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Approach
 
-## Plan
+**`src/components/CompetitionTimeline.tsx`**: Export the swipe navigation via a callback so the parent can also trigger week changes — actually, simpler: make the timeline container fill all remaining vertical space so the touch target extends to the bottom of the screen.
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+Change the outermost `div` of `CompetitionTimeline` (currently `className="w-full select-none"`) to also include `min-h-[calc(100vh-env(safe-area-inset-top,0px)-6rem)]` (or `flex-1` if the parent uses flex-col). This makes the swipe area extend to the bottom of the viewport, covering the blank space.
 
-This will immediately reveal which names are mismatched.
+**`src/components/CompetitionsTab.tsx`**: Ensure the flex container wrapping the timeline uses `flex-1` and the parent div uses `min-h-screen` or similar so the timeline can grow to fill space.
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
+### Changes
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+1. **`src/components/CompetitionsTab.tsx`** line 198: Change wrapper to `className="flex flex-col items-center w-full flex-1"` and the outer div (line 170) to include `min-h-screen` and use flex column layout.
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+2. **`src/components/CompetitionTimeline.tsx`**: Add `flex-1` to the outermost div so it stretches to fill the parent, making the entire blank area below cards swipeable.
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
-
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
