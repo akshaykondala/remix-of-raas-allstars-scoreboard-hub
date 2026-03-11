@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { MapPin, Star, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { Competition } from '@/lib/types';
 import { isCurrentlyLive } from '@/lib/utils';
