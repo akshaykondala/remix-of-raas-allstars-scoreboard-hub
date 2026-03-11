@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TeamCard } from '@/components/TeamCard';
 import { TeamDetail } from '@/components/TeamDetail';
@@ -310,29 +310,24 @@ const Index = () => {
   }, [simulationData, originalTeamsData, competitions]);
 
   // Tiebreaker: primary by bid points, then by Google Sheet ranking, then alphabetical
-  const tiebreakerSort = createTeamComparator(tiebreakerRankingMap, sheetOriginalNames);
+  const tiebreakerSort = useMemo(() => createTeamComparator(tiebreakerRankingMap, sheetOriginalNames), [tiebreakerRankingMap, sheetOriginalNames]);
 
+  const sortedTeams = useMemo(() => [...teamsData].sort(tiebreakerSort), [teamsData, tiebreakerSort]);
+  const rankedTeams = useMemo(() => sortedTeams.filter(t => t.bidPoints > 0), [sortedTeams]);
+  const topThreeTeams = useMemo(() => rankedTeams.slice(0, 3), [rankedTeams]);
+  const topNineTeams = useMemo(() => rankedTeams.slice(0, 9), [rankedTeams]);
+  const qualifiedOtherTeams = useMemo(() => rankedTeams.slice(3, 9), [rankedTeams]);
+  const notQualifiedTeams = useMemo(() => rankedTeams.slice(9), [rankedTeams]);
 
-
-  const qualifiedTeams = teamsData.filter(team => team.qualified).length;
-  const sortedTeams = [...teamsData].sort(tiebreakerSort);
-  const rankedTeams = sortedTeams.filter(t => t.bidPoints > 0);
-  const topThreeTeams = rankedTeams.slice(0, 3);
-  const topNineTeams = rankedTeams.slice(0, 9);
-  const qualifiedOtherTeams = rankedTeams.slice(3, 9);
-  const notQualifiedTeams = rankedTeams.slice(9);
-
-
-
-  const handleSimulationSet = (competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
+  const handleSimulationSet = useCallback((competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData(prev => ({
       ...prev,
       [competitionId]: { competitionName, competitionId, predictions }
     }));
     setActiveTab('standings');
-  };
+  }, []);
 
-  const handleCompetitionClick = (competitionData: any) => {
+  const handleCompetitionClick = useCallback((competitionData: any) => {
     let competitionId = '';
     if (typeof competitionData === 'string') {
       competitionId = competitionData;
@@ -349,11 +344,11 @@ const Index = () => {
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
       pushModal('competition', mappedCompetition);
     }
-  };
+  }, [competitions, teamsData]);
 
-  const handleTeamClick = (team: Team) => {
+  const handleTeamClick = useCallback((team: Team) => {
     pushModal('team', team);
-  };
+  }, []);
 
   const clearSimulation = () => {
     setSimulationData({});

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { MapPin, Star, ChevronLeft, ChevronRight, Crown } from 'lucide-react';
 import { Competition } from '@/lib/types';
 import { isCurrentlyLive } from '@/lib/utils';
@@ -72,57 +72,60 @@ export function CompetitionTimeline({
     }
   }, [activeWeekIndex]);
   const weekendGroups = useMemo(() => groupByWeekend(competitions), [competitions]);
-  const handleTouchStart = (e: React.TouchEvent) => {
+
+  // Pre-compute isPast for each group
+  const groupIsPast = useMemo(() => {
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return weekendGroups.map(g => g.date < todayMidnight);
+  }, [weekendGroups]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = e.touches[0].clientX;
     touchMoved.current = false;
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
+  }, []);
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
     touchMoved.current = true;
-  };
-  const handleTouchEnd = () => {
+  }, []);
+  const handleTouchEnd = useCallback(() => {
     if (!touchMoved.current) return;
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 80;
     if (Math.abs(diff) > threshold) {
-      if (diff > 0 && activeWeekIndex < weekendGroups.length - 1) {
-        setActiveWeekIndex(prev => prev + 1);
-      } else if (diff < 0 && activeWeekIndex > 0) {
-        setActiveWeekIndex(prev => prev - 1);
+      if (diff > 0) {
+        setActiveWeekIndex(prev => Math.min(prev + 1, weekendGroups.length - 1));
+      } else {
+        setActiveWeekIndex(prev => Math.max(prev - 1, 0));
       }
     }
-  };
-  const handleMouseDown = (e: React.MouseEvent) => {
+  }, [weekendGroups.length]);
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     mouseStartX.current = e.clientX;
     isDragging.current = true;
-  };
-  const handleMouseUp = (e: React.MouseEvent) => {
+  }, []);
+  const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (!isDragging.current) return;
     isDragging.current = false;
     const diff = mouseStartX.current - e.clientX;
     const threshold = 50;
     if (Math.abs(diff) > threshold) {
-      if (diff > 0 && activeWeekIndex < weekendGroups.length - 1) {
-        setActiveWeekIndex(prev => prev + 1);
-      } else if (diff < 0 && activeWeekIndex > 0) {
-        setActiveWeekIndex(prev => prev - 1);
+      if (diff > 0) {
+        setActiveWeekIndex(prev => Math.min(prev + 1, weekendGroups.length - 1));
+      } else {
+        setActiveWeekIndex(prev => Math.max(prev - 1, 0));
       }
     }
-  };
-  const handleMouseLeave = () => {
+  }, [weekendGroups.length]);
+  const handleMouseLeave = useCallback(() => {
     isDragging.current = false;
-  };
-  const goToPrev = () => {
-    if (activeWeekIndex > 0) {
-      setActiveWeekIndex(prev => prev - 1);
-    }
-  };
-  const goToNext = () => {
-    if (activeWeekIndex < weekendGroups.length - 1) {
-      setActiveWeekIndex(prev => prev + 1);
-    }
-  };
+  }, []);
+  const goToPrev = useCallback(() => {
+    setActiveWeekIndex(prev => Math.max(prev - 1, 0));
+  }, []);
+  const goToNext = useCallback(() => {
+    setActiveWeekIndex(prev => Math.min(prev + 1, weekendGroups.length - 1));
+  }, [weekendGroups.length]);
   if (weekendGroups.length === 0) return null;
   return <div className="w-full select-none" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       {/* Competition Weekend Timeline with Navigation */}
@@ -217,17 +220,27 @@ export function CompetitionTimeline({
       </div>
 
       {/* Competition cards */}
+      {/* Competition cards — only render active ±1 weeks */}
       <div className="overflow-hidden mt-2">
         <div className="flex transition-transform duration-500 ease-out" style={{
-        transform: `translateX(-${activeWeekIndex * 100}%)`
+        transform: `translateX(-${activeWeekIndex * 100}%)`,
+        willChange: 'transform'
       }}>
-          {weekendGroups.map(group => <div key={`cards-${group.day}-${group.month}`} className="w-full flex-shrink-0 px-4">
-              <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
-                {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
-                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={competition.date ? (() => { const [y,m,d] = competition.date.split('-').map(Number); return new Date(y, m-1, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate()); })() : false} />
-                  </div>)}
-              </div>
-            </div>)}
+          {weekendGroups.map((group, groupIndex) => {
+            // Only render content for visible windows (active ±1)
+            const isVisible = Math.abs(groupIndex - activeWeekIndex) <= 1;
+            return <div key={`cards-${group.day}-${group.month}-${group.year}`} className="w-full flex-shrink-0 px-4">
+              {isVisible ? (
+                <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
+                  {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
+                      <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={groupIsPast[groupIndex]} />
+                    </div>)}
+                </div>
+              ) : (
+                <div style={{ minHeight: '120px' }} />
+              )}
+            </div>;
+          })}
         </div>
       </div>
     </div>;
@@ -237,7 +250,7 @@ interface TimelineCompetitionCardProps {
   onClick: () => void;
   isPast?: boolean;
 }
-function TimelineCompetitionCard({
+const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
   competition,
   onClick,
   isPast
@@ -367,4 +380,4 @@ function TimelineCompetitionCard({
       </div>
     )}
   </div>;
-}
+});
