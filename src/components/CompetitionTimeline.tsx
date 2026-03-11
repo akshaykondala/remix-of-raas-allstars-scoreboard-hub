@@ -250,7 +250,7 @@ interface TimelineCompetitionCardProps {
   onClick: () => void;
   isPast?: boolean;
 }
-function TimelineCompetitionCard({
+const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
   competition,
   onClick,
   isPast
