@@ -380,4 +380,4 @@ const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
       </div>
     )}
   </div>;
-}
+});

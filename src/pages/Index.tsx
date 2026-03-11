@@ -327,7 +327,7 @@ const Index = () => {
     setActiveTab('standings');
   }, []);
 
-  const handleCompetitionClick = (competitionData: any) => {
+  const handleCompetitionClick = useCallback((competitionData: any) => {
     let competitionId = '';
     if (typeof competitionData === 'string') {
       competitionId = competitionData;
@@ -344,11 +344,11 @@ const Index = () => {
       const mappedCompetition = mapCompetitionTeamsFull(competition, teamsData);
       pushModal('competition', mappedCompetition);
     }
-  };
+  }, [competitions, teamsData]);
 
-  const handleTeamClick = (team: Team) => {
+  const handleTeamClick = useCallback((team: Team) => {
     pushModal('team', team);
-  };
+  }, []);
 
   const clearSimulation = () => {
     setSimulationData({});
