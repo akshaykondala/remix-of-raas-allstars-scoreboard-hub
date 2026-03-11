@@ -220,17 +220,27 @@ export function CompetitionTimeline({
       </div>
 
       {/* Competition cards */}
+      {/* Competition cards — only render active ±1 weeks */}
       <div className="overflow-hidden mt-2">
         <div className="flex transition-transform duration-500 ease-out" style={{
-        transform: `translateX(-${activeWeekIndex * 100}%)`
+        transform: `translateX(-${activeWeekIndex * 100}%)`,
+        willChange: 'transform'
       }}>
-          {weekendGroups.map(group => <div key={`cards-${group.day}-${group.month}`} className="w-full flex-shrink-0 px-4">
-              <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
-                {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
-                    <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={competition.date ? (() => { const [y,m,d] = competition.date.split('-').map(Number); return new Date(y, m-1, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate()); })() : false} />
-                  </div>)}
-              </div>
-            </div>)}
+          {weekendGroups.map((group, groupIndex) => {
+            // Only render content for visible windows (active ±1)
+            const isVisible = Math.abs(groupIndex - activeWeekIndex) <= 1;
+            return <div key={`cards-${group.day}-${group.month}-${group.year}`} className="w-full flex-shrink-0 px-4">
+              {isVisible ? (
+                <div className={`flex gap-4 ${group.competitions.length > 1 ? 'flex-col sm:flex-row sm:overflow-x-auto pb-4 sm:snap-x sm:snap-mandatory scrollbar-hide' : 'justify-center'}`}>
+                  {group.competitions.map(competition => <div key={competition.id} className={`flex-shrink-0 sm:snap-center ${group.competitions.length > 1 ? 'w-full sm:w-80' : 'w-full max-w-sm'}`}>
+                      <TimelineCompetitionCard competition={competition} onClick={() => onCompetitionClick(competition)} isPast={groupIsPast[groupIndex]} />
+                    </div>)}
+                </div>
+              ) : (
+                <div style={{ minHeight: '120px' }} />
+              )}
+            </div>;
+          })}
         </div>
       </div>
     </div>;
