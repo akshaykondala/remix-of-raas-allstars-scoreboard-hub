@@ -4,6 +4,7 @@ export interface Team {
   university: string;
   bidPoints: number;
   qualified: boolean;
+  bubble?: boolean;
   locked?: boolean;
   logo?: string;
   color: string;

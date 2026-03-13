@@ -97,12 +97,17 @@ const formatCompetitionDate = (dateStr?: string) => {
                   <span className="text-purple-400/90">{team.genderComposition}</span>
                   <span className="mx-2 text-white/30">•</span>
                   <span className="text-blue-400/90">Est. {team.founded}</span>
-                  {team.qualified && (
+                  {team.qualified ? (
                     <>
                       <span className="mx-2 text-white/30">•</span>
                       <span className="text-emerald-400/90">Qualified for RAS</span>
                     </>
-                  )}
+                  ) : team.bubble ? (
+                    <>
+                      <span className="mx-2 text-white/30">•</span>
+                      <span className="text-amber-400/90">On the Bubble</span>
+                    </>
+                  ) : null}
                 </p>
               </div>
             </div>
