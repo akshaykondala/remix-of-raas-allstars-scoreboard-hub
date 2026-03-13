@@ -33,6 +33,7 @@ const Index = () => {
   const [showLoading, setShowLoading] = useState(true);
   const [animationReady, setAnimationReady] = useState(false);
   const [dbReady, setDbReady] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const headerLogoRef = useRef<HTMLImageElement>(null);
   const [modalStack, setModalStack] = useState<ModalEntry[]>([]);
   const [competitions, setCompetitions] = useState<Competition[]>([]);
