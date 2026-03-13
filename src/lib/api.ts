@@ -1,10 +1,49 @@
 const API_URL = import.meta.env.VITE_DIRECTUS_URL || 'https://your-directus-instance.com';
 const TOKEN = import.meta.env.VITE_DIRECTUS_TOKEN || '';
 
+/** Save data to localStorage cache */
+function setCache(key: string, data: any): void {
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch {}
+}
+
+/** Get data from localStorage cache */
+function getCache(key: string): any | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch with retry and exponential backoff */
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutMs = 15000;
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return res;
+    } catch (err) {
+      if (attempt === maxRetries - 1) throw err;
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
 export async function fetchFromDirectus(collection: string) {
+  const cacheKey = `cache_${collection}`;
   try {
     if (!API_URL || API_URL === 'https://your-directus-instance.com') {
-      return null;
+      return getCache(cacheKey);
     }
     
     let url = `${API_URL}/items/${collection}`;
@@ -15,22 +54,26 @@ export async function fetchFromDirectus(collection: string) {
       url += '?fields=*,competitions_attending.competitions_id.*';
     }
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    const res = await fetch(url, {
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-      },
+    const res = await fetchWithRetry(url, {
+      headers: { Authorization: `Bearer ${TOKEN}` },
     });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
 
     const data = await res.json();
-    return data.data;
+    const result = data.data;
+    
+    // Cache successful response
+    if (result) {
+      setCache(cacheKey, result);
+    }
+    
+    return result;
   } catch (err) {
-    return null;
+    console.warn(`[API] Failed to fetch ${collection}, falling back to cache:`, err);
+    const cached = getCache(cacheKey);
+    if (cached) {
+      console.info(`[API] Using cached data for ${collection}`);
+    }
+    return cached;
   }
 }
 
@@ -149,6 +192,7 @@ export async function fetchTeams() {
       };
     });
   } catch (err) {
+    console.warn('[API] fetchTeams failed:', err);
     return [];
   }
 }
