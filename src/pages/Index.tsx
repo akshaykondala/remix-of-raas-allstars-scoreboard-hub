@@ -79,177 +79,185 @@ const Index = () => {
   const getCurrentCompetition = () => modalStack.find(modal => modal.type === 'competition')?.data || null;
 
   // Fetch teams and competitions from database
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [teams, competitionsData, sheetResult] = await Promise.all([
-          fetchTeams(),
-          fetchFromDirectus('competitions'),
-          fetchTiebreakerRanking()
-        ]);
-        setTiebreakerRankingMap(sheetResult.rankingMap);
-        setSheetOriginalNames(sheetResult.originalNames);
-        
-        // Map competitions data FIRST
-        let mappedCompetitions: any[] = [];
-        if (competitionsData) {
-          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-          mappedCompetitions = competitionsData.map((comp: any) => ({
-            id: comp.id,
-            name: comp.name,
-            city: comp.city,
-            date: comp.date ? comp.date.split('T')[0] : comp.date,
-            logo: comp.logo
-              ? (typeof comp.logo === 'string'
-                  ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
-                  : (comp.logo && typeof comp.logo === 'object' && comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
-              : '',
-            lineup: comp.lineup || [],
-            firstplace: comp.firstplace,
-            secondplace: comp.secondplace,
-            thirdplace: comp.thirdplace,
-            judges: Array.isArray(comp.judges)
-              ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
-              : [],
-            instagramlink: comp.instagramlink || '',
-            time: (() => {
-              const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
-              let t = raw.includes('T') ? raw.split('T')[1] : raw;
-              t = t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
-              return t;
-            })(),
-            timezone: comp.timezone || '',
-            showTicketsLink: comp.showtickets || '',
-            afterpartyTicketsLink: comp.aptickets || '',
-            livestreamLink: comp.livelink || '',
-            bid_status: comp.bid_status || false,
-            ras: comp.ras === true || comp.ras === 'true',
-            media: { photos: [], videos: [] }
-          }));
-          setCompetitions(mappedCompetitions);
-        }
-        
-        // Map teams data AFTER competitions are available
-        if (teams) {
-          const API_URL = import.meta.env.VITE_DIRECTUS_URL;
-          const mappedTeams = teams.map((team: any) => {
-            const competitionResults: any[] = (() => {
-              if (mappedCompetitions.length === 0) return [];
-              
-              const results = mappedCompetitions.map((competition: any) => {
-                let placement = 'N/A';
-                let pointsEarned = 0;
-                
-                const teamId = String(team.id);
-                const teamName = team.name;
-
-                if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
-                  placement = '1st';
-                  pointsEarned = 4;
-                } else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
-                  placement = '2nd';
-                  pointsEarned = 2;
-                } else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
-                  const lineupSize = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
-                  if (lineupSize > 6) {
-                    placement = '3rd';
-                    pointsEarned = 1;
-                  }
-                }
-                
-                if (placement === 'N/A') {
-                  const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry: any) => {
-                    const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
-                    return String(entryTeamId) === teamId ||
-                           (entry?.teams_id?.name && entry.teams_id.name === teamName);
-                  });
-
-                  if (!inLineup) return null;
-                  const [y, m, d] = (competition.date || '').split('-').map(Number);
-                  const compDate = new Date(y, m - 1, d);
-                  const now = new Date();
-                  now.setHours(0, 0, 0, 0);
-                  placement = compDate >= now ? 'Upcoming' : 'Competed';
-                }
-                
-                return {
-                  competitionId: competition.id,
-                  competitionName: competition.name,
-                  placement,
-                  bidPointsEarned: competition.bid_status === true ? pointsEarned : 0,
-                  cumulativeBidPoints: 0,
-                  date: competition.date || '',
-                  isBidCompetition: competition.bid_status === true
-                };
-              }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-              
-              return results;
-            })();
-
-            // Calculate cumulative bid points
-            let runningTotal = 0;
-            competitionResults.forEach((result) => {
-              runningTotal += result.bidPointsEarned;
-              result.cumulativeBidPoints = runningTotal;
-            });
-
-            // Calculate bidPoints from competition placings
-            const calculatedBidPoints = competitionResults.reduce((sum: number, r: any) => sum + r.bidPointsEarned, 0);
-
-            return {
-              id: team.id,
-              name: team.name,
-              founded: team.founded || team.est || 0,
-              university: team.university,
-              city: team.city,
-              logo: team.logo
-                ? (typeof team.logo === 'string'
-                    ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
-                    : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
-                : '',
-              color: team.color || team.theme || 'bg-slate-600',
-              theme: team.theme || '',
-              bidPoints: calculatedBidPoints,
-              qualified: team.qualified ?? false,
-              competitions_attending: Array.isArray(team.competitions_attending) 
-                ? team.competitions_attending.map((comp: any) => 
-                    typeof comp === 'string' ? comp : comp.name || comp.id || comp
-                  )
-                : [],
-              achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
-              history: team.history || [],
-              instagramlink: team.instagramlink || '',
-              genderComposition: team.genderComposition || team.gender_comp,
-              contactInfo: {
-                email: team.contactInfo?.email || team.contact_info || team.email || '',
-                phone: team.contactInfo?.phone || team.phone || '',
-                website: team.contactInfo?.website || team.website || '',
-                captains: Array.isArray(team.contactInfo?.captains) ? team.contactInfo.captains : 
-                         Array.isArray(team.captains) ? team.captains : 
-                         (typeof (team.contactInfo?.captains || team.captains) === 'string' && 
-                          (team.contactInfo?.captains || team.captains).includes('[') && 
-                          (team.contactInfo?.captains || team.captains).includes(']')) 
-                            ? (team.contactInfo?.captains || team.captains).replace(/[\[\]]/g, '').split(',').map((c: string) => c.trim())
-                            : (team.contactInfo?.captains || team.captains ? [team.contactInfo?.captains || team.captains] : [])
-              },
-              competitionResults,
-            };
-          });
-          setTeamsData(mappedTeams);
-          setOriginalTeamsData(mappedTeams);
-        }
-      } catch (error) {
-        // DB unreachable — show empty state; loading screen will still dismiss
-        setTeamsData([]);
-        setCompetitions([]);
-      } finally {
-        setLoading(false);
-        setDbReady(true); // DB attempt complete — loading screen may now dismiss
+  const loadData = useCallback(async () => {
+    setFetchError(false);
+    try {
+      const [teams, competitionsData, sheetResult] = await Promise.all([
+        fetchTeams(),
+        fetchFromDirectus('competitions'),
+        fetchTiebreakerRanking()
+      ]);
+      setTiebreakerRankingMap(sheetResult.rankingMap);
+      setSheetOriginalNames(sheetResult.originalNames);
+      
+      // Map competitions data FIRST
+      let mappedCompetitions: any[] = [];
+      if (competitionsData) {
+        const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+        mappedCompetitions = competitionsData.map((comp: any) => ({
+          id: comp.id,
+          name: comp.name,
+          city: comp.city,
+          date: comp.date ? comp.date.split('T')[0] : comp.date,
+          logo: comp.logo
+            ? (typeof comp.logo === 'string'
+                ? (comp.logo.startsWith('http') ? comp.logo : `${API_URL}/assets/${comp.logo}`)
+                : (comp.logo && typeof comp.logo === 'object' && comp.logo.url ? comp.logo.url : `${API_URL}/assets/${comp.logo.id}`))
+            : '',
+          lineup: comp.lineup || [],
+          firstplace: comp.firstplace,
+          secondplace: comp.secondplace,
+          thirdplace: comp.thirdplace,
+          judges: Array.isArray(comp.judges)
+            ? comp.judges.map((judge: any) => typeof judge === 'string' ? { name: judge, category: 'Judge' } : judge)
+            : [],
+          instagramlink: comp.instagramlink || '',
+          time: (() => {
+            const raw = comp.time || (comp.date && comp.date.includes('T') ? comp.date.split('T')[1] : '') || '';
+            let t = raw.includes('T') ? raw.split('T')[1] : raw;
+            t = t.replace(/\.\d+Z?$/, '').replace(/Z$/, '');
+            return t;
+          })(),
+          timezone: comp.timezone || '',
+          showTicketsLink: comp.showtickets || '',
+          afterpartyTicketsLink: comp.aptickets || '',
+          livestreamLink: comp.livelink || '',
+          bid_status: comp.bid_status || false,
+          ras: comp.ras === true || comp.ras === 'true',
+          media: { photos: [], videos: [] }
+        }));
+        setCompetitions(mappedCompetitions);
       }
-    };
-    
-    loadData();
+      
+      // Map teams data AFTER competitions are available
+      if (teams) {
+        const API_URL = import.meta.env.VITE_DIRECTUS_URL;
+        const mappedTeams = teams.map((team: any) => {
+          const competitionResults: any[] = (() => {
+            if (mappedCompetitions.length === 0) return [];
+            
+            const results = mappedCompetitions.map((competition: any) => {
+              let placement = 'N/A';
+              let pointsEarned = 0;
+              
+              const teamId = String(team.id);
+              const teamName = team.name;
+
+              if (String(competition.firstplace) === teamId || competition.firstplace === teamName) {
+                placement = '1st';
+                pointsEarned = 4;
+              } else if (String(competition.secondplace) === teamId || competition.secondplace === teamName) {
+                placement = '2nd';
+                pointsEarned = 2;
+              } else if (String(competition.thirdplace) === teamId || competition.thirdplace === teamName) {
+                const lineupSize = Array.isArray(competition.lineup) ? competition.lineup.length : 0;
+                if (lineupSize > 6) {
+                  placement = '3rd';
+                  pointsEarned = 1;
+                }
+              }
+              
+              if (placement === 'N/A') {
+                const inLineup = Array.isArray(competition.lineup) && competition.lineup.some((entry: any) => {
+                  const entryTeamId = entry?.teams_id?.id ?? entry?.teams_id ?? entry?.id ?? entry;
+                  return String(entryTeamId) === teamId ||
+                         (entry?.teams_id?.name && entry.teams_id.name === teamName);
+                });
+
+                if (!inLineup) return null;
+                const [y, m, d] = (competition.date || '').split('-').map(Number);
+                const compDate = new Date(y, m - 1, d);
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                placement = compDate >= now ? 'Upcoming' : 'Competed';
+              }
+              
+              return {
+                competitionId: competition.id,
+                competitionName: competition.name,
+                placement,
+                bidPointsEarned: competition.bid_status === true ? pointsEarned : 0,
+                cumulativeBidPoints: 0,
+                date: competition.date || '',
+                isBidCompetition: competition.bid_status === true
+              };
+            }).filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            
+            return results;
+          })();
+
+          // Calculate cumulative bid points
+          let runningTotal = 0;
+          competitionResults.forEach((result) => {
+            runningTotal += result.bidPointsEarned;
+            result.cumulativeBidPoints = runningTotal;
+          });
+
+          // Calculate bidPoints from competition placings
+          const calculatedBidPoints = competitionResults.reduce((sum: number, r: any) => sum + r.bidPointsEarned, 0);
+
+          return {
+            id: team.id,
+            name: team.name,
+            founded: team.founded || team.est || 0,
+            university: team.university,
+            city: team.city,
+            logo: team.logo
+              ? (typeof team.logo === 'string'
+                  ? (team.logo.startsWith('http') ? team.logo : `${API_URL}/assets/${team.logo}`)
+                  : (team.logo.url ? team.logo.url : `${API_URL}/assets/${team.logo.id}`))
+              : '',
+            color: team.color || team.theme || 'bg-slate-600',
+            theme: team.theme || '',
+            bidPoints: calculatedBidPoints,
+            qualified: team.qualified ?? false,
+            competitions_attending: Array.isArray(team.competitions_attending) 
+              ? team.competitions_attending.map((comp: any) => 
+                  typeof comp === 'string' ? comp : comp.name || comp.id || comp
+                )
+              : [],
+            achievements: Array.isArray(team.achievements) ? team.achievements : (team.achievements ? [team.achievements] : []),
+            history: team.history || [],
+            instagramlink: team.instagramlink || '',
+            genderComposition: team.genderComposition || team.gender_comp,
+            contactInfo: {
+              email: team.contactInfo?.email || team.contact_info || team.email || '',
+              phone: team.contactInfo?.phone || team.phone || '',
+              website: team.contactInfo?.website || team.website || '',
+              captains: Array.isArray(team.contactInfo?.captains) ? team.contactInfo.captains : 
+                       Array.isArray(team.captains) ? team.captains : 
+                       (typeof (team.contactInfo?.captains || team.captains) === 'string' && 
+                        (team.contactInfo?.captains || team.captains).includes('[') && 
+                        (team.contactInfo?.captains || team.captains).includes(']')) 
+                          ? (team.contactInfo?.captains || team.captains).replace(/[\[\]]/g, '').split(',').map((c: string) => c.trim())
+                          : (team.contactInfo?.captains || team.captains ? [team.contactInfo?.captains || team.captains] : [])
+            },
+            competitionResults,
+          };
+        });
+        setTeamsData(mappedTeams);
+        setOriginalTeamsData(mappedTeams);
+      } else {
+        setFetchError(true);
+      }
+      
+      if ((!teams || teams.length === 0) && (!competitionsData || competitionsData.length === 0)) {
+        setFetchError(true);
+      }
+    } catch (error) {
+      console.error('[App] Data load failed:', error);
+      setFetchError(true);
+      setTeamsData([]);
+      setCompetitions([]);
+    } finally {
+      setLoading(false);
+      setDbReady(true);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Calculate bid points based on competition results
   const calculateBidPoints = (teams: Team[], competitions: any[]) => {
