@@ -1,43 +1,34 @@
 
 
-## Root Cause
+## Issues Found That Could Cause Blank Screen / Rejection
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+### Issue 1: `loading` state is never set to `true`
+In `Index.tsx` line 44, `loading` is initialized as `false`. The `loadData` function never sets it to `true` — it only sets it to `false` in the `finally` block. This means the "Loading teams..." spinner (line 437-440) **never renders**. After the loading screen dismisses, if data is still empty but `fetchError` hasn't been set, users see nothing.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Issue 2: Error UI only shows on the Standings tab
+The error state with the "Try Again" button is rendered only inside `TabsContent value="standings"`. If a user taps the Competitions or Fantasy tab while data is missing, they see a completely blank tab with no error message and no retry option.
+
+### Issue 3: Network retries can hang for 45+ seconds
+With 3 retry attempts × 15s timeout each, the loading screen can hang for up to 45 seconds before showing any error. App Store reviewers on slow/restricted networks would see a stuck loading screen and reject.
+
+### Issue 4: Dead code in LoadingScreen
+The first `LoadingScreen` component (lines 10-127) is unused dead code — only `LoadingScreenWrapper` is exported. Not a bug but unnecessary bloat.
 
 ## Plan
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+### 1. Fix `loading` state in `Index.tsx`
+Add `setLoading(true)` at the start of `loadData()` so the loading spinner works correctly between the loading screen dismissing and data appearing.
 
-This will immediately reveal which names are mismatched.
+### 2. Add error/empty state to ALL tabs
+Move the error UI out of the standings-only block, or duplicate it in the Competitions and Fantasy tabs, so every tab shows "Unable to Load Data" + "Try Again" when `fetchError` is true and data is empty.
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
+### 3. Add a maximum loading timeout
+Add a 20-second overall timeout for the entire `loadData` call. If it exceeds this, immediately set `fetchError` and `dbReady` so the loading screen dismisses and the error UI shows. This prevents the 45-second hang. Reduce individual fetch timeout to 8s and retries to 2 attempts (max ~24s but with the 20s overall cap).
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
-
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+### 4. Remove dead code
+Remove the unused first `LoadingScreen` component (lines 10-127) to keep the file clean.
 
 ### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
+- `src/pages/Index.tsx` — fix loading state, add error UI to all tabs, add overall timeout
+- `src/components/LoadingScreen.tsx` — remove dead code
 
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
