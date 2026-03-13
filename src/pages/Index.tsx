@@ -716,15 +716,28 @@ const Index = () => {
         </TabsContent>
 
         <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
-          <div className="px-4">
-            <CompetitionsTab
-              competitions={competitions}
-              onSimulationSet={handleSimulationSet}
-              simulationData={simulationData}
-              teams={teamsData}
-              onTeamClick={handleTeamClick}
-            />
-          </div>
+          {fetchError && competitions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-6">
+              <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-8 max-w-sm w-full text-center backdrop-blur-sm">
+                <WifiOff className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                <h2 className="text-lg font-semibold text-slate-200 mb-2">Unable to Load Data</h2>
+                <p className="text-slate-400 text-sm mb-6">Please check your internet connection and try again.</p>
+                <button onClick={() => { setDbReady(false); setShowLoading(true); setAnimationReady(false); loadData(); }} className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-3 rounded-xl transition-colors">
+                  <RotateCcw className="w-4 h-4" /> Try Again
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-4">
+              <CompetitionsTab
+                competitions={competitions}
+                onSimulationSet={handleSimulationSet}
+                simulationData={simulationData}
+                teams={teamsData}
+                onTeamClick={handleTeamClick}
+              />
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
