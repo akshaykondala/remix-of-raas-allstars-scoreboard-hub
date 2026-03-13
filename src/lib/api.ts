@@ -154,6 +154,7 @@ export async function fetchTeams() {
         const bidPointsFromResults = results.reduce((sum: number, r: any) => sum + r.bidPointsEarned, 0);
         return { results, bidPointsFromResults };
       })();
+      console.log('[DEBUG] team bubble raw:', team.name, team.bubble, typeof team.bubble);
       return {
         id: String(team.id),
         name: team.name,
@@ -161,7 +162,7 @@ export async function fetchTeams() {
         university: team.university,
         bidPoints: teamResult.bidPointsFromResults,
         qualified: team.rasqual === true || team.rasqual === 'true',
-        bubble: team.bubble === true || team.bubble === 'true',
+        bubble: team.bubble === true || team.bubble === 'true' || team.bubble === 1 || team.bubble === '1',
         locked: false,
         color: team.theme || 'bg-slate-600',
         theme: team.theme || '',
