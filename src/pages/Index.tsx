@@ -7,7 +7,7 @@ import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw } from 'lucide-react';
+import { Trophy, Target, Calendar, Users, Zap, RotateCcw, WifiOff } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
