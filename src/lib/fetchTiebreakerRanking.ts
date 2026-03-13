@@ -87,19 +87,65 @@ export function fuzzyLookup(
   return bestPos;
 }
 
+const CACHE_KEY = 'cache_tiebreaker';
+
+/** Save tiebreaker data to localStorage */
+function cacheTiebreaker(rankingMap: Map<string, number>, originalNames: Map<string, string>): void {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      rankingMap: Array.from(rankingMap.entries()),
+      originalNames: Array.from(originalNames.entries()),
+      timestamp: Date.now(),
+    }));
+  } catch {}
+}
+
+/** Load tiebreaker data from localStorage */
+function getCachedTiebreaker(): { rankingMap: Map<string, number>; originalNames: Map<string, string> } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return {
+      rankingMap: new Map(parsed.rankingMap),
+      originalNames: new Map(parsed.originalNames),
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Fetches the tiebreaker ranking from a public Google Sheet (specific tab).
  * Returns a Map of normalized team name → numeric Position from Column A.
- * On failure, returns an empty map (ties fall back to alphabetical).
+ * On failure, returns cached data or an empty map.
  */
 export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string, number>; originalNames: Map<string, string> }> {
   const rankingMap = new Map<string, number>();
-  const originalNames = new Map<string, string>(); // normalized → original sheet name
+  const originalNames = new Map<string, string>();
 
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
-    const response = await fetch(url);
-    if (!response.ok) return { rankingMap, originalNames };
+    
+    // Retry up to 3 times with backoff
+    let response: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (response.ok) break;
+        response = null;
+      } catch {
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+      }
+    }
+    
+    if (!response || !response.ok) {
+      console.warn('[Tiebreaker] All fetch attempts failed, falling back to cache');
+      return getCachedTiebreaker() || { rankingMap, originalNames };
+    }
 
     const csv = await response.text();
     const lines = csv.split('\n').filter(line => line.trim().length > 0);
@@ -116,9 +162,14 @@ export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string
         originalNames.set(normalized, rawName);
       }
     }
-    // Sheet loaded successfully
+    
+    // Cache on success
+    if (rankingMap.size > 0) {
+      cacheTiebreaker(rankingMap, originalNames);
+    }
   } catch (error) {
-    // Tiebreaker fetch failed; ties fall back to alphabetical
+    console.warn('[Tiebreaker] Fetch failed, falling back to cache:', error);
+    return getCachedTiebreaker() || { rankingMap, originalNames };
   }
 
   return { rankingMap, originalNames };
