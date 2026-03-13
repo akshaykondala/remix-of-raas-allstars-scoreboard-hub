@@ -130,7 +130,7 @@ export function CompetitionDetail({
     if (!isOpen) {
       setOpen(false);
       // Delay the onClose to allow animation to complete
-      setTimeout(onClose, 300);
+      setTimeout(onClose, 150);
     }
   };
 
