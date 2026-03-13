@@ -286,19 +286,6 @@ export function CompetitionDetail({
                     </div>}
                 </div>
               </div>
-              {/* Inline keyframes for logo animation */}
-              <style>{`
-                @keyframes logo-entrance {
-                  0% { opacity: 0; transform: scale(0.5); }
-                  60% { opacity: 1; transform: scale(1.08); }
-                  100% { opacity: 1; transform: scale(1); }
-                }
-                @keyframes logo-glow-spin {
-                  0% { opacity: 0; transform: rotate(0deg) scale(0.8); }
-                  30% { opacity: 0.7; }
-                  100% { opacity: 0; transform: rotate(360deg) scale(1.1); }
-                }
-              `}</style>
               
               {/* Competition Name & Info */}
               <div className="space-y-1">

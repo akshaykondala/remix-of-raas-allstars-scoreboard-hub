@@ -2,7 +2,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 import { cn } from "@/lib/utils";
 const Drawer = ({
-  shouldScaleBackground = true,
+  shouldScaleBackground = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => <DrawerPrimitive.Root closeThreshold={0.15} shouldScaleBackground={shouldScaleBackground} {...props} />;
 Drawer.displayName = "Drawer";
