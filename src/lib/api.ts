@@ -21,7 +21,7 @@ function getCache(key: string): any | null {
 }
 
 /** Fetch with retry and exponential backoff */
-async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 2): Promise<Response> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       const controller = new AbortController();
