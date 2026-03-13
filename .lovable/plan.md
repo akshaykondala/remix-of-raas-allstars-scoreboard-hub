@@ -1,29 +1,43 @@
 
 
-## Audit: Current State of Loading/Blank Screen Fixes
+## Root Cause
 
-You're right — the environment variables **are** configured (likely as build secrets, which I can't see). The intermittent blank screen is purely a **network reliability issue** — Directus or Google Sheets sometimes times out or fails.
+The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
 
-### What's Already Working Well
-- Retry logic with backoff in `api.ts` (2 retries, 8s timeout)
-- localStorage caching for teams and competitions — on failure, cached data is served
-- Error UI with "Try Again" button on all 3 tabs (standings, competitions, teams)
-- 20-second overall timeout prevents indefinite hanging
-- `setLoading(true)` at start of `loadData()` — loading spinner works correctly
+Evidence:
+- 1pt tie works (all 3 names match) 
+- 7pt and 5pt ties are wrong (one or both names don't match)
+- The "unmatched team loses" rule in the comparator flips the intended order
 
-### Two Remaining Issues
+## Plan
 
-**1. Tiebreaker fetch still uses 3 retries × 15s timeout**
-`src/lib/fetchTiebreakerRanking.ts` line 132-135 still has the old values. Since it runs in `Promise.all` with the Directus calls, it can block the entire load for up to 45s — exceeding the 20s overall timeout. When the timeout fires, the error state is set, but the tiebreaker fetch keeps running in the background, potentially causing a state race.
+### 1. Add critical diagnostic logging (immediate)
+In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
+- Original Directus name
+- Normalized form
+- Whether it matched the sheet
+- Sheet position (if matched)
 
-**Fix:** Reduce to 2 retries with 8s timeout (matching `api.ts`).
+This will immediately reveal which names are mismatched.
 
-**2. Timeout doesn't cancel in-flight requests**
-When the 20s timeout fires (line 87-92), it sets `fetchError` and `dbReady`, but the `Promise.all` on line 95 keeps running. If those requests eventually succeed, the `.then` logic on lines 100-256 runs and overwrites the error state — potentially flashing between error UI and content, or setting partial data without clearing the error flag.
+### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
+Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+```
+"uconnthunderraas" → same position as "uconnthunderaas"
+```
 
-**Fix:** Use an `AbortController` so the timeout actually cancels the in-flight fetches, preventing the race condition.
+### 3. Fallback: use fuzzy matching
+If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
 
-### Files to Change
-- **`src/lib/fetchTiebreakerRanking.ts`** — reduce retries from 3→2, timeout from 15s→8s
-- **`src/pages/Index.tsx`** — add `AbortController` to `loadData` so the 20s timeout aborts in-flight requests cleanly
+### 4. Change unmatched behavior
+Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
 
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
+- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
+- `src/pages/Index.tsx` - Add per-team diagnostic logging
+
+### What I need from you
+After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+
+Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.

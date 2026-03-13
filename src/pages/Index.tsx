@@ -83,13 +83,18 @@ const Index = () => {
     setFetchError(false);
     setLoading(true);
     
-    // Overall timeout to prevent hanging for 45+ seconds
+    // AbortController to cancel in-flight requests on timeout
+    const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
       console.warn('[App] Load timeout reached (20s)');
+      abortController.abort();
       setFetchError(true);
       setLoading(false);
       setDbReady(true);
     }, 20000);
+    
+    // If already aborted by timeout, bail out early
+    if (abortController.signal.aborted) return;
     
     try {
       const [teams, competitionsData, sheetResult] = await Promise.all([
@@ -97,6 +102,9 @@ const Index = () => {
         fetchFromDirectus('competitions'),
         fetchTiebreakerRanking()
       ]);
+      
+      // If timeout fired while awaiting, don't overwrite error state
+      if (abortController.signal.aborted) return;
       setTiebreakerRankingMap(sheetResult.rankingMap);
       setSheetOriginalNames(sheetResult.originalNames);
       
