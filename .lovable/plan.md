@@ -1,43 +1,28 @@
 
 
-## Root Cause
+## Add "On the Bubble" Indicator
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+The backend has a new `bubble` toggle field on teams. When enabled, the team should show an "On the Bubble" badge in the same style as the "Qualified for RAS" indicator but in a distinct color (amber/orange).
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Changes
 
-## Plan
+#### 1. `src/lib/types.ts`
+- Add `bubble?: boolean` to the `Team` interface
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+#### 2. `src/lib/api.ts`
+- Map `team.bubble` from the Directus response into the Team object (line ~163, alongside `qualified`)
 
-This will immediately reveal which names are mismatched.
+#### 3. `src/pages/Index.tsx` — Teams tab (lines 804-807)
+- After the university text, add a conditional badge: if `team.qualified` show green "Qualified for RAS" pill, else if `team.bubble` show amber/orange "On the Bubble" pill
+- Style: same rounded-full pill format, using `bg-amber-500/20 border border-amber-400/30 text-amber-400` to contrast with the green qualified badge
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
+#### 4. `src/components/TeamDetail.tsx` — Drawer header (lines 100-105)
+- After the existing `qualified` check, add an `else if` for `team.bubble` showing `text-amber-400/90` "On the Bubble" text in the same inline style as "Qualified for RAS"
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+#### 5. `src/pages/TeamDetailPage.tsx` — Status badge (lines 152-157)
+- After the qualified badge, add conditional rendering for bubble: same pill style as the QUALIFIED badge but with amber colors (`from-amber-500/20 to-orange-500/20 border-amber-400/30 text-amber-400`) and text "ON THE BUBBLE"
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+### Color Distinction
+- **Qualified**: Green (`emerald-400/green-400`)
+- **On the Bubble**: Amber/Orange (`amber-400/orange-400`)
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
-
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
