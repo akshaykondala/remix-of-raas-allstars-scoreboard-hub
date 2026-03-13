@@ -149,12 +149,17 @@ export const TeamDetailPage = () => {
             )}
             
             {/* Status Badge */}
-            {team.qualified && (
+            {team.qualified ? (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 text-green-400 text-sm font-semibold mt-3">
                 <Star className="h-4 w-4" />
                 QUALIFIED
               </div>
-            )}
+            ) : team.bubble ? (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 text-amber-400 text-sm font-semibold mt-3">
+                <Star className="h-4 w-4" />
+                ON THE BUBBLE
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

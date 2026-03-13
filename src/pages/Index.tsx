@@ -804,6 +804,15 @@ const Index = () => {
                         <div className="flex-1 min-w-0 w-full">
                           <h3 className="text-white font-semibold text-lg truncate group-hover:text-blue-200 transition-colors duration-300">{team.name}</h3>
                           <p className="text-slate-400 text-sm truncate">{team.university}</p>
+                          {team.qualified ? (
+                            <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/20 border border-green-400/30 text-green-400">
+                              Qualified for RAS
+                            </span>
+                          ) : team.bubble ? (
+                            <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 border border-amber-400/30 text-amber-400">
+                              On the Bubble
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                     </div>

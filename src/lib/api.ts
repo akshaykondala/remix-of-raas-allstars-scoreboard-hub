@@ -161,6 +161,7 @@ export async function fetchTeams() {
         university: team.university,
         bidPoints: teamResult.bidPointsFromResults,
         qualified: team.rasqual === true || team.rasqual === 'true',
+        bubble: team.bubble === true || team.bubble === 'true',
         locked: false,
         color: team.theme || 'bg-slate-600',
         theme: team.theme || '',
