@@ -127,12 +127,12 @@ export async function fetchTiebreakerRanking(): Promise<{ rankingMap: Map<string
   try {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
     
-    // Retry up to 3 times with backoff
+    // Retry up to 2 times with backoff
     let response: Response | null = null;
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 2; attempt++) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 15000);
+        const timeout = setTimeout(() => controller.abort(), 8000);
         response = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
         if (response.ok) break;
