@@ -81,6 +81,16 @@ const Index = () => {
   // Fetch teams and competitions from database
   const loadData = useCallback(async () => {
     setFetchError(false);
+    setLoading(true);
+    
+    // Overall timeout to prevent hanging for 45+ seconds
+    const timeoutId = setTimeout(() => {
+      console.warn('[App] Load timeout reached (20s)');
+      setFetchError(true);
+      setLoading(false);
+      setDbReady(true);
+    }, 20000);
+    
     try {
       const [teams, competitionsData, sheetResult] = await Promise.all([
         fetchTeams(),
