@@ -260,6 +260,7 @@ const Index = () => {
       setTeamsData([]);
       setCompetitions([]);
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
       setDbReady(true);
     }
