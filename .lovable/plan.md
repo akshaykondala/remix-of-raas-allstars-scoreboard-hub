@@ -1,43 +1,33 @@
 
 
-## Root Cause
+## Problem: Laggy Competition Detail Drawer Exit Animation
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+The competition detail drawer (bottom sheet) is slow and laggy when dismissing, especially on mobile.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Root Causes
 
-## Plan
+1. **`shouldScaleBackground={true}`** in `drawer.tsx` (line 6) — Vaul scales the entire page background during open/close transitions. This triggers expensive compositing on every frame, especially with the app's heavy gradient/blur backgrounds.
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+2. **300ms `setTimeout` before unmount** in `CompetitionDetail.tsx` (line 133) — After the drawer closes, there's a `setTimeout(onClose, 300)` that keeps the entire heavy component mounted for an extra 300ms while it's invisible, blocking the next interaction.
 
-This will immediately reveal which names are mismatched.
+3. **Heavy blur/glow effects inside the drawer** — Multiple `blur-xl`, `blur-2xl`, `blur-3xl` elements (lines 281, 282+) and gradient overlays remain composited during the exit animation, causing GPU thrashing on mobile.
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
-```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
+4. **Inline `<style>` tag re-injected on every render** (lines 290-301) — The `@keyframes` block is injected as a `<style>` element inside the component, causing style recalculation on mount/unmount.
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+### Plan
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+#### `src/components/ui/drawer.tsx`
+- Set `shouldScaleBackground={false}` — removes the expensive background scaling transform during open/close
 
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
+#### `src/components/CompetitionDetail.tsx`
+- Reduce the `setTimeout(onClose, 300)` to `setTimeout(onClose, 150)` — the Vaul drawer handles its own exit animation; the extra delay just keeps heavy DOM mounted longer
+- Move the inline `<style>` keyframes to `src/index.css` so they're defined once globally instead of injected/removed with every drawer open/close
 
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+#### `src/index.css`
+- Add the `logo-entrance` and `logo-glow-spin` keyframes here (moved from inline)
 
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
+### Files Changed
+- `src/components/ui/drawer.tsx` — disable background scaling
+- `src/components/CompetitionDetail.tsx` — reduce close delay, remove inline styles
+- `src/index.css` — add keyframes globally
+
