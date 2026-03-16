@@ -250,7 +250,7 @@ export function CompetitionDetail({
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
-        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
+        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide" style={{ willChange: 'transform' }}>
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className={`relative p-6 pb-4 pt-[44px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
@@ -258,7 +258,7 @@ export function CompetitionDetail({
               {/* Large Competition Logo with entrance animation */}
               <div className="relative">
                 {/* Glow ring that spins once on open */}
-                <div 
+                {open && <div 
                   className="absolute -inset-3 rounded-3xl opacity-0"
                   style={{
                     background: competition.ras 
@@ -269,7 +269,7 @@ export function CompetitionDetail({
                     animation: 'logo-glow-spin 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards',
                     filter: 'blur(12px)',
                   }}
-                />
+                />}
                 <div 
                   className="relative"
                   style={{
@@ -447,7 +447,7 @@ export function CompetitionDetail({
 
           {(() => {
             const igUrl = getInstagramEmbedUrl(competition.videoLink) || getInstagramEmbedUrl(competition.livestreamLink);
-            if (igUrl) {
+            if (igUrl && open) {
               return (
                 <div className="flex justify-center px-4 pb-6">
                   <div className="w-full max-w-[400px] rounded-2xl overflow-hidden border border-slate-600/40">
