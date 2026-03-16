@@ -202,50 +202,47 @@ export function CompetitionDetail({
       }, 1500);
     }
   };
-  const handleTeamClick = (teamId: string | number) => {
+  const handleTeamClick = useCallback((teamId: string | number) => {
     const team = teams.find(t => t.id === String(teamId) || t.id === teamId);
     if (team && onTeamClick) {
       onTeamClick(team);
     }
-  };
+  }, [teams, onTeamClick]);
+
   const canSaveSimulation = predictions.first && predictions.second && (detailHasThirdPlace ? predictions.third : true) && predictions.first !== predictions.second && (!detailHasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
-  const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
+
+  const getAvailableTeams = useCallback((position: 'first' | 'second' | 'third') => {
+    const lineup = competition.lineup || [];
+    const toTeam = (team: any) => ({
+      id: typeof team.id === 'string' ? team.id : String(team.id),
+      name: team.name || `Team ${team.id}`
+    });
     switch (position) {
       case 'first':
-        return (competition.lineup || []).map(team => ({
-          id: typeof team.id === 'string' ? team.id : String(team.id),
-          name: team.name || `Team ${team.id}`
-        }));
+        return lineup.map(toTeam);
       case 'second':
-        return (competition.lineup || []).filter(team => {
+        return lineup.filter(team => {
           const teamId = typeof team.id === 'string' ? team.id : String(team.id);
           return teamId !== predictions.first;
-        }).map(team => ({
-          id: typeof team.id === 'string' ? team.id : String(team.id),
-          name: team.name || `Team ${team.id}`
-        }));
+        }).map(toTeam);
       case 'third':
-        return (competition.lineup || []).filter(team => {
+        return lineup.filter(team => {
           const teamId = typeof team.id === 'string' ? team.id : String(team.id);
           return teamId !== predictions.first && teamId !== predictions.second;
-        }).map(team => ({
-          id: typeof team.id === 'string' ? team.id : String(team.id),
-          name: team.name || `Team ${team.id}`
-        }));
+        }).map(toTeam);
       default:
-        return (competition.lineup || []).map(team => ({
-          id: typeof team.id === 'string' ? team.id : String(team.id),
-          name: team.name || `Team ${team.id}`
-        }));
+        return lineup.map(toTeam);
     }
-  };
-  const getPlacingTeam = (teamId: string | number) => {
+  }, [competition.lineup, predictions.first, predictions.second]);
+
+  const getPlacingTeam = useCallback((teamId: string | number) => {
     if (!teamId || !teams.length) return null;
     return teams.find(team => team.id === String(teamId) || team.id === teamId);
-  };
-  const firstPlaceTeam = getPlacingTeam(competition.firstplace);
-  const secondPlaceTeam = getPlacingTeam(competition.secondplace);
-  const thirdPlaceTeam = getPlacingTeam(competition.thirdplace);
+  }, [teams]);
+
+  const firstPlaceTeam = useMemo(() => getPlacingTeam(competition.firstplace), [getPlacingTeam, competition.firstplace]);
+  const secondPlaceTeam = useMemo(() => getPlacingTeam(competition.secondplace), [getPlacingTeam, competition.secondplace]);
+  const thirdPlaceTeam = useMemo(() => getPlacingTeam(competition.thirdplace), [getPlacingTeam, competition.thirdplace]);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}

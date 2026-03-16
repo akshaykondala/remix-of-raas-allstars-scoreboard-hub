@@ -723,7 +723,8 @@ const Index = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
+        {activeTab === 'comps' && (
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32" forceMount>
           {fetchError && competitions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-6">
               <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-8 max-w-sm w-full text-center backdrop-blur-sm">
@@ -747,6 +748,7 @@ const Index = () => {
             </div>
           )}
         </TabsContent>
+        )}
 
         <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
           {fetchError && teamsData.length === 0 ? (
