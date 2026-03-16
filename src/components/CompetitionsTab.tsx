@@ -197,13 +197,10 @@ export const CompetitionsTab = memo(function CompetitionsTab({
 
       <div className="flex flex-col items-center w-full flex-1">
           <CompetitionTimeline
-            competitions={[...competitions].sort((a, b) => {
-              if (!a.date && !b.date) return 0;
-              if (!a.date) return 1;
-              if (!b.date) return -1;
-              return new Date(a.date).getTime() - new Date(b.date).getTime();
-            })}
-            onCompetitionClick={competition => {
+            competitions={sortedCompetitions}
+            onCompetitionClick={handleCompetitionClick}
+            onSimulationStart={handleSimulationStart}
+          />
               const mapped = mapCompetitionTeamsFull(competition, teams);
               setSelectedCompetition({
                 ...mapped,
