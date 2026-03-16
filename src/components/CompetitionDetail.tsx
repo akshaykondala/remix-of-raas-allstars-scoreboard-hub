@@ -608,9 +608,7 @@ export function CompetitionDetail({
                       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
                       <div className="relative flex flex-col items-center text-center space-y-2">
                         <div className="flex items-center gap-2">
-                          <Crown className="h-5 w-5 text-amber-400" />
                           <span className="text-amber-300/80 text-xs font-semibold uppercase tracking-widest">National Champion</span>
-                          <Crown className="h-5 w-5 text-amber-400" />
                         </div>
                         <div className="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400/40 flex items-center justify-center">
                           <span className="text-amber-300 text-2xl font-black">?</span>
