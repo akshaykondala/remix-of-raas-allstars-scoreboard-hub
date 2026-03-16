@@ -585,10 +585,10 @@ export function CompetitionDetail({
               {/* Placings Section */}
               <div className="px-4 pb-4">
                 <h3 className="text-base font-bold text-white mb-3 flex items-center">
-                  <div className="bg-yellow-500/20 rounded-full p-1.5 mr-2">
-                    <Trophy className="h-3.5 w-3.5 text-yellow-400" />
+                  <div className={`${competition.ras ? 'bg-amber-500/20' : 'bg-yellow-500/20'} rounded-full p-1.5 mr-2`}>
+                    <Trophy className={`h-3.5 w-3.5 ${competition.ras ? 'text-amber-400' : 'text-yellow-400'}`} />
                   </div>
-                  Top {detailHasThirdPlace ? '3' : '2'} Placings
+                  {competition.ras ? 'National Champions' : `Top ${detailHasThirdPlace ? '3' : '2'} Placings`}
                 </h3>
                 
                 {isFutureCompetition && !competition.ras ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
@@ -600,8 +600,41 @@ export function CompetitionDetail({
                     {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
                         {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                       </button>}
-                  </div> : isFutureCompetition && competition.ras ? <div className="bg-gradient-to-br from-amber-900/20 to-slate-800/50 border border-amber-500/20 rounded-xl p-4 text-center">
-                    <p className="text-amber-300/70 text-sm font-medium">Results TBD</p>
+                  </div> : isFutureCompetition && competition.ras ? <div className="space-y-3">
+                    {/* 1st Place - National Champion */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 via-yellow-600/15 to-amber-700/20 border-2 border-amber-500/40 rounded-2xl p-5">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent animate-ras-shimmer" />
+                      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+                      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
+                      <div className="relative flex flex-col items-center text-center space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-5 w-5 text-amber-400" />
+                          <span className="text-amber-300/80 text-xs font-semibold uppercase tracking-widest">National Champion</span>
+                          <Crown className="h-5 w-5 text-amber-400" />
+                        </div>
+                        <div className="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400/40 flex items-center justify-center">
+                          <span className="text-amber-300 text-2xl font-black">?</span>
+                        </div>
+                        <span className="text-foreground text-xl font-black tracking-wide">TBD</span>
+                        <div className="bg-amber-500/15 px-3 py-1 rounded-full border border-amber-400/30">
+                          <span className="text-amber-300 text-xs font-bold">1st Place</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* 2nd Place - Runner Up */}
+                    <div className="relative overflow-hidden bg-gradient-to-br from-slate-400/10 via-slate-500/10 to-slate-600/10 border border-slate-400/30 rounded-xl p-4">
+                      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-400/40 to-transparent" />
+                      <div className="relative flex flex-col items-center text-center space-y-2">
+                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Runner Up</span>
+                        <div className="w-12 h-12 rounded-full bg-slate-500/20 border-2 border-slate-400/30 flex items-center justify-center">
+                          <span className="text-slate-300 text-xl font-black">?</span>
+                        </div>
+                        <span className="text-foreground text-lg font-bold">TBD</span>
+                        <div className="bg-slate-500/15 px-3 py-1 rounded-full border border-slate-400/25">
+                          <span className="text-slate-300 text-xs font-bold">2nd Place</span>
+                        </div>
+                      </div>
+                    </div>
                   </div> : <div className="space-y-2">
                     {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
                         <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
