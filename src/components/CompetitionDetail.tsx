@@ -447,7 +447,7 @@ export function CompetitionDetail({
 
           {(() => {
             const igUrl = getInstagramEmbedUrl(competition.videoLink) || getInstagramEmbedUrl(competition.livestreamLink);
-            if (igUrl) {
+            if (igUrl && open) {
               return (
                 <div className="flex justify-center px-4 pb-6">
                   <div className="w-full max-w-[400px] rounded-2xl overflow-hidden border border-slate-600/40">
