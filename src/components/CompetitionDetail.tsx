@@ -464,24 +464,7 @@ export function CompetitionDetail({
               );
             }
 
-            if (competition.ras && (competition.judges || []).filter(j => j && j.name).length === 0) {
-              return (
-                <div className="flex flex-col items-center justify-center py-16 px-4 gap-4">
-                  <div className="flex items-center gap-4 text-amber-400/60">
-                    <span className="text-lg tracking-[0.3em]">──</span>
-                    <span className="text-xl font-semibold tracking-wide text-amber-400">{competition.city}</span>
-                    <span className="text-lg tracking-[0.3em]">──</span>
-                  </div>
-                  <span className="text-base text-amber-400/40 font-medium tracking-wider">
-                    {competition.date ? (() => {
-                      const [y, m, d] = competition.date.split('-').map(Number);
-                      const date = new Date(y, m - 1, d);
-                      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                    })() : ''}
-                  </span>
-                </div>
-              );
-            }
+            // RAS fallback removed — nationals now renders full layout
 
             return (
               <>
