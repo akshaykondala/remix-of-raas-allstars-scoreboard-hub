@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { CompetitionDetail } from './CompetitionDetail';
 import { CompetitionTimeline } from './CompetitionTimeline';
 import { ChevronDown } from 'lucide-react';
