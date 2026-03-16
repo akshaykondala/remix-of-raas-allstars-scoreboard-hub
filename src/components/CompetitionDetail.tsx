@@ -250,7 +250,7 @@ export function CompetitionDetail({
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
-        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
+        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide" style={{ willChange: 'transform' }}>
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className={`relative p-6 pb-4 pt-[44px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
