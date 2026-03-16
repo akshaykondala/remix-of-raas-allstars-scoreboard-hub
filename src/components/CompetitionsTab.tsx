@@ -105,34 +105,42 @@ export const CompetitionsTab = memo(function CompetitionsTab({
     third: ''
   });
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const currentDate = new Date();
-  const pastCompetitions = competitions.filter(comp => comp.date && new Date(comp.date) < currentDate);
-  const futureCompetitions = competitions.filter(comp => !comp.date || new Date(comp.date) >= currentDate);
-  const handleSimulationStart = (competition: Competition) => {
+
+  const sortedCompetitions = useMemo(() => 
+    [...competitions].sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    }), [competitions]);
+
+  const handleCompetitionClick = useCallback((competition: Competition) => {
+    const mapped = mapCompetitionTeamsFull(competition, teams);
+    setSelectedCompetition({
+      ...mapped,
+      media: { photos: [], videos: [] }
+    });
+  }, [teams]);
+
+  const handleSimulationStart = useCallback((competition: Competition) => {
     setSimulatingCompetition(competition);
-    // Load existing predictions if available
     const existingData = simulationData?.[competition.id];
     if (existingData) {
       setPredictions(existingData.predictions);
     } else {
-      setPredictions({
-        first: '',
-        second: '',
-        third: ''
-      });
+      setPredictions({ first: '', second: '', third: '' });
     }
     setShowSuccessMessage(false);
-  };
-  const handlePredictionChange = (position: 'first' | 'second' | 'third', team: string) => {
-    setPredictions(prev => ({
-      ...prev,
-      [position]: team
-    }));
-  };
+  }, [simulationData]);
+
+  const handlePredictionChange = useCallback((position: 'first' | 'second' | 'third', team: string) => {
+    setPredictions(prev => ({ ...prev, [position]: team }));
+  }, []);
+
   const simulatingLineupSize = simulatingCompetition ? (Array.isArray(simulatingCompetition.lineup) ? simulatingCompetition.lineup.length : 0) : 0;
   const simulatingHasThirdPlace = simulatingLineupSize > 6;
 
-  const handleSaveSimulation = () => {
+  const handleSaveSimulation = useCallback(() => {
     if (simulatingCompetition && predictions.first && predictions.second && (simulatingHasThirdPlace ? predictions.third : true) && onSimulationSet) {
       onSimulationSet(simulatingCompetition.name, simulatingCompetition.id, predictions);
       setShowSuccessMessage(true);
@@ -141,48 +149,37 @@ export const CompetitionsTab = memo(function CompetitionsTab({
         setShowSuccessMessage(false);
       }, 1500);
     }
-  };
-  const handleCancelSimulation = () => {
-    setSimulatingCompetition(null);
-    setPredictions({
-      first: '',
-      second: '',
-      third: ''
-    });
-    setShowSuccessMessage(false);
-  };
-  const canSaveSimulation = predictions.first && predictions.second && (simulatingHasThirdPlace ? predictions.third : true) && predictions.first !== predictions.second && (!simulatingHasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
-  const getAvailableTeams = (position: 'first' | 'second' | 'third') => {
-    if (!simulatingCompetition) return [];
+  }, [simulatingCompetition, predictions, simulatingHasThirdPlace, onSimulationSet]);
 
-    // Ensure lineup has the expected structure
-    const availableTeams = simulatingCompetition.lineup.filter(team => {
-      // Skip teams that are already selected in previous positions
+  const handleCancelSimulation = useCallback(() => {
+    setSimulatingCompetition(null);
+    setPredictions({ first: '', second: '', third: '' });
+    setShowSuccessMessage(false);
+  }, []);
+
+  const canSaveSimulation = predictions.first && predictions.second && (simulatingHasThirdPlace ? predictions.third : true) && predictions.first !== predictions.second && (!simulatingHasThirdPlace || (predictions.first !== predictions.third && predictions.second !== predictions.third));
+
+  const getAvailableTeams = useCallback((position: 'first' | 'second' | 'third') => {
+    if (!simulatingCompetition) return [];
+    return simulatingCompetition.lineup.filter(team => {
       if (position === 'second' && String(team.id) === predictions.first) return false;
       if (position === 'third' && (String(team.id) === predictions.first || String(team.id) === predictions.second)) return false;
       return true;
-    }).map(team => ({
-      id: String(team.id),
-      name: team.name
-    }));
-    return availableTeams;
-  };
+    }).map(team => ({ id: String(team.id), name: team.name }));
+  }, [simulatingCompetition, predictions.first, predictions.second]);
+
   return <div className="pb-4 w-full overflow-hidden min-h-screen flex flex-col" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}>
-
-
       {/* Simulation Modal */}
       {simulatingCompetition && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-bold text-foreground mb-4 text-center">Simulate {simulatingCompetition.name}</h3>
               <p className="text-muted-foreground text-sm mb-6 text-center">Predict the top {simulatingHasThirdPlace ? '3' : '2'} teams for this competition</p>
-              
               <div className="space-y-4 mb-6">
                 <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
                 <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
                 {simulatingHasThirdPlace && <SimulationDropdown teams={getAvailableTeams('third')} selectedTeam={predictions.third} onSelect={team => handlePredictionChange('third', team)} placeholder="Select 3rd place team" position="third" />}
               </div>
-              
               <div className="flex gap-3">
                 <button onClick={handleCancelSimulation} className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-4 rounded-lg transition-colors min-h-[48px]">
                   Cancel
@@ -199,14 +196,6 @@ export const CompetitionsTab = memo(function CompetitionsTab({
           <CompetitionTimeline
             competitions={sortedCompetitions}
             onCompetitionClick={handleCompetitionClick}
-            onSimulationStart={handleSimulationStart}
-          />
-              const mapped = mapCompetitionTeamsFull(competition, teams);
-              setSelectedCompetition({
-                ...mapped,
-                media: { photos: [], videos: [] }
-              });
-            }}
             onSimulationStart={handleSimulationStart}
           />
         </div>
