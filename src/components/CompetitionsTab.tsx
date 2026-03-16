@@ -86,7 +86,7 @@ function SimulationDropdown({
         </div>}
     </div>;
 }
-export function CompetitionsTab({
+export const CompetitionsTab = memo(function CompetitionsTab({
   competitions,
   onSimulationSet,
   simulationData,
