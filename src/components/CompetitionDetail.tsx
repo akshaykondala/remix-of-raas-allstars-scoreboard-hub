@@ -486,11 +486,18 @@ export function CompetitionDetail({
                       <div className="bg-gradient-to-br from-amber-900/20 via-slate-800/50 to-amber-900/10 border border-amber-500/20 rounded-xl p-3 shadow-lg shadow-amber-500/5">
                         <div className="grid gap-2">
                           {(() => {
-                            const rankMap = buildRankMap(teams, rankingMap);
-                            return (competition.lineup || []).map((team, index) => {
+                            // Sort lineup by bid points descending
+                            const sortedLineup = [...(competition.lineup || [])].sort((a, b) => {
+                              const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
+                              const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
+                              const aTeam = teams.find(t => t.id === aId);
+                              const bTeam = teams.find(t => t.id === bId);
+                              return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
+                            });
+                            return sortedLineup.map((team, index) => {
                               const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
                               const fullTeam = teams.find(t => t.id === teamIdStr);
-                              const rank = rankMap.get(teamIdStr);
+                              const bidPoints = fullTeam?.bidPoints || 0;
                               return (
                                 <div
                                   key={index}
@@ -519,12 +526,10 @@ export function CompetitionDetail({
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/70 flex-shrink-0">
                                     Qualified
                                   </span>
-                                  {/* Leaderboard rank */}
-                                  {rank && (
-                                    <span className="text-xs font-bold bg-amber-500/20 text-amber-300 rounded-full px-2 py-0.5 ring-1 ring-amber-400/20 flex-shrink-0">
-                                      #{rank}
-                                    </span>
-                                  )}
+                                  {/* Bid points */}
+                                  <span className="text-xs font-bold bg-amber-500/20 text-amber-300 rounded-full px-2 py-0.5 ring-1 ring-amber-400/20 flex-shrink-0">
+                                    {bidPoints} pts
+                                  </span>
                                 </div>
                               );
                             });
