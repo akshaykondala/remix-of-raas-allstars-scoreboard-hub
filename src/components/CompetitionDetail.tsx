@@ -608,9 +608,7 @@ export function CompetitionDetail({
                       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
                       <div className="relative flex flex-col items-center text-center space-y-2">
                         <div className="flex items-center gap-2">
-                          <Crown className="h-5 w-5 text-amber-400" />
                           <span className="text-amber-300/80 text-xs font-semibold uppercase tracking-widest">National Champion</span>
-                          <Crown className="h-5 w-5 text-amber-400" />
                         </div>
                         <div className="w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400/40 flex items-center justify-center">
                           <span className="text-amber-300 text-2xl font-black">?</span>
@@ -693,17 +691,23 @@ export function CompetitionDetail({
                   Judging Panel
                 </h3>
                 <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
-                  <div className="grid gap-2">
-                    {(competition.judges || []).filter(j => j && j.name).sort((a, b) => (a.category || '').localeCompare(b.category || '')).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
-                        <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
-                          <Eye className="h-3.5 w-3.5 text-purple-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-slate-200 text-sm font-medium truncate">{judge.name}</div>
-                          <div className="text-slate-400 text-xs truncate">{judge.category}</div>
-                        </div>
-                      </div>)}
-                  </div>
+                  {(competition.judges || []).filter(j => j && j.name).length === 0 ? (
+                    <div className="text-center py-3">
+                      <span className="text-slate-400 text-sm font-medium italic">TBD</span>
+                    </div>
+                  ) : (
+                    <div className="grid gap-2">
+                      {(competition.judges || []).filter(j => j && j.name).sort((a, b) => (a.category || '').localeCompare(b.category || '')).map((judge, index) => <div key={index} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2">
+                          <div className="w-7 h-7 bg-purple-500/20 rounded-full flex items-center justify-center">
+                            <Eye className="h-3.5 w-3.5 text-purple-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-slate-200 text-sm font-medium truncate">{judge.name}</div>
+                            <div className="text-slate-400 text-xs truncate">{judge.category}</div>
+                          </div>
+                        </div>)}
+                    </div>
+                  )}
                 </div>
               </div>
 
