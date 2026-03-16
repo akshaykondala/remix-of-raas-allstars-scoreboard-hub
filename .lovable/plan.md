@@ -1,35 +1,43 @@
 
 
-## Nationals Competition: Full Layout with Premium Lineup
+## Root Cause
 
-### Current Behavior
-When a RAS competition has no judges, the entire content area is replaced by just a centered "── City ── Date" display (lines 467-484). This means no lineup, no placings, no links are shown.
+The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
 
-### What Changes
+Evidence:
+- 1pt tie works (all 3 names match) 
+- 7pt and 5pt ties are wrong (one or both names don't match)
+- The "unmatched team loses" rule in the comparator flips the intended order
 
-#### `src/components/CompetitionDetail.tsx`
+## Plan
 
-**1. Remove the RAS-only city/date fallback** (lines 467-484)
-Delete the special case that hides all content when RAS has no judges. The RAS competition will now render the same sections as every other competition: lineup, placings, judges, Instagram.
+### 1. Add critical diagnostic logging (immediate)
+In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
+- Original Directus name
+- Normalized form
+- Whether it matched the sheet
+- Sheet position (if matched)
 
-**2. Replace the generic lineup grid with a premium "Nationals Lineup" section for RAS competitions**
-When `competition.ras` is true, instead of the plain grey rows in `bg-slate-700/30`, render a premium nationals-themed lineup:
+This will immediately reveal which names are mismatched.
 
-- Section header changes from "Competition Lineup" to "Nationals Lineup" with amber/gold icon styling
-- Each team card gets:
-  - A slightly larger layout with more breathing room
-  - Amber-accented left border or subtle gradient background (from-amber-500/10)
-  - Larger team logo (w-8 h-8 instead of w-6 h-6) with an amber ring
-  - Team name in white with their leaderboard rank badge
-  - A subtle "Qualified" indicator (small amber dot or text)
-- The container gets the holographic/amber gradient border treatment consistent with the RAS card styling
-- Numbered entries (1-9) with small amber-tinted rank circles
+### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
+Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+```
+"uconnthunderraas" → same position as "uconnthunderaas"
+```
 
-The non-RAS path remains completely unchanged — same generic grey lineup rows as before.
+### 3. Fallback: use fuzzy matching
+If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
 
-**3. Keep everything else identical**
-Placings, judges, tickets, Instagram, video links all render normally for RAS just like any other competition.
+### 4. Change unmatched behavior
+Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
 
-### Files Changed
-- `src/components/CompetitionDetail.tsx` — Remove RAS city/date fallback; add premium nationals lineup rendering when `competition.ras` is true
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
+- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
+- `src/pages/Index.tsx` - Add per-team diagnostic logging
 
+### What I need from you
+After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+
+Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
