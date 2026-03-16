@@ -591,7 +591,7 @@ export function CompetitionDetail({
                   Top {detailHasThirdPlace ? '3' : '2'} Placings
                 </h3>
                 
-                {isFutureCompetition ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
+                {isFutureCompetition && !competition.ras ? <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3 space-y-3">
                     <p className="text-slate-400 text-xs mb-2 text-center">Select teams for predictions:</p>
                     <SimulationDropdown teams={getAvailableTeams('first')} selectedTeam={predictions.first} onSelect={team => handlePredictionChange('first', team)} placeholder="Select 1st place team" position="first" />
                     <SimulationDropdown teams={getAvailableTeams('second')} selectedTeam={predictions.second} onSelect={team => handlePredictionChange('second', team)} placeholder="Select 2nd place team" position="second" />
@@ -600,6 +600,8 @@ export function CompetitionDetail({
                     {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
                         {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                       </button>}
+                  </div> : isFutureCompetition && competition.ras ? <div className="bg-gradient-to-br from-amber-900/20 to-slate-800/50 border border-amber-500/20 rounded-xl p-4 text-center">
+                    <p className="text-amber-300/70 text-sm font-medium">Results TBD</p>
                   </div> : <div className="space-y-2">
                     {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
                         <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
