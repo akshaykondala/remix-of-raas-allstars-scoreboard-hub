@@ -258,7 +258,7 @@ export function CompetitionDetail({
               {/* Large Competition Logo with entrance animation */}
               <div className="relative">
                 {/* Glow ring that spins once on open */}
-                <div 
+                {open && <div 
                   className="absolute -inset-3 rounded-3xl opacity-0"
                   style={{
                     background: competition.ras 
@@ -269,7 +269,7 @@ export function CompetitionDetail({
                     animation: 'logo-glow-spin 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards',
                     filter: 'blur(12px)',
                   }}
-                />
+                />}
                 <div 
                   className="relative"
                   style={{
