@@ -470,41 +470,112 @@ export function CompetitionDetail({
               <>
                 {/* Lineup Section */}
                 <div className="px-4 pb-4">
-                  <h3 className="text-base font-bold text-white mb-3 flex items-center">
-                    <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
-                      <Users className="h-3.5 w-3.5 text-purple-400" />
-                  </div>
-                  Competition Lineup
-                </h3>
-                <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
-                <div className="grid gap-1.5">
-                    {(() => {
-                      const rankMap = buildRankMap(teams, rankingMap);
-
-                      return (competition.lineup || []).map((team, index) => {
-                        const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                        const fullTeam = teams.find(t => t.id === teamIdStr);
-                        const rank = rankMap.get(teamIdStr);
-                        return <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                              {fullTeam?.logo ? <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
-                                  <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
-                                </div> : <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
-                                  {(team.name || 'T').charAt(0)}
-                                </div>}
-                              <span className="font-medium text-sm truncate flex-1">
-                                {team.name || `Team ${team.id}`}
-                              </span>
-                              {rank && (
-                                <span className="ml-auto text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full px-2 py-0.5">
-                                  #{rank}
-                                </span>
-                              )}
-                            </div>;
-                      });
-                    })()}
-                  </div>
+                  {competition.ras ? (
+                    <>
+                      <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                        <div className="bg-amber-500/20 rounded-full p-1.5 mr-2">
+                          <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                        </div>
+                        <span className="bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">
+                          Nationals Lineup
+                        </span>
+                        <span className="ml-2 text-xs text-amber-400/60 font-medium">
+                          {(competition.lineup || []).length} Teams
+                        </span>
+                      </h3>
+                      <div className="bg-gradient-to-br from-amber-900/20 via-slate-800/50 to-amber-900/10 border border-amber-500/20 rounded-xl p-3 shadow-lg shadow-amber-500/5">
+                        <div className="grid gap-2">
+                          {(() => {
+                            const rankMap = buildRankMap(teams, rankingMap);
+                            return (competition.lineup || []).map((team, index) => {
+                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                              const fullTeam = teams.find(t => t.id === teamIdStr);
+                              const rank = rankMap.get(teamIdStr);
+                              return (
+                                <div
+                                  key={index}
+                                  onClick={() => handleTeamClick(teamIdStr)}
+                                  className="flex items-center gap-3 bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-400/40 rounded-lg px-3 py-3 text-slate-300 cursor-pointer hover:from-amber-500/20 hover:to-amber-400/5 transition-all duration-200 active:scale-[0.98]"
+                                >
+                                  {/* Rank number */}
+                                  <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-300 text-xs font-bold flex-shrink-0 ring-1 ring-amber-400/30">
+                                    {index + 1}
+                                  </div>
+                                  {/* Team logo */}
+                                  {fullTeam?.logo ? (
+                                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-amber-400/30">
+                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-8 h-8 bg-amber-600/20 rounded-full flex items-center justify-center text-sm font-bold text-amber-300 flex-shrink-0 ring-2 ring-amber-400/30">
+                                      {(team.name || 'T').charAt(0)}
+                                    </div>
+                                  )}
+                                  {/* Team name */}
+                                  <span className="font-semibold text-sm text-white truncate flex-1">
+                                    {team.name || `Team ${team.id}`}
+                                  </span>
+                                  {/* Qualified badge */}
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/70 flex-shrink-0">
+                                    Qualified
+                                  </span>
+                                  {/* Leaderboard rank */}
+                                  {rank && (
+                                    <span className="text-xs font-bold bg-amber-500/20 text-amber-300 rounded-full px-2 py-0.5 ring-1 ring-amber-400/20 flex-shrink-0">
+                                      #{rank}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-base font-bold text-white mb-3 flex items-center">
+                        <div className="bg-purple-500/20 rounded-full p-1.5 mr-2">
+                          <Users className="h-3.5 w-3.5 text-purple-400" />
+                        </div>
+                        Competition Lineup
+                      </h3>
+                      <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
+                        <div className="grid gap-1.5">
+                          {(() => {
+                            const rankMap = buildRankMap(teams, rankingMap);
+                            return (competition.lineup || []).map((team, index) => {
+                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+                              const fullTeam = teams.find(t => t.id === teamIdStr);
+                              const rank = rankMap.get(teamIdStr);
+                              return (
+                                <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                                  {fullTeam?.logo ? (
+                                    <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
+                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                    </div>
+                                  ) : (
+                                    <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
+                                      {(team.name || 'T').charAt(0)}
+                                    </div>
+                                  )}
+                                  <span className="font-medium text-sm truncate flex-1">
+                                    {team.name || `Team ${team.id}`}
+                                  </span>
+                                  {rank && (
+                                    <span className="ml-auto text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full px-2 py-0.5">
+                                      #{rank}
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            });
+                          })()}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
 
               {/* Placings Section */}
               <div className="px-4 pb-4">
