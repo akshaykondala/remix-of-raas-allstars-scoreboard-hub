@@ -219,4 +219,4 @@ export const CompetitionsTab = memo(function CompetitionsTab({
         <CompetitionDetail competition={selectedCompetition} onClose={() => setSelectedCompetition(null)} onSimulationSet={onSimulationSet} simulationData={simulationData} teams={teams} onTeamClick={onTeamClick} />
         </>}
     </div>;
-}
+});
