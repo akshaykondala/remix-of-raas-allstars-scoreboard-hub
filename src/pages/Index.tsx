@@ -723,7 +723,8 @@ const Index = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
+        {activeTab === 'comps' && (
+        <TabsContent value="comps" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32" forceMount>
           {fetchError && competitions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-6">
               <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-8 max-w-sm w-full text-center backdrop-blur-sm">
@@ -747,8 +748,10 @@ const Index = () => {
             </div>
           )}
         </TabsContent>
+        )}
 
-        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32">
+        {activeTab === 'teams' && (
+        <TabsContent value="teams" className="mt-0 flex-1 overflow-y-auto scrollbar-hide pb-32" forceMount>
           {fetchError && teamsData.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-6">
               <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-8 max-w-sm w-full text-center backdrop-blur-sm">
@@ -779,7 +782,6 @@ const Index = () => {
                     className="px-4 py-2 bg-slate-800/60 border border-slate-700/50 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                   />
                 </div>
-
                 <div className="space-y-3">
                   {[...teamsData]
                     .filter(team => 
@@ -823,6 +825,7 @@ const Index = () => {
           </div>
           )}
         </TabsContent>
+        )}
 
         {/* Mobile Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-sm border-t border-slate-700/50 shadow-lg z-50 flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>

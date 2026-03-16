@@ -1,37 +1,43 @@
 
 
-## Performance Optimization for Competitions Tab
+## Root Cause
 
-The shimmer animation on the nationals placings card is pure CSS and won't cause JS lag. The real performance issues are:
+The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
 
-### Root Causes
+Evidence:
+- 1pt tie works (all 3 names match) 
+- 7pt and 5pt ties are wrong (one or both names don't match)
+- The "unmatched team loses" rule in the comparator flips the intended order
 
-1. **CompetitionsTab sorts competitions on every render** (line 200-205) — `[...competitions].sort(...)` is inline with no memoization
-2. **CompetitionsTab re-renders fully on any parent state change** — it receives `teamsData` and `simulationData` as props from Index, and Index has many state variables that trigger re-renders (tab changes, modal stack, search query, etc.)
-3. **All three TabsContent panels are always mounted and rendered** — even when viewing "standings", the comps tab components are re-rendering
-4. **CompetitionDetail (731 lines) has zero memoization** — inline functions like `getAvailableTeams`, `getPlacingTeam`, `handleTeamClick` are recreated every render; multiple `teams.find()` calls run on each render
-5. **CompetitionsTab inline `getAvailableTeams` creates new arrays every render**
-6. **Multiple heavy blur effects** in the background (3 large blur-3xl divs in Index + timeline card blurs) compound GPU load
+## Plan
 
-### Plan
+### 1. Add critical diagnostic logging (immediate)
+In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
+- Original Directus name
+- Normalized form
+- Whether it matched the sheet
+- Sheet position (if matched)
 
-#### 1. Memoize competition sorting in `CompetitionsTab`
-Wrap the `[...competitions].sort(...)` call passed to `CompetitionTimeline` in `useMemo` instead of computing it inline on every render.
+This will immediately reveal which names are mismatched.
 
-#### 2. Wrap `CompetitionsTab` in `React.memo`
-Prevent re-renders when unrelated parent state changes (e.g. modal stack, search query, active tab switching).
+### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
+Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+```
+"uconnthunderraas" → same position as "uconnthunderaas"
+```
 
-#### 3. Add `useMemo` for derived data in `CompetitionDetail`
-Memoize `firstPlaceTeam`, `secondPlaceTeam`, `thirdPlaceTeam`, and wrap `getAvailableTeams` in `useCallback`.
+### 3. Fallback: use fuzzy matching
+If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
 
-#### 4. Use `forceMount` + CSS visibility on TabsContent (or lazy render)
-Instead of always rendering all tabs, only render the comps tab content when `activeTab === 'comps'` using a conditional, so the timeline and its children don't mount/update while on other tabs.
+### 4. Change unmatched behavior
+Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
 
-#### 5. Add `transform-gpu` to animated/blurred elements
-Add `transform-gpu` class to the blur/glow elements in the timeline cards and nationals placings to offload compositing to the GPU.
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
+- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
+- `src/pages/Index.tsx` - Add per-team diagnostic logging
 
-### Files Changed
-- `src/components/CompetitionsTab.tsx` — memo wrap + memoize sorted competitions
-- `src/components/CompetitionDetail.tsx` — memoize derived team lookups, useCallback for handlers
-- `src/pages/Index.tsx` — conditionally render tab content only when active (lazy mount)
+### What I need from you
+After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
 
+Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
