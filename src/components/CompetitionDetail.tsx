@@ -3,7 +3,7 @@ import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDo
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
-import { buildRankMap } from '@/lib/sorting';
+
 
 function getInstagramEmbedUrl(url?: string): string | null {
   if (!url) return null;
@@ -23,7 +23,7 @@ interface CompetitionDetailProps {
   teams?: Team[];
   onTeamClick?: (team: Team) => void;
   zIndex?: number;
-  rankingMap?: Map<string, number>;
+  teamSortOrder?: Map<string, number>;
 }
 interface SimulationDropdownProps {
   teams: Array<{
@@ -95,7 +95,7 @@ export function CompetitionDetail({
   simulationData,
   teams = [],
   onTeamClick,
-  rankingMap = new Map()
+  teamSortOrder = new Map()
 }: CompetitionDetailProps) {
   const [predictions, setPredictions] = useState<{
     first: string;
@@ -250,27 +250,27 @@ export function CompetitionDetail({
     return [...(competition.lineup || [])].sort((a, b) => {
       const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
       const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
-      const aTeam = teams.find(t => t.id === aId);
-      const bTeam = teams.find(t => t.id === bId);
-      return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
+      const aOrder = teamSortOrder?.get(aId) ?? Infinity;
+      const bOrder = teamSortOrder?.get(bId) ?? Infinity;
+      return aOrder - bOrder;
     }).map(team => {
       const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
       const fullTeam = teams.find(t => t.id === teamIdStr);
       return { teamIdStr, fullTeam, name: team.name, bidPoints: fullTeam?.bidPoints || 0 };
     });
-  }, [competition.ras, competition.lineup, teams]);
+  }, [competition.ras, competition.lineup, teams, teamSortOrder]);
 
   // Memoize regular lineup with rank data
   const regularLineupData = useMemo(() => {
     if (competition.ras) return [];
-    const rankMap = buildRankMap(teams, rankingMap);
     return (competition.lineup || []).map(team => {
       const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
       const fullTeam = teams.find(t => t.id === teamIdStr);
-      const rank = rankMap.get(teamIdStr);
+      const sortIdx = teamSortOrder.get(teamIdStr);
+      const rank = sortIdx !== undefined ? sortIdx + 1 : undefined;
       return { teamIdStr, fullTeam, name: team.name, rank };
     });
-  }, [competition.ras, competition.lineup, teams, rankingMap]);
+  }, [competition.ras, competition.lineup, teams, teamSortOrder]);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
