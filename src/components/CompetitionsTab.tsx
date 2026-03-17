@@ -14,6 +14,7 @@ export interface CompetitionsTabProps {
   simulationData?: SimulationData;
   teams: any[];
   onTeamClick?: (team: any) => void;
+  teamSortOrder?: Map<string, number>;
 }
 
 
