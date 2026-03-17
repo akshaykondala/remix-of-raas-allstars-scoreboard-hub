@@ -341,6 +341,7 @@ const Index = () => {
   const tiebreakerSort = useMemo(() => createTeamComparator(tiebreakerRankingMap, sheetOriginalNames), [tiebreakerRankingMap, sheetOriginalNames]);
 
   const sortedTeams = useMemo(() => [...teamsData].sort(tiebreakerSort), [teamsData, tiebreakerSort]);
+  const teamSortOrder = useMemo(() => new Map(sortedTeams.map((t, i) => [t.id, i])), [sortedTeams]);
   const rankedTeams = useMemo(() => sortedTeams.filter(t => t.bidPoints > 0), [sortedTeams]);
   const topThreeTeams = useMemo(() => rankedTeams.slice(0, 3), [rankedTeams]);
   const topNineTeams = useMemo(() => rankedTeams.slice(0, 9), [rankedTeams]);
