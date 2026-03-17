@@ -92,7 +92,8 @@ export const CompetitionsTab = memo(function CompetitionsTab({
   onSimulationSet,
   simulationData,
   teams,
-  onTeamClick
+  onTeamClick,
+  teamSortOrder
 }: CompetitionsTabProps) {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [simulatingCompetition, setSimulatingCompetition] = useState<Competition | null>(null);
