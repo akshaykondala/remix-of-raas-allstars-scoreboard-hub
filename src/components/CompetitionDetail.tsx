@@ -3,7 +3,7 @@ import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDo
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
-import { buildRankMap } from '@/lib/sorting';
+
 
 function getInstagramEmbedUrl(url?: string): string | null {
   if (!url) return null;
