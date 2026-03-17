@@ -267,7 +267,7 @@ export function CompetitionDetail({
       const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
       const fullTeam = teams.find(t => t.id === teamIdStr);
       const sortIdx = teamSortOrder.get(teamIdStr);
-      const rank = sortIdx !== undefined ? sortIdx + 1 : undefined;
+      const rank = (sortIdx !== undefined && fullTeam?.bidPoints && fullTeam.bidPoints > 0) ? sortIdx + 1 : undefined;
       return { teamIdStr, fullTeam, name: team.name, rank };
     });
   }, [competition.ras, competition.lineup, teams, teamSortOrder]);
