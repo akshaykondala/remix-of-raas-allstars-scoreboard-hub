@@ -317,7 +317,7 @@ export function CompetitionDetail({
                 ) : (
                   <div className="flex items-center gap-3 bg-gradient-to-r from-red-500/20 to-red-600/10 border-2 border-red-400/50 rounded-xl px-4 py-3 shadow-lg shadow-red-500/15">
                     <div className="bg-red-500/20 rounded-full p-2">
-                      <div className="w-4 h-4 rounded-full bg-red-400 animate-pulse" />
+                      <div className="w-4 h-4 rounded-full bg-red-400" />
                     </div>
                     <div className="flex-1">
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
