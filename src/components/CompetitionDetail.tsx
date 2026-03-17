@@ -263,14 +263,14 @@ export function CompetitionDetail({
   // Memoize regular lineup with rank data
   const regularLineupData = useMemo(() => {
     if (competition.ras) return [];
-    const rankMap = buildRankMap(teams, rankingMap);
     return (competition.lineup || []).map(team => {
       const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
       const fullTeam = teams.find(t => t.id === teamIdStr);
-      const rank = rankMap.get(teamIdStr);
+      const sortIdx = teamSortOrder.get(teamIdStr);
+      const rank = sortIdx !== undefined ? sortIdx + 1 : undefined;
       return { teamIdStr, fullTeam, name: team.name, rank };
     });
-  }, [competition.ras, competition.lineup, teams, rankingMap]);
+  }, [competition.ras, competition.lineup, teams, teamSortOrder]);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
