@@ -577,7 +577,7 @@ export function CompetitionDetail({
                   </div> : isFutureCompetition && competition.ras ? <div className="space-y-3">
                     {/* 1st Place - National Champion */}
                     <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 via-yellow-600/15 to-amber-700/20 border-2 border-amber-500/40 rounded-2xl p-5">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent animate-ras-shimmer" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent" />
                       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
                       <div className="relative flex flex-col items-center text-center space-y-2">
