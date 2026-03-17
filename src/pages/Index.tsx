@@ -869,7 +869,7 @@ const Index = () => {
               teams={teamsData}
               onTeamClick={handleTeamClick}
               zIndex={modal.zIndex}
-              rankingMap={tiebreakerRankingMap}
+              teamSortOrder={teamSortOrder}
             />
           );
         }
