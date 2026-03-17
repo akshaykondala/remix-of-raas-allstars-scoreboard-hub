@@ -243,6 +243,34 @@ export function CompetitionDetail({
   const firstPlaceTeam = useMemo(() => getPlacingTeam(competition.firstplace), [getPlacingTeam, competition.firstplace]);
   const secondPlaceTeam = useMemo(() => getPlacingTeam(competition.secondplace), [getPlacingTeam, competition.secondplace]);
   const thirdPlaceTeam = useMemo(() => getPlacingTeam(competition.thirdplace), [getPlacingTeam, competition.thirdplace]);
+
+  // Memoize sorted RAS lineup
+  const sortedRasLineup = useMemo(() => {
+    if (!competition.ras) return [];
+    return [...(competition.lineup || [])].sort((a, b) => {
+      const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
+      const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
+      const aTeam = teams.find(t => t.id === aId);
+      const bTeam = teams.find(t => t.id === bId);
+      return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
+    }).map(team => {
+      const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+      const fullTeam = teams.find(t => t.id === teamIdStr);
+      return { teamIdStr, fullTeam, name: team.name, bidPoints: fullTeam?.bidPoints || 0 };
+    });
+  }, [competition.ras, competition.lineup, teams]);
+
+  // Memoize regular lineup with rank data
+  const regularLineupData = useMemo(() => {
+    if (competition.ras) return [];
+    const rankMap = buildRankMap(teams, rankingMap);
+    return (competition.lineup || []).map(team => {
+      const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+      const fullTeam = teams.find(t => t.id === teamIdStr);
+      const rank = rankMap.get(teamIdStr);
+      return { teamIdStr, fullTeam, name: team.name, rank };
+    });
+  }, [competition.ras, competition.lineup, teams, rankingMap]);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}

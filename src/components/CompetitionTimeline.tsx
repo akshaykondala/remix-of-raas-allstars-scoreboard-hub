@@ -363,11 +363,5 @@ const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
       isRAS ? 'via-amber-200/20' : isLive ? 'via-red-200/10' : isBid ? 'via-amber-200/15' : 'via-white/10'
     }`} />
 
-    {/* Extra RAS shimmer sweep */}
-    {isRAS && (
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-full w-1/3 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-ras-shimmer" />
-      </div>
-    )}
   </div>;
 });
