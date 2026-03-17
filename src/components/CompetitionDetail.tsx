@@ -501,35 +501,27 @@ export function CompetitionDetail({
                       </h3>
                       <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
                         <div className="grid gap-1.5">
-                          {(() => {
-                            const rankMap = buildRankMap(teams, rankingMap);
-                            return (competition.lineup || []).map((team, index) => {
-                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                              const fullTeam = teams.find(t => t.id === teamIdStr);
-                              const rank = rankMap.get(teamIdStr);
-                              return (
-                                <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                                  {fullTeam?.logo ? (
+                          {regularLineupData.map((item, index) => (
+                                <div key={index} onClick={() => handleTeamClick(item.teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                                  {item.fullTeam?.logo ? (
                                     <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
-                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                      <img src={item.fullTeam.logo} alt={item.name} className="w-full h-full object-cover" />
                                     </div>
                                   ) : (
                                     <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
-                                      {(team.name || 'T').charAt(0)}
+                                      {(item.name || 'T').charAt(0)}
                                     </div>
                                   )}
                                   <span className="font-medium text-sm truncate flex-1">
-                                    {team.name || `Team ${team.id}`}
+                                    {item.name || `Team ${item.teamIdStr}`}
                                   </span>
-                                  {rank && (
+                                  {item.rank && (
                                     <span className="ml-auto text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full px-2 py-0.5">
-                                      #{rank}
+                                      #{item.rank}
                                     </span>
                                   )}
                                 </div>
-                              );
-                            });
-                          })()}
+                          ))}
                         </div>
                       </div>
                     </>
