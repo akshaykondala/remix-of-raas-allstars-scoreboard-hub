@@ -23,7 +23,7 @@ interface CompetitionDetailProps {
   teams?: Team[];
   onTeamClick?: (team: Team) => void;
   zIndex?: number;
-  rankingMap?: Map<string, number>;
+  teamSortOrder?: Map<string, number>;
 }
 interface SimulationDropdownProps {
   teams: Array<{
