@@ -300,18 +300,11 @@ const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
       animation: 'ras-glow 3s ease infinite',
     } : undefined} />
     
-    {/* Background glow */}
+    {/* Simplified background accent — no blur */}
     {isRAS ? (
-      <>
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl bg-amber-500/20" />
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full blur-3xl bg-purple-500/20" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full blur-2xl bg-cyan-500/15" />
-      </>
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-500/10" />
     ) : (
-      <>
-        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl ${isLive ? 'bg-red-500/20' : isBid ? 'bg-amber-500/15' : 'bg-primary/15'}`} />
-        <div className={`absolute -bottom-10 -left-10 w-24 h-24 rounded-full blur-2xl ${isLive ? 'bg-orange-500/15' : isBid ? 'bg-orange-500/10' : 'bg-primary/10'}`} />
-      </>
+      <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full ${isLive ? 'bg-red-500/10' : isBid ? 'bg-amber-500/8' : 'bg-primary/8'}`} />
     )}
 
     {/* NATIONALS badge */}
