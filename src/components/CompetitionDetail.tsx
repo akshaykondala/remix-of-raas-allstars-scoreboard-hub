@@ -321,7 +321,7 @@ export function CompetitionDetail({
                     </div>
                     <div className="flex-1">
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
-                        <span className="animate-pulse">●</span> LIVE NOW
+                        <span>●</span> LIVE NOW
                       </div>
                       <div className="text-red-400/70 text-xs">{formatTime(competition.time)} · {competition.timezone || 'Local time'}</div>
                     </div>
