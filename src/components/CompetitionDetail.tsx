@@ -95,7 +95,7 @@ export function CompetitionDetail({
   simulationData,
   teams = [],
   onTeamClick,
-  rankingMap = new Map()
+  teamSortOrder = new Map()
 }: CompetitionDetailProps) {
   const [predictions, setPredictions] = useState<{
     first: string;
