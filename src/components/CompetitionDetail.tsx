@@ -459,55 +459,35 @@ export function CompetitionDetail({
                       </h3>
                       <div className="bg-gradient-to-br from-amber-900/20 via-slate-800/50 to-amber-900/10 border border-amber-500/20 rounded-xl p-3 shadow-lg shadow-amber-500/5">
                         <div className="grid gap-2">
-                          {(() => {
-                            // Sort lineup by bid points descending
-                            const sortedLineup = [...(competition.lineup || [])].sort((a, b) => {
-                              const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
-                              const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
-                              const aTeam = teams.find(t => t.id === aId);
-                              const bTeam = teams.find(t => t.id === bId);
-                              return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
-                            });
-                            return sortedLineup.map((team, index) => {
-                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                              const fullTeam = teams.find(t => t.id === teamIdStr);
-                              const bidPoints = fullTeam?.bidPoints || 0;
-                              return (
+                          {sortedRasLineup.map((item, index) => (
                                 <div
                                   key={index}
-                                  onClick={() => handleTeamClick(teamIdStr)}
+                                  onClick={() => handleTeamClick(item.teamIdStr)}
                                   className="flex items-center gap-3 bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-400/40 rounded-lg px-3 py-3 text-slate-300 cursor-pointer hover:from-amber-500/20 hover:to-amber-400/5 transition-all duration-200 active:scale-[0.98]"
                                 >
-                                  {/* Rank number */}
                                   <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-300 text-xs font-bold flex-shrink-0 ring-1 ring-amber-400/30">
                                     {index + 1}
                                   </div>
-                                  {/* Team logo */}
-                                  {fullTeam?.logo ? (
+                                  {item.fullTeam?.logo ? (
                                     <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-amber-400/30">
-                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                      <img src={item.fullTeam.logo} alt={item.name} className="w-full h-full object-cover" />
                                     </div>
                                   ) : (
                                     <div className="w-8 h-8 bg-amber-600/20 rounded-full flex items-center justify-center text-sm font-bold text-amber-300 flex-shrink-0 ring-2 ring-amber-400/30">
-                                      {(team.name || 'T').charAt(0)}
+                                      {(item.name || 'T').charAt(0)}
                                     </div>
                                   )}
-                                  {/* Team name */}
                                   <span className="font-semibold text-sm text-white truncate flex-1">
-                                    {team.name || `Team ${team.id}`}
+                                    {item.name || `Team ${item.teamIdStr}`}
                                   </span>
-                                  {/* Qualified badge */}
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/70 flex-shrink-0">
                                     Qualified
                                   </span>
-                                  {/* Bid points */}
                                   <span className="text-xs font-bold bg-amber-500/20 text-amber-300 rounded-full px-2 py-0.5 ring-1 ring-amber-400/20 flex-shrink-0">
-                                    {bidPoints} pts
+                                    {item.bidPoints} pts
                                   </span>
                                 </div>
-                              );
-                            });
-                          })()}
+                          ))}
                         </div>
                       </div>
                     </>
