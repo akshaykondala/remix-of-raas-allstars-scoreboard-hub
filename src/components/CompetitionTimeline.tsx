@@ -173,9 +173,6 @@ export function CompetitionTimeline({
                       {/* RAS Nationals dot */}
                       {isRASWeekend ? (
                         <>
-                          {/* Subtle holographic glow behind logo */}
-                          <div className="absolute inset-0 w-7 h-7 -m-1.5 rounded-full blur-sm animate-ras-glow"
-                            style={{ background: 'linear-gradient(135deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)', backgroundSize: '300% 300%', opacity: 0.3 }} />
                           {/* RAS logo as dot */}
                           <div className="relative w-5 h-5 rounded-full overflow-hidden ring-1 ring-amber-400/40 shadow-md shadow-amber-500/30">
                             {rasLogo ? (
