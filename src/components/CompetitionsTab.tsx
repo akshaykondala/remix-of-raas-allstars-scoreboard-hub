@@ -204,7 +204,7 @@ export const CompetitionsTab = memo(function CompetitionsTab({
 
       {/* Competition Detail Modal */}
       {selectedCompetition && <>
-        <CompetitionDetail competition={selectedCompetition} onClose={() => setSelectedCompetition(null)} onSimulationSet={onSimulationSet} simulationData={simulationData} teams={teams} onTeamClick={onTeamClick} />
+        <CompetitionDetail competition={selectedCompetition} onClose={() => setSelectedCompetition(null)} onSimulationSet={onSimulationSet} simulationData={simulationData} teams={teams} onTeamClick={onTeamClick} teamSortOrder={teamSortOrder} />
         </>}
     </div>;
 });
