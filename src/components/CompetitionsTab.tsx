@@ -14,6 +14,7 @@ export interface CompetitionsTabProps {
   simulationData?: SimulationData;
   teams: any[];
   onTeamClick?: (team: any) => void;
+  teamSortOrder?: Map<string, number>;
 }
 
 
@@ -91,7 +92,8 @@ export const CompetitionsTab = memo(function CompetitionsTab({
   onSimulationSet,
   simulationData,
   teams,
-  onTeamClick
+  onTeamClick,
+  teamSortOrder
 }: CompetitionsTabProps) {
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [simulatingCompetition, setSimulatingCompetition] = useState<Competition | null>(null);
@@ -202,7 +204,7 @@ export const CompetitionsTab = memo(function CompetitionsTab({
 
       {/* Competition Detail Modal */}
       {selectedCompetition && <>
-        <CompetitionDetail competition={selectedCompetition} onClose={() => setSelectedCompetition(null)} onSimulationSet={onSimulationSet} simulationData={simulationData} teams={teams} onTeamClick={onTeamClick} />
+        <CompetitionDetail competition={selectedCompetition} onClose={() => setSelectedCompetition(null)} onSimulationSet={onSimulationSet} simulationData={simulationData} teams={teams} onTeamClick={onTeamClick} teamSortOrder={teamSortOrder} />
         </>}
     </div>;
 });

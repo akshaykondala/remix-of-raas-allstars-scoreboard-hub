@@ -745,6 +745,7 @@ const Index = () => {
                 simulationData={simulationData}
                 teams={teamsData}
                 onTeamClick={handleTeamClick}
+                teamSortOrder={teamSortOrder}
               />
             </div>
           )}
