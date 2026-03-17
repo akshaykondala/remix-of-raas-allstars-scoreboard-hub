@@ -300,12 +300,6 @@ const TimelineCompetitionCard = memo(function TimelineCompetitionCard({
       animation: 'ras-glow 3s ease infinite',
     } : undefined} />
     
-    {/* Simplified background accent — no blur */}
-    {isRAS ? (
-      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-amber-500/10" />
-    ) : (
-      <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full ${isLive ? 'bg-red-500/10' : isBid ? 'bg-amber-500/8' : 'bg-primary/8'}`} />
-    )}
 
     {/* NATIONALS badge */}
     {isRAS && (
