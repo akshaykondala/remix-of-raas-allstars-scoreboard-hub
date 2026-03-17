@@ -243,45 +243,50 @@ export function CompetitionDetail({
   const firstPlaceTeam = useMemo(() => getPlacingTeam(competition.firstplace), [getPlacingTeam, competition.firstplace]);
   const secondPlaceTeam = useMemo(() => getPlacingTeam(competition.secondplace), [getPlacingTeam, competition.secondplace]);
   const thirdPlaceTeam = useMemo(() => getPlacingTeam(competition.thirdplace), [getPlacingTeam, competition.thirdplace]);
+
+  // Memoize sorted RAS lineup
+  const sortedRasLineup = useMemo(() => {
+    if (!competition.ras) return [];
+    return [...(competition.lineup || [])].sort((a, b) => {
+      const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
+      const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
+      const aTeam = teams.find(t => t.id === aId);
+      const bTeam = teams.find(t => t.id === bId);
+      return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
+    }).map(team => {
+      const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+      const fullTeam = teams.find(t => t.id === teamIdStr);
+      return { teamIdStr, fullTeam, name: team.name, bidPoints: fullTeam?.bidPoints || 0 };
+    });
+  }, [competition.ras, competition.lineup, teams]);
+
+  // Memoize regular lineup with rank data
+  const regularLineupData = useMemo(() => {
+    if (competition.ras) return [];
+    const rankMap = buildRankMap(teams, rankingMap);
+    return (competition.lineup || []).map(team => {
+      const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
+      const fullTeam = teams.find(t => t.id === teamIdStr);
+      const rank = rankMap.get(teamIdStr);
+      return { teamIdStr, fullTeam, name: team.name, rank };
+    });
+  }, [competition.ras, competition.lineup, teams, rankingMap]);
   return <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-t border-slate-700/50 h-[98vh] max-h-[98vh] rounded-t-3xl">
         {/* Drag Handle - already included in DrawerContent */}
         
-        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide" style={{ willChange: 'transform' }}>
+        <div ref={scrollRef} onScroll={handleScroll} onTouchStart={handleTouchStart} className="overflow-y-auto flex-1 scrollbar-hide">
           {/* Modern Header with Hero Profile */}
           <DrawerHeader className={`relative p-6 pb-4 pt-[44px] px-[22px] ${isLive ? 'bg-gradient-to-br from-red-600/25 via-red-500/15 to-transparent' : 'bg-gradient-to-br from-purple-600/20 via-blue-600/15 to-transparent'}`}>
             {/* Hero Competition Presentation */}
             <div className="flex flex-col items-center text-center space-y-4">
-              {/* Large Competition Logo with entrance animation */}
+              {/* Large Competition Logo — static, no animations */}
               <div className="relative">
-                {/* Glow ring that spins once on open */}
-                {open && <div 
-                  className="absolute -inset-3 rounded-3xl opacity-0"
-                  style={{
-                    background: competition.ras 
-                      ? 'conic-gradient(from 0deg, #fbbf24, #a855f7, #06b6d4, #ec4899, #fbbf24)'
-                      : isLive 
-                        ? 'conic-gradient(from 0deg, #ef4444, #f97316, #ef4444)' 
-                        : 'conic-gradient(from 0deg, #a855f7, #3b82f6, #a855f7)',
-                    animation: 'logo-glow-spin 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards',
-                    filter: 'blur(12px)',
-                  }}
-                />}
-                <div 
-                  className="relative"
-                  style={{
-                    animation: 'logo-entrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-                    opacity: 0,
-                    transform: 'scale(0.5)',
-                  }}
-                >
-                  <div className={`absolute inset-0 rounded-3xl blur-xl ${isLive ? 'bg-gradient-to-br from-red-500/30 to-orange-500/20' : competition.ras ? 'bg-gradient-to-br from-amber-500/30 to-purple-500/20' : 'bg-gradient-to-br from-purple-500/20 to-blue-500/20'}`}></div>
-                  {competition.logo ? <div className={`relative w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 ${isLive ? 'border-red-400/50' : competition.ras ? 'border-amber-400/50' : 'border-white/20'}`}>
-                      <img src={competition.logo} alt={competition.name} className="w-full h-full object-cover" />
-                    </div> : <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 ${isLive ? 'bg-gradient-to-br from-red-500 to-orange-600 border-red-400/50' : competition.ras ? 'bg-gradient-to-br from-amber-400 to-purple-600 border-amber-400/50' : 'bg-gradient-to-br from-purple-500 to-blue-600 border-white/20'}`}>
-                      <Trophy className="h-10 w-10 text-white" />
-                    </div>}
-                </div>
+                {competition.logo ? <div className={`w-20 h-20 rounded-2xl overflow-hidden shadow-2xl border-2 ${isLive ? 'border-red-400/50' : competition.ras ? 'border-amber-400/50' : 'border-white/20'}`}>
+                    <img src={competition.logo} alt={competition.name} className="w-full h-full object-cover" />
+                  </div> : <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shadow-2xl border-2 ${isLive ? 'bg-gradient-to-br from-red-500 to-orange-600 border-red-400/50' : competition.ras ? 'bg-gradient-to-br from-amber-400 to-purple-600 border-amber-400/50' : 'bg-gradient-to-br from-purple-500 to-blue-600 border-white/20'}`}>
+                    <Trophy className="h-10 w-10 text-white" />
+                  </div>}
               </div>
               
               {/* Competition Name & Info */}
@@ -327,11 +332,11 @@ export function CompetitionDetail({
                     className="flex items-center gap-3 bg-gradient-to-r from-red-500/30 to-red-600/20 border-2 border-red-400/60 rounded-xl px-4 py-3 hover:from-red-500/40 hover:to-red-600/30 transition-all duration-200 cursor-pointer shadow-lg shadow-red-500/20"
                   >
                     <div className="bg-red-500/30 rounded-full p-2">
-                      <div className="w-4 h-4 rounded-full bg-red-400 animate-pulse" />
+                      <div className="w-4 h-4 rounded-full bg-red-400" />
                     </div>
                     <div className="flex-1">
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
-                        <span className="animate-pulse">●</span> LIVE NOW
+                        <span>●</span> LIVE NOW
                       </div>
                       <div className="text-red-400/80 text-xs">{formatTime(competition.time)} · Watch Live →</div>
                     </div>
@@ -340,11 +345,11 @@ export function CompetitionDetail({
                 ) : (
                   <div className="flex items-center gap-3 bg-gradient-to-r from-red-500/20 to-red-600/10 border-2 border-red-400/50 rounded-xl px-4 py-3 shadow-lg shadow-red-500/15">
                     <div className="bg-red-500/20 rounded-full p-2">
-                      <div className="w-4 h-4 rounded-full bg-red-400 animate-pulse" />
+                      <div className="w-4 h-4 rounded-full bg-red-400" />
                     </div>
                     <div className="flex-1">
                       <div className="text-red-200 font-bold text-sm flex items-center gap-1.5">
-                        <span className="animate-pulse">●</span> LIVE NOW
+                        <span>●</span> LIVE NOW
                       </div>
                       <div className="text-red-400/70 text-xs">{formatTime(competition.time)} · {competition.timezone || 'Local time'}</div>
                     </div>
@@ -482,55 +487,35 @@ export function CompetitionDetail({
                       </h3>
                       <div className="bg-gradient-to-br from-amber-900/20 via-slate-800/50 to-amber-900/10 border border-amber-500/20 rounded-xl p-3 shadow-lg shadow-amber-500/5">
                         <div className="grid gap-2">
-                          {(() => {
-                            // Sort lineup by bid points descending
-                            const sortedLineup = [...(competition.lineup || [])].sort((a, b) => {
-                              const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
-                              const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
-                              const aTeam = teams.find(t => t.id === aId);
-                              const bTeam = teams.find(t => t.id === bId);
-                              return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
-                            });
-                            return sortedLineup.map((team, index) => {
-                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                              const fullTeam = teams.find(t => t.id === teamIdStr);
-                              const bidPoints = fullTeam?.bidPoints || 0;
-                              return (
+                          {sortedRasLineup.map((item, index) => (
                                 <div
                                   key={index}
-                                  onClick={() => handleTeamClick(teamIdStr)}
+                                  onClick={() => handleTeamClick(item.teamIdStr)}
                                   className="flex items-center gap-3 bg-gradient-to-r from-amber-500/10 to-transparent border-l-2 border-amber-400/40 rounded-lg px-3 py-3 text-slate-300 cursor-pointer hover:from-amber-500/20 hover:to-amber-400/5 transition-all duration-200 active:scale-[0.98]"
                                 >
-                                  {/* Rank number */}
                                   <div className="w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-300 text-xs font-bold flex-shrink-0 ring-1 ring-amber-400/30">
                                     {index + 1}
                                   </div>
-                                  {/* Team logo */}
-                                  {fullTeam?.logo ? (
+                                  {item.fullTeam?.logo ? (
                                     <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-amber-400/30">
-                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                      <img src={item.fullTeam.logo} alt={item.name} className="w-full h-full object-cover" />
                                     </div>
                                   ) : (
                                     <div className="w-8 h-8 bg-amber-600/20 rounded-full flex items-center justify-center text-sm font-bold text-amber-300 flex-shrink-0 ring-2 ring-amber-400/30">
-                                      {(team.name || 'T').charAt(0)}
+                                      {(item.name || 'T').charAt(0)}
                                     </div>
                                   )}
-                                  {/* Team name */}
                                   <span className="font-semibold text-sm text-white truncate flex-1">
-                                    {team.name || `Team ${team.id}`}
+                                    {item.name || `Team ${item.teamIdStr}`}
                                   </span>
-                                  {/* Qualified badge */}
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/70 flex-shrink-0">
                                     Qualified
                                   </span>
-                                  {/* Bid points */}
                                   <span className="text-xs font-bold bg-amber-500/20 text-amber-300 rounded-full px-2 py-0.5 ring-1 ring-amber-400/20 flex-shrink-0">
-                                    {bidPoints} pts
+                                    {item.bidPoints} pts
                                   </span>
                                 </div>
-                              );
-                            });
-                          })()}
+                          ))}
                         </div>
                       </div>
                     </>
@@ -544,35 +529,27 @@ export function CompetitionDetail({
                       </h3>
                       <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 border border-slate-600/40 rounded-xl p-3">
                         <div className="grid gap-1.5">
-                          {(() => {
-                            const rankMap = buildRankMap(teams, rankingMap);
-                            return (competition.lineup || []).map((team, index) => {
-                              const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
-                              const fullTeam = teams.find(t => t.id === teamIdStr);
-                              const rank = rankMap.get(teamIdStr);
-                              return (
-                                <div key={index} onClick={() => handleTeamClick(teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
-                                  {fullTeam?.logo ? (
+                          {regularLineupData.map((item, index) => (
+                                <div key={index} onClick={() => handleTeamClick(item.teamIdStr)} className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2.5 py-2 text-slate-300 text-sm cursor-pointer hover:bg-slate-600/50 transition-colors active:scale-[0.98]">
+                                  {item.fullTeam?.logo ? (
                                     <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 ring-1 ring-slate-500/50">
-                                      <img src={fullTeam.logo} alt={team.name} className="w-full h-full object-cover" />
+                                      <img src={item.fullTeam.logo} alt={item.name} className="w-full h-full object-cover" />
                                     </div>
                                   ) : (
                                     <div className="w-6 h-6 bg-slate-600/50 rounded-full flex items-center justify-center text-xs font-bold text-slate-400 flex-shrink-0">
-                                      {(team.name || 'T').charAt(0)}
+                                      {(item.name || 'T').charAt(0)}
                                     </div>
                                   )}
                                   <span className="font-medium text-sm truncate flex-1">
-                                    {team.name || `Team ${team.id}`}
+                                    {item.name || `Team ${item.teamIdStr}`}
                                   </span>
-                                  {rank && (
+                                  {item.rank && (
                                     <span className="ml-auto text-xs font-bold bg-purple-500/20 text-purple-300 rounded-full px-2 py-0.5">
-                                      #{rank}
+                                      #{item.rank}
                                     </span>
                                   )}
                                 </div>
-                              );
-                            });
-                          })()}
+                          ))}
                         </div>
                       </div>
                     </>
@@ -600,7 +577,7 @@ export function CompetitionDetail({
                   </div> : isFutureCompetition && competition.ras ? <div className="space-y-3">
                     {/* 1st Place - National Champion */}
                     <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 via-yellow-600/15 to-amber-700/20 border-2 border-amber-500/40 rounded-2xl p-5">
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent animate-ras-shimmer" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent" />
                       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
                       <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
                       <div className="relative flex flex-col items-center text-center space-y-2">

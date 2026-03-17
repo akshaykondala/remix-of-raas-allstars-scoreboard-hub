@@ -1,34 +1,43 @@
 
 
-## Performance Fix: Competition Detail Drawer
+## Root Cause
 
-### Problem
-The CompetitionDetail drawer is janky when dragging because:
+The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
 
-1. **Heavy CSS animations running during drag** — `animate-ras-shimmer`, `animate-ras-glow`, `logo-glow-spin`, `animate-pulse` all run continuously inside the drawer, causing GPU compositing fights with the vaul drag transform
-2. **Multiple `blur-xl`/`blur-2xl`/`blur-3xl` elements** — Lines 278, 309-311, 315-317 in the header create expensive blur layers that must be re-composited every frame during drag
-3. **`willChange: 'transform'` on scroll container** — Line 250 promotes a massive layer for no benefit during drag
-4. **Inline IIFE renders** — The lineup section (lines 485-533, 547-575) runs `.find()` lookups and sorts inside render without memoization
-5. **728-line monolith** — Every state change re-evaluates the entire tree
+Evidence:
+- 1pt tie works (all 3 names match) 
+- 7pt and 5pt ties are wrong (one or both names don't match)
+- The "unmatched team loses" rule in the comparator flips the intended order
 
-### Plan
+## Plan
 
-#### `src/components/CompetitionDetail.tsx`
-- **Remove all blur elements** from the header (lines 278, 309-311, 315-317) — replace with simple solid/gradient backgrounds. These are the biggest perf killers on iOS Safari during compositing
-- **Remove `animate-ras-shimmer`** from the 1st place TBD card (line 603) — continuous animation during drag
-- **Remove `animate-pulse`** from live indicator elements inside the drawer
-- **Remove the `logo-glow-spin` animated glow ring** (lines 258-269) — runs a blur+rotate animation on open
-- **Remove the `logo-entrance` animation** (lines 271-276) — not worth the compositing cost
-- **Remove `willChange: 'transform'`** from the scroll container (line 250)
-- **Memoize the sorted RAS lineup** — move the `.sort()` + `.find()` calls in the lineup IIFE (lines 487-493) into a `useMemo`
-- **Memoize the regular lineup render data** — same for non-RAS lineup (lines 547-575)
+### 1. Add critical diagnostic logging (immediate)
+In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
+- Original Directus name
+- Normalized form
+- Whether it matched the sheet
+- Sheet position (if matched)
 
-#### `src/components/CompetitionTimeline.tsx`
-- **Remove RAS shimmer sweep** on the timeline card (lines 377-381) — continuous animation on a card that's always visible
-- **Remove the `blur-3xl` glow elements** inside `TimelineCompetitionCard` (lines 309-317) — replace with simpler opaque backgrounds
-- **Remove the animated holographic glow** behind the RAS timeline dot (lines 177-178) — `blur-sm` with `animate-ras-glow`
+This will immediately reveal which names are mismatched.
 
-### Files Changed
-- `src/components/CompetitionDetail.tsx` — strip blur/animation layers, memoize lineup data
-- `src/components/CompetitionTimeline.tsx` — strip blur/animation layers from cards and RAS dot
+### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
+Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+```
+"uconnthunderraas" → same position as "uconnthunderaas"
+```
 
+### 3. Fallback: use fuzzy matching
+If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+
+### 4. Change unmatched behavior
+Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
+
+### Files to change
+- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
+- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
+- `src/pages/Index.tsx` - Add per-team diagnostic logging
+
+### What I need from you
+After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
+
+Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
