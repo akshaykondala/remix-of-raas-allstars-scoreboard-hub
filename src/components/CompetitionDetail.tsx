@@ -250,15 +250,15 @@ export function CompetitionDetail({
     return [...(competition.lineup || [])].sort((a, b) => {
       const aId = typeof a.id === 'object' ? (a.id as any).id : String(a.id);
       const bId = typeof b.id === 'object' ? (b.id as any).id : String(b.id);
-      const aTeam = teams.find(t => t.id === aId);
-      const bTeam = teams.find(t => t.id === bId);
-      return (bTeam?.bidPoints || 0) - (aTeam?.bidPoints || 0);
+      const aOrder = teamSortOrder?.get(aId) ?? Infinity;
+      const bOrder = teamSortOrder?.get(bId) ?? Infinity;
+      return aOrder - bOrder;
     }).map(team => {
       const teamIdStr = typeof team.id === 'object' ? (team.id as any).id : String(team.id);
       const fullTeam = teams.find(t => t.id === teamIdStr);
       return { teamIdStr, fullTeam, name: team.name, bidPoints: fullTeam?.bidPoints || 0 };
     });
-  }, [competition.ras, competition.lineup, teams]);
+  }, [competition.ras, competition.lineup, teams, teamSortOrder]);
 
   // Memoize regular lineup with rank data
   const regularLineupData = useMemo(() => {
