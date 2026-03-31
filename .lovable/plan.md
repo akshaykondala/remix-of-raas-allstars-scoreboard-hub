@@ -1,43 +1,94 @@
 
+## Feature: Nationals Champions Banner Above Standings
 
-## Root Cause
+### What to build
+Add a special nationals-only hero banner at the top of the Standings tab that appears once the nationals competition has both `firstplace` and `secondplace` filled in. It should sit above the existing leaderboard/podium and celebrate the top 2 finishers, while keeping the leaderboard visible underneath.
 
-The comparator logic is correct. The problem is **name mismatches between Directus team names and Google Sheet team names**. When `normalizeName(directusName)` doesn't equal `normalizeName(sheetName)`, the team is treated as "unmatched" and loses every tie to a matched team.
+### Why this fits the current app
+- The standings screen already owns all competition + team data in `src/pages/Index.tsx`, so this is the best place to derive nationals winners and render the banner.
+- Nationals already has a premium amber/gold visual language in `CompetitionDetail.tsx`, so the new banner should reuse that style.
+- The current leaderboard remains useful as secondary context, so we only add a hero section above it rather than replacing the page.
 
-Evidence:
-- 1pt tie works (all 3 names match) 
-- 7pt and 5pt ties are wrong (one or both names don't match)
-- The "unmatched team loses" rule in the comparator flips the intended order
+### Implementation plan
 
-## Plan
+1. **Derive the nationals results in `src/pages/Index.tsx`**
+   - Find the competition where `ras === true`
+   - Resolve `firstplace` and `secondplace` into actual team objects using the same ID/name matching pattern already used elsewhere
+   - Add simple booleans like:
+     - `hasNationalsResults`
+     - `nationalChampion`
+     - `nationalRunnerUp`
 
-### 1. Add critical diagnostic logging (immediate)
-In `Index.tsx`, after both `teamsData` and `tiebreakerRankingMap` are populated, log EVERY team with bid points:
-- Original Directus name
-- Normalized form
-- Whether it matched the sheet
-- Sheet position (if matched)
+2. **Render a new hero banner above the current podium**
+   - Insert it near the top of the Standings tab, after the loading/error/simulation alert area and before the existing “Top 3 Flowing Podium”
+   - Only show it when nationals exists and both 1st + 2nd are available
+   - Keep it lightweight:
+     - no continuous animation
+     - no heavy blur layers
+     - minimal shadows/gradients
+     - static premium card treatment
 
-This will immediately reveal which names are mismatched.
+3. **Banner layout**
+   - Headline like “National Champions” or “RAS Finals Results”
+   - Large featured champion card:
+     - team logo
+     - team name
+     - “National Champion” label
+   - Smaller runner-up card beneath or beside it:
+     - logo
+     - name
+     - “Runner Up” label
+   - Optional small text with the nationals event name/date if available
 
-### 2. Add a name alias map in `fetchTiebreakerRanking.ts`
-Create a hardcoded alias map for known Directus↔Sheet name differences. After loading the sheet, also register aliases so both name forms point to the same position. Example:
+4. **Preserve the existing leaderboard below**
+   - Leave the current podium + standings list intact
+   - Add spacing so the new banner feels like a celebratory header, not a replacement
+   - This keeps the standings visible for users who still want to inspect points/ranking history
+
+5. **Match existing visual conventions**
+   - Reuse the amber/gold nationals identity already used in `CompetitionDetail.tsx`
+   - Keep rounded cards, dark background, strong contrast, and mobile-first sizing
+   - Make logos clickable to open team detail, matching current standings interactions
+
+### Technical details
+- Main file:
+  - `src/pages/Index.tsx`
+- Likely approach:
+  - add a helper or `useMemo` to find the nationals competition and resolve placed teams
+  - conditionally render a standalone JSX block above the existing podium section
+- Data source:
+  - use `competitions` + `teamsData`
+- Show condition:
+  - only when nationals competition exists and `firstplace` + `secondplace` resolve successfully
+- Performance:
+  - use memoized lookup
+  - avoid animated glows/pulses
+  - avoid expensive backdrop blur stacking
+
+### Suggested UX structure
+```text
+[Header logo]
+
+[Simulation alert if active]
+
+[National Champions Banner]
+  National Champion
+  Team logo + name
+
+  Runner Up
+  Team logo + name
+
+[Existing leaderboard podium]
+
+[Existing ranked team list]
 ```
-"uconnthunderraas" → same position as "uconnthunderaas"
-```
 
-### 3. Fallback: use fuzzy matching
-If exact normalized match fails, try a substring/Levenshtein match against sheet names. This handles minor spelling differences (extra letters, missing letters, etc.).
+### Nice refinement
+If you want it to feel even more “big moment” without adding lag, the champion card can have:
+- a thin gold gradient border
+- one subtle static radial glow behind the champion logo
+- a trophy icon badge
+But avoid particle effects, shimmer loops, or animated confetti.
 
-### 4. Change unmatched behavior
-Currently, matched teams ALWAYS beat unmatched teams in ties. Instead, when one team is unmatched, fall back to alphabetical rather than automatically losing. This prevents name mismatches from completely inverting the order.
-
-### Files to change
-- `src/lib/fetchTiebreakerRanking.ts` - Add alias map, fuzzy matching fallback
-- `src/lib/sorting.ts` - Change unmatched handling to alphabetical fallback
-- `src/pages/Index.tsx` - Add per-team diagnostic logging
-
-### What I need from you
-After implementing the diagnostic logging, I'll need you to check your browser console and tell me which team names show as "UNMATCHED". Then I can add the exact aliases needed.
-
-Alternatively, I can implement all of the above (diagnostics + fuzzy matching + safer fallback) in one go so it self-heals without manual alias mapping.
+### Result
+When you enter nationals first and second place results, users will immediately see a premium championship banner above the standings, while the normal leaderboard remains available below for context.
