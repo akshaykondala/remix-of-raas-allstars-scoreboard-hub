@@ -1,94 +1,43 @@
 
-## Feature: Nationals Champions Banner Above Standings
+Goal: fix why placements entered for the RAAS All Stars competition are not showing correctly in the competition detail page.
 
-### What to build
-Add a special nationals-only hero banner at the top of the Standings tab that appears once the nationals competition has both `firstplace` and `secondplace` filled in. It should sit above the existing leaderboard/podium and celebrate the top 2 finishers, while keeping the leaderboard visible underneath.
+What I found
+- The issue is in the frontend display logic, not in the standings calculation.
+- In `src/components/CompetitionDetail.tsx`, the placings section has a special branch for `isFutureCompetition && competition.ras` that always renders hardcoded “TBD” cards for 1st and 2nd place.
+- That means even if `competition.firstplace` and `competition.secondplace` are populated, the RAAS/Nationals-style screen will still show placeholders as long as the event date is still considered future.
+- There is also a second mismatch: `getPlacingTeam()` only matches teams by ID, while other parts of the app already support placements stored as either team ID or team name. If Directus saved a team name instead of an ID, the page will fail to resolve the winner.
 
-### Why this fits the current app
-- The standings screen already owns all competition + team data in `src/pages/Index.tsx`, so this is the best place to derive nationals winners and render the banner.
-- Nationals already has a premium amber/gold visual language in `CompetitionDetail.tsx`, so the new banner should reuse that style.
-- The current leaderboard remains useful as secondary context, so we only add a hero section above it rather than replacing the page.
+Implementation plan
+1. Update placement resolution in `CompetitionDetail.tsx`
+   - Replace the current `getPlacingTeam()` logic with the same flexible matching strategy already used elsewhere:
+     - match by exact ID
+     - match by exact name
+     - optionally normalized name match for safety
+   - This keeps competition detail consistent with standings and banner behavior.
 
-### Implementation plan
+2. Fix the RAAS placings rendering branch
+   - Change the `isFutureCompetition && competition.ras` branch so it does not always show static TBD cards.
+   - Instead:
+     - if placements exist, render the actual champion/runner-up cards using the resolved teams
+     - if placements are missing, show the current TBD placeholders
+   - This preserves the premium RAAS visual treatment while allowing real results to appear immediately.
 
-1. **Derive the nationals results in `src/pages/Index.tsx`**
-   - Find the competition where `ras === true`
-   - Resolve `firstplace` and `secondplace` into actual team objects using the same ID/name matching pattern already used elsewhere
-   - Add simple booleans like:
-     - `hasNationalsResults`
-     - `nationalChampion`
-     - `nationalRunnerUp`
+3. Keep current non-RAAS behavior intact
+   - Do not change the normal future-competition prediction flow for non-RAS events.
+   - Do not alter leaderboard sorting or bid point logic unless needed.
 
-2. **Render a new hero banner above the current podium**
-   - Insert it near the top of the Standings tab, after the loading/error/simulation alert area and before the existing “Top 3 Flowing Podium”
-   - Only show it when nationals exists and both 1st + 2nd are available
-   - Keep it lightweight:
-     - no continuous animation
-     - no heavy blur layers
-     - minimal shadows/gradients
-     - static premium card treatment
+4. Verify related edge cases
+   - Confirm 3rd place still only appears when lineup size > 6.
+   - Confirm RAAS/Nationals competitions still use their special styling.
+   - Confirm clicks on resolved placed teams still open the team detail modal.
 
-3. **Banner layout**
-   - Headline like “National Champions” or “RAS Finals Results”
-   - Large featured champion card:
-     - team logo
-     - team name
-     - “National Champion” label
-   - Smaller runner-up card beneath or beside it:
-     - logo
-     - name
-     - “Runner Up” label
-   - Optional small text with the nationals event name/date if available
+Technical details
+- Main file to update: `src/components/CompetitionDetail.tsx`
+- Root causes:
+  - hardcoded future-RAS placeholder UI overrides real placements
+  - team lookup only supports IDs, but backend data may contain names
+- No backend/database change appears necessary based on the current code.
 
-4. **Preserve the existing leaderboard below**
-   - Leave the current podium + standings list intact
-   - Add spacing so the new banner feels like a celebratory header, not a replacement
-   - This keeps the standings visible for users who still want to inspect points/ranking history
-
-5. **Match existing visual conventions**
-   - Reuse the amber/gold nationals identity already used in `CompetitionDetail.tsx`
-   - Keep rounded cards, dark background, strong contrast, and mobile-first sizing
-   - Make logos clickable to open team detail, matching current standings interactions
-
-### Technical details
-- Main file:
-  - `src/pages/Index.tsx`
-- Likely approach:
-  - add a helper or `useMemo` to find the nationals competition and resolve placed teams
-  - conditionally render a standalone JSX block above the existing podium section
-- Data source:
-  - use `competitions` + `teamsData`
-- Show condition:
-  - only when nationals competition exists and `firstplace` + `secondplace` resolve successfully
-- Performance:
-  - use memoized lookup
-  - avoid animated glows/pulses
-  - avoid expensive backdrop blur stacking
-
-### Suggested UX structure
-```text
-[Header logo]
-
-[Simulation alert if active]
-
-[National Champions Banner]
-  National Champion
-  Team logo + name
-
-  Runner Up
-  Team logo + name
-
-[Existing leaderboard podium]
-
-[Existing ranked team list]
-```
-
-### Nice refinement
-If you want it to feel even more “big moment” without adding lag, the champion card can have:
-- a thin gold gradient border
-- one subtle static radial glow behind the champion logo
-- a trophy icon badge
-But avoid particle effects, shimmer loops, or animated confetti.
-
-### Result
-When you enter nationals first and second place results, users will immediately see a premium championship banner above the standings, while the normal leaderboard remains available below for context.
+Expected result
+- When you enter 1st/2nd place for RAAS All Stars, the competition page will show the actual placed teams instead of staying on TBD.
+- If placements are empty, it will still show the styled placeholder state.
