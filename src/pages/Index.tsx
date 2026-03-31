@@ -7,7 +7,7 @@ import { CompetitionDetail } from '@/components/CompetitionDetail';
 import { CompetitionsTab } from '@/components/CompetitionsTab';
 import { FantasyTab } from '@/components/FantasyTab';
 import LoadingScreen from '@/components/LoadingScreen';
-import { Trophy, Target, Calendar, Users, Zap, RotateCcw, WifiOff } from 'lucide-react';
+import { Trophy, Calendar, Users, Zap, RotateCcw, WifiOff } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { fetchTeams, fetchFromDirectus } from '@/lib/api';
 import { Team, SimulationData, Competition } from '@/lib/types';
@@ -348,6 +348,52 @@ const Index = () => {
   const qualifiedOtherTeams = useMemo(() => rankedTeams.slice(3, 9), [rankedTeams]);
   const notQualifiedTeams = useMemo(() => rankedTeams.slice(9), [rankedTeams]);
 
+  const formatBannerDate = useCallback((dateString?: string) => {
+    if (!dateString) return '';
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, (month || 1) - 1, day || 1);
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }, []);
+
+  const resolvePlacedTeam = useCallback((placement?: string) => {
+    if (!placement) return null;
+
+    const rawPlacement = String(placement);
+    const normalizedPlacement = normalizeName(rawPlacement);
+
+    return teamsData.find((team) => {
+      if (team.id === rawPlacement || String(team.id) === rawPlacement) return true;
+      if (team.name === rawPlacement) return true;
+      return normalizeName(team.name) === normalizedPlacement;
+    }) || null;
+  }, [teamsData]);
+
+  const nationalsResults = useMemo(() => {
+    const nationalsCompetition = competitions.find((competition) => competition.ras);
+    if (!nationalsCompetition) {
+      return {
+        competition: null,
+        champion: null,
+        runnerUp: null,
+        hasNationalsResults: false,
+      };
+    }
+
+    const champion = resolvePlacedTeam(nationalsCompetition.firstplace);
+    const runnerUp = resolvePlacedTeam(nationalsCompetition.secondplace);
+
+    return {
+      competition: nationalsCompetition,
+      champion,
+      runnerUp,
+      hasNationalsResults: Boolean(champion && runnerUp),
+    };
+  }, [competitions, resolvePlacedTeam]);
+
   const handleSimulationSet = useCallback((competitionName: string, competitionId: string, predictions: { first: string; second: string; third: string }) => {
     setSimulationData(prev => ({
       ...prev,
@@ -496,6 +542,93 @@ const Index = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {nationalsResults.hasNationalsResults && nationalsResults.competition && nationalsResults.champion && nationalsResults.runnerUp && (
+            <section className="px-4 pb-8">
+              <div className="relative overflow-hidden rounded-[2rem] border border-[hsl(var(--nationals-banner-border))] bg-[hsl(var(--nationals-banner-bg))] text-foreground shadow-[0_24px_60px_-32px_hsl(var(--nationals-banner-shadow))]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_hsl(var(--nationals-banner-glow))_0%,_transparent_60%)] opacity-70 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,_hsl(var(--nationals-banner-highlight)),transparent)] pointer-events-none" />
+
+                <div className="relative p-5 sm:p-6">
+                  <div className="mb-5 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-[hsl(var(--nationals-banner-kicker))]">
+                        RAS Finals Results
+                      </p>
+                      <h2 className="mt-2 text-2xl font-black tracking-tight text-[hsl(var(--nationals-banner-title))]">
+                        National Champions
+                      </h2>
+                      <p className="mt-2 text-sm text-[hsl(var(--nationals-banner-copy))]">
+                        {nationalsResults.competition.name}
+                        {nationalsResults.competition.date ? ` · ${formatBannerDate(nationalsResults.competition.date)}` : ''}
+                      </p>
+                    </div>
+
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[hsl(var(--nationals-banner-border-strong))] bg-[hsl(var(--nationals-banner-chip))]">
+                      <Trophy className="h-5 w-5 text-[hsl(var(--nationals-banner-title))]" />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-[minmax(0,1.35fr)_minmax(0,0.95fr)]">
+                    <button
+                      onClick={() => pushModal('team', nationalsResults.champion)}
+                      className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(var(--nationals-banner-border-strong))] bg-[hsl(var(--nationals-card-champion-bg))] p-5 text-left transition-transform duration-300 active:scale-[0.99]"
+                    >
+                      <div className="absolute inset-0 bg-[linear-gradient(135deg,_transparent,_hsl(var(--nationals-card-sheen)))] opacity-60 pointer-events-none" />
+                      <div className="relative flex items-center gap-4 sm:gap-5">
+                        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-[1.4rem] border border-[hsl(var(--nationals-banner-border-strong))] bg-[hsl(var(--nationals-card-avatar))] shadow-[0_12px_30px_-18px_hsl(var(--nationals-banner-shadow))]">
+                          {nationalsResults.champion.logo ? (
+                            <img src={nationalsResults.champion.logo} alt={nationalsResults.champion.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Trophy className="h-8 w-8 text-[hsl(var(--nationals-banner-title))]" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[0.7rem] font-bold uppercase tracking-[0.3em] text-[hsl(var(--nationals-banner-kicker))]">
+                            National Champion
+                          </p>
+                          <h3 className="mt-2 truncate text-xl font-black text-[hsl(var(--nationals-banner-title))] sm:text-2xl">
+                            {nationalsResults.champion.name}
+                          </h3>
+                          <p className="mt-1 truncate text-sm text-[hsl(var(--nationals-banner-copy))]">
+                            {nationalsResults.champion.university}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => pushModal('team', nationalsResults.runnerUp)}
+                      className="group relative overflow-hidden rounded-[1.75rem] border border-[hsl(var(--nationals-runner-border))] bg-[hsl(var(--nationals-runner-bg))] p-5 text-left transition-transform duration-300 active:scale-[0.99]"
+                    >
+                      <div className="relative flex items-center gap-4">
+                        <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-[1.2rem] border border-[hsl(var(--nationals-runner-border))] bg-[hsl(var(--nationals-runner-avatar))]">
+                          {nationalsResults.runnerUp.logo ? (
+                            <img src={nationalsResults.runnerUp.logo} alt={nationalsResults.runnerUp.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Trophy className="h-7 w-7 text-[hsl(var(--nationals-runner-title))]" />
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-[hsl(var(--nationals-runner-kicker))]">
+                            Runner Up
+                          </p>
+                          <h3 className="mt-2 truncate text-lg font-black text-[hsl(var(--nationals-runner-title))]">
+                            {nationalsResults.runnerUp.name}
+                          </h3>
+                          <p className="mt-1 truncate text-sm text-[hsl(var(--nationals-runner-copy))]">
+                            {nationalsResults.runnerUp.university}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
           )}
 
           {/* Top 3 Flowing Podium - Reduced Brightness */}
