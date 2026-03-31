@@ -3,6 +3,7 @@ import { Trophy, Users, Eye, Calendar, Clock, Instagram, ExternalLink, ChevronDo
 import { Competition, SimulationData, Team } from '../lib/types';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { isCurrentlyLive } from '@/lib/utils';
+import { normalizeName } from '@/lib/fetchTiebreakerRanking';
 
 
 function getInstagramEmbedUrl(url?: string): string | null {
@@ -235,9 +236,17 @@ export function CompetitionDetail({
     }
   }, [competition.lineup, predictions.first, predictions.second]);
 
-  const getPlacingTeam = useCallback((teamId: string | number) => {
-    if (!teamId || !teams.length) return null;
-    return teams.find(team => team.id === String(teamId) || team.id === teamId);
+  const getPlacingTeam = useCallback((placement: string | number) => {
+    if (!placement || !teams.length) return null;
+
+    const rawPlacement = String(placement);
+    const normalizedPlacement = normalizeName(rawPlacement);
+
+    return teams.find((team) => {
+      if (team.id === rawPlacement || String(team.id) === rawPlacement) return true;
+      if (team.name === rawPlacement) return true;
+      return normalizeName(team.name) === normalizedPlacement;
+    }) || null;
   }, [teams]);
 
   const firstPlaceTeam = useMemo(() => getPlacingTeam(competition.firstplace), [getPlacingTeam, competition.firstplace]);
@@ -574,7 +583,7 @@ export function CompetitionDetail({
                     {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
                         {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                       </button>}
-                  </div> : isFutureCompetition && competition.ras ? <div className="space-y-3">
+                  </div> : isFutureCompetition && competition.ras && !firstPlaceTeam && !secondPlaceTeam ? <div className="space-y-3">
                     {/* 1st Place - National Champion */}
                     <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 via-yellow-600/15 to-amber-700/20 border-2 border-amber-500/40 rounded-2xl p-5">
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent" />
