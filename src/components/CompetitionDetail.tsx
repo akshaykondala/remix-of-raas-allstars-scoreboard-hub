@@ -36,6 +36,14 @@ interface SimulationDropdownProps {
   placeholder: string;
   position: 'first' | 'second' | 'third';
 }
+
+interface PlacementDisplay {
+  team: Team | null;
+  displayName: string;
+  clickId?: string | number | null;
+  logo?: string;
+}
+
 function SimulationDropdown({
   teams,
   selectedTeam,
@@ -236,22 +244,73 @@ export function CompetitionDetail({
     }
   }, [competition.lineup, predictions.first, predictions.second]);
 
-  const getPlacingTeam = useCallback((placement: string | number) => {
-    if (!placement || !teams.length) return null;
+  const resolvePlacementDisplay = useCallback((placement?: string | number): PlacementDisplay | null => {
+    if (placement === undefined || placement === null) return null;
 
-    const rawPlacement = String(placement);
+    const rawPlacement = String(placement).trim();
+    if (!rawPlacement) return null;
+
     const normalizedPlacement = normalizeName(rawPlacement);
-
-    return teams.find((team) => {
+    const exactTeamMatch = teams.find((team) => {
       if (team.id === rawPlacement || String(team.id) === rawPlacement) return true;
       if (team.name === rawPlacement) return true;
       return normalizeName(team.name) === normalizedPlacement;
-    }) || null;
-  }, [teams]);
+    });
 
-  const firstPlaceTeam = useMemo(() => getPlacingTeam(competition.firstplace), [getPlacingTeam, competition.firstplace]);
-  const secondPlaceTeam = useMemo(() => getPlacingTeam(competition.secondplace), [getPlacingTeam, competition.secondplace]);
-  const thirdPlaceTeam = useMemo(() => getPlacingTeam(competition.thirdplace), [getPlacingTeam, competition.thirdplace]);
+    if (exactTeamMatch) {
+      return {
+        team: exactTeamMatch,
+        displayName: exactTeamMatch.name,
+        clickId: exactTeamMatch.id,
+        logo: exactTeamMatch.logo,
+      };
+    }
+
+    const lineupMatch = (competition.lineup || []).find((entry) => {
+      const embeddedTeam = typeof entry.id === 'object' && entry.id ? entry.id as Team : null;
+      const lineupId = embeddedTeam?.id ?? (entry.id ? String(entry.id) : '');
+      const lineupName = entry.name || embeddedTeam?.name || '';
+
+      return lineupId === rawPlacement ||
+        lineupName === rawPlacement ||
+        normalizeName(lineupName) === normalizedPlacement;
+    });
+
+    if (lineupMatch) {
+      const embeddedTeam = typeof lineupMatch.id === 'object' && lineupMatch.id ? lineupMatch.id as Team : null;
+      const lineupId = embeddedTeam?.id ?? (lineupMatch.id ? String(lineupMatch.id) : rawPlacement);
+      const lineupName = lineupMatch.name || embeddedTeam?.name || rawPlacement;
+      const hydratedTeam = teams.find((team) => {
+        if (team.id === lineupId || String(team.id) === String(lineupId)) return true;
+        if (team.name === lineupName) return true;
+        return normalizeName(team.name) === normalizeName(lineupName);
+      });
+      const resolvedTeam = hydratedTeam || embeddedTeam;
+
+      return {
+        team: resolvedTeam,
+        displayName: resolvedTeam?.name || lineupName,
+        clickId: hydratedTeam?.id ?? resolvedTeam?.id ?? null,
+        logo: resolvedTeam?.logo,
+      };
+    }
+
+    return competition.ras ? {
+      team: null,
+      displayName: rawPlacement,
+      clickId: null,
+    } : null;
+  }, [teams, competition.lineup, competition.ras]);
+
+  const firstPlaceDisplay = useMemo(() => resolvePlacementDisplay(competition.firstplace), [resolvePlacementDisplay, competition.firstplace]);
+  const secondPlaceDisplay = useMemo(() => resolvePlacementDisplay(competition.secondplace), [resolvePlacementDisplay, competition.secondplace]);
+  const thirdPlaceDisplay = useMemo(() => resolvePlacementDisplay(competition.thirdplace), [resolvePlacementDisplay, competition.thirdplace]);
+  const hasPlacedResults = Boolean(
+    competition.firstplace ||
+    competition.secondplace ||
+    (detailHasThirdPlace && competition.thirdplace)
+  );
+  const showRasPlaceholders = isFutureCompetition && competition.ras && !hasPlacedResults;
 
   // Memoize sorted RAS lineup
   const sortedRasLineup = useMemo(() => {
@@ -583,7 +642,7 @@ export function CompetitionDetail({
                     {canSaveSimulation && <button onClick={handleSaveSimulation} className={`w-full px-4 py-3 rounded-lg transition-colors font-semibold min-h-[44px] ${showSuccessMessage ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
                         {showSuccessMessage ? 'Prediction Saved!' : 'Save Prediction'}
                       </button>}
-                  </div> : isFutureCompetition && competition.ras && !firstPlaceTeam && !secondPlaceTeam ? <div className="space-y-3">
+                  </div> : showRasPlaceholders ? <div className="space-y-3">
                     {/* 1st Place - National Champion */}
                     <div className="relative overflow-hidden bg-gradient-to-br from-amber-500/20 via-yellow-600/15 to-amber-700/20 border-2 border-amber-500/40 rounded-2xl p-5">
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/5 to-transparent" />
@@ -617,49 +676,49 @@ export function CompetitionDetail({
                       </div>
                     </div>
                   </div> : <div className="space-y-2">
-                    {firstPlaceTeam && <div onClick={() => handleTeamClick(firstPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20 transition-all duration-200 active:scale-[0.98]">
+                    {firstPlaceDisplay && <div onClick={() => firstPlaceDisplay.clickId && handleTeamClick(firstPlaceDisplay.clickId)} className={`flex items-center gap-3 bg-gradient-to-r from-yellow-600/20 to-yellow-400/10 border border-yellow-600/30 rounded-xl p-3 transition-all duration-200 active:scale-[0.98] ${firstPlaceDisplay.clickId ? 'cursor-pointer hover:from-yellow-600/30 hover:to-yellow-400/20' : 'cursor-default'}`}>
                         <div className="w-7 h-7 bg-yellow-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
-                        {firstPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
-                            <img src={firstPlaceTeam.logo} alt={firstPlaceTeam.name} className="w-full h-full object-cover" />
+                        {firstPlaceDisplay.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-yellow-500/50">
+                            <img src={firstPlaceDisplay.logo} alt={firstPlaceDisplay.displayName} className="w-full h-full object-cover" />
                           </div> : <div className="w-8 h-8 bg-yellow-600/30 rounded-full flex items-center justify-center text-yellow-300 text-sm font-bold flex-shrink-0">
-                            {firstPlaceTeam.name.charAt(0)}
+                            {firstPlaceDisplay.displayName.charAt(0)}
                           </div>}
-                        <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceTeam.name}</div>
+                        <div className="text-white font-semibold text-sm truncate flex-1">{firstPlaceDisplay.displayName}</div>
                         {competition.bid_status && (
                           <div className="bg-yellow-500/20 px-2 py-0.5 rounded-full border border-yellow-400/30 flex-shrink-0">
                             <span className="text-yellow-300 text-xs font-bold">+4 pts</span>
                           </div>
                         )}
                       </div>}
-                    {secondPlaceTeam && <div onClick={() => handleTeamClick(secondPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20 transition-all duration-200 active:scale-[0.98]">
+                    {secondPlaceDisplay && <div onClick={() => secondPlaceDisplay.clickId && handleTeamClick(secondPlaceDisplay.clickId)} className={`flex items-center gap-3 bg-gradient-to-r from-slate-500/20 to-slate-400/10 border border-slate-500/30 rounded-xl p-3 transition-all duration-200 active:scale-[0.98] ${secondPlaceDisplay.clickId ? 'cursor-pointer hover:from-slate-500/30 hover:to-slate-400/20' : 'cursor-default'}`}>
                         <div className="w-7 h-7 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
-                        {secondPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
-                            <img src={secondPlaceTeam.logo} alt={secondPlaceTeam.name} className="w-full h-full object-cover" />
+                        {secondPlaceDisplay.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-slate-400/50">
+                            <img src={secondPlaceDisplay.logo} alt={secondPlaceDisplay.displayName} className="w-full h-full object-cover" />
                           </div> : <div className="w-8 h-8 bg-slate-500/30 rounded-full flex items-center justify-center text-slate-300 text-sm font-bold flex-shrink-0">
-                            {secondPlaceTeam.name.charAt(0)}
+                            {secondPlaceDisplay.displayName.charAt(0)}
                           </div>}
-                        <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceTeam.name}</div>
+                        <div className="text-white font-semibold text-sm truncate flex-1">{secondPlaceDisplay.displayName}</div>
                         {competition.bid_status && (
                           <div className="bg-slate-500/20 px-2 py-0.5 rounded-full border border-slate-400/30 flex-shrink-0">
                             <span className="text-slate-300 text-xs font-bold">+2 pts</span>
                           </div>
                         )}
                       </div>}
-                    {thirdPlaceTeam && <div onClick={() => handleTeamClick(thirdPlaceTeam.id)} className="flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20 transition-all duration-200 active:scale-[0.98]">
+                    {thirdPlaceDisplay && <div onClick={() => thirdPlaceDisplay.clickId && handleTeamClick(thirdPlaceDisplay.clickId)} className={`flex items-center gap-3 bg-gradient-to-r from-orange-600/20 to-orange-400/10 border border-orange-600/30 rounded-xl p-3 transition-all duration-200 active:scale-[0.98] ${thirdPlaceDisplay.clickId ? 'cursor-pointer hover:from-orange-600/30 hover:to-orange-400/20' : 'cursor-default'}`}>
                         <div className="w-7 h-7 bg-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
-                        {thirdPlaceTeam.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
-                            <img src={thirdPlaceTeam.logo} alt={thirdPlaceTeam.name} className="w-full h-full object-cover" />
+                        {thirdPlaceDisplay.logo ? <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-orange-500/50">
+                            <img src={thirdPlaceDisplay.logo} alt={thirdPlaceDisplay.displayName} className="w-full h-full object-cover" />
                           </div> : <div className="w-8 h-8 bg-orange-600/30 rounded-full flex items-center justify-center text-orange-300 text-sm font-bold flex-shrink-0">
-                            {thirdPlaceTeam.name.charAt(0)}
+                            {thirdPlaceDisplay.displayName.charAt(0)}
                           </div>}
-                        <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceTeam.name}</div>
+                        <div className="text-white font-semibold text-sm truncate flex-1">{thirdPlaceDisplay.displayName}</div>
                         {competition.bid_status && (
                           <div className="bg-orange-500/20 px-2 py-0.5 rounded-full border border-orange-400/30 flex-shrink-0">
                             <span className="text-orange-300 text-xs font-bold">+1 pt</span>
                           </div>
                         )}
                       </div>}
-                    {!firstPlaceTeam && !secondPlaceTeam && !thirdPlaceTeam && <div className="text-slate-400 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-600/30">
+                    {!firstPlaceDisplay && !secondPlaceDisplay && !thirdPlaceDisplay && <div className="text-slate-400 text-sm text-center py-6 bg-slate-800/30 rounded-xl border border-slate-600/30">
                         No results available yet
                       </div>}
                   </div>}
