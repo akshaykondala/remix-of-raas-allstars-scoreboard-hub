@@ -1,43 +1,49 @@
 
-Goal: fix why placements entered for the RAAS All Stars competition are not showing correctly in the competition detail page.
+Fix the competition detail placings by tightening the display logic in `src/components/CompetitionDetail.tsx`.
 
-What I found
-- The issue is in the frontend display logic, not in the standings calculation.
-- In `src/components/CompetitionDetail.tsx`, the placings section has a special branch for `isFutureCompetition && competition.ras` that always renders hardcoded “TBD” cards for 1st and 2nd place.
-- That means even if `competition.firstplace` and `competition.secondplace` are populated, the RAAS/Nationals-style screen will still show placeholders as long as the event date is still considered future.
-- There is also a second mismatch: `getPlacingTeam()` only matches teams by ID, while other parts of the app already support placements stored as either team ID or team name. If Directus saved a team name instead of an ID, the page will fail to resolve the winner.
+What’s causing it
+- The detail page still has a fallback branch for future RAS competitions that renders the `? / TBD` cards whenever both resolved teams are missing.
+- The placed-team resolver is better than before, but it still only searches the global `teams` list. If the placement value matches a team present in `competition.lineup` but not perfectly in `teams`, the detail page can still fail to resolve it even though the banner worked elsewhere.
+- The placings section currently renders only cards for resolved teams, so if resolution fails you get the placeholder state instead of the actual placed lineup entries.
 
-Implementation plan
-1. Update placement resolution in `CompetitionDetail.tsx`
-   - Replace the current `getPlacingTeam()` logic with the same flexible matching strategy already used elsewhere:
-     - match by exact ID
-     - match by exact name
-     - optionally normalized name match for safety
-   - This keeps competition detail consistent with standings and banner behavior.
+What to change
+1. Strengthen team resolution for placements
+- Update `getPlacingTeam()` so it checks, in order:
+  - exact ID match in `teams`
+  - exact ID/name match in `competition.lineup`
+  - normalized name match in both sources
+- If a lineup match is found first, hydrate it with the full `teams` record when possible so logo/click behavior still works.
 
-2. Fix the RAAS placings rendering branch
-   - Change the `isFutureCompetition && competition.ras` branch so it does not always show static TBD cards.
-   - Instead:
-     - if placements exist, render the actual champion/runner-up cards using the resolved teams
-     - if placements are missing, show the current TBD placeholders
-   - This preserves the premium RAAS visual treatment while allowing real results to appear immediately.
+2. Stop showing placeholder cards once placement values exist
+- Replace the current future-RAS condition:
+  - from: show placeholders when `!firstPlaceTeam && !secondPlaceTeam`
+  - to: show placeholders only when there are no actual placement values entered at all
+- This ensures that once `competition.firstplace` or `competition.secondplace` is populated, the page attempts to render results instead of defaulting to `?`.
 
-3. Keep current non-RAAS behavior intact
-   - Do not change the normal future-competition prediction flow for non-RAS events.
-   - Do not alter leaderboard sorting or bid point logic unless needed.
+3. Add a placement-aware fallback UI
+- For RAS results, if a placement value exists but team resolution still fails, render a result card using the raw stored placement text instead of `TBD`.
+- Example:
+  - label stays “National Champion” / “Runner Up”
+  - avatar falls back to first letter
+  - name shows `competition.firstplace` / `competition.secondplace`
+- This removes the broken-looking `?` state even if Directus data is slightly inconsistent.
 
-4. Verify related edge cases
-   - Confirm 3rd place still only appears when lineup size > 6.
-   - Confirm RAAS/Nationals competitions still use their special styling.
-   - Confirm clicks on resolved placed teams still open the team detail modal.
+4. Keep existing behavior for normal competitions
+- Do not alter non-RAS future prediction cards.
+- Keep third place conditional on lineup size / existing placement data.
 
-Technical details
-- Main file to update: `src/components/CompetitionDetail.tsx`
-- Root causes:
-  - hardcoded future-RAS placeholder UI overrides real placements
-  - team lookup only supports IDs, but backend data may contain names
-- No backend/database change appears necessary based on the current code.
+Files to update
+- `src/components/CompetitionDetail.tsx`
 
 Expected result
-- When you enter 1st/2nd place for RAAS All Stars, the competition page will show the actual placed teams instead of staying on TBD.
-- If placements are empty, it will still show the styled placeholder state.
+- On the competition detail page, entered RAS placements will appear immediately.
+- The `?` placeholder cards will only show when no placements have been entered yet.
+- If Directus stores a name/string that can’t fully hydrate to a team object, the user will still see the entered placement text instead of a broken placeholder.
+
+Technical notes
+- Reuse the existing `normalizeName` helper.
+- Prefer deriving small booleans like:
+  - `hasPlacedResults`
+  - `firstPlaceDisplay`
+  - `secondPlaceDisplay`
+- Keep the current card styling; only change the data resolution and rendering conditions.
